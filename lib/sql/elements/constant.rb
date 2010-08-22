@@ -1,3 +1,5 @@
+require 'expression'
+
 module Sql
 
   class Constant < Expression

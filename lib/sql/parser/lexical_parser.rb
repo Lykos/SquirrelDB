@@ -1,10 +1,17 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
+require 'syntax'
 
 module Sql
+
   class LexicalParser
-    def initialize
-      
+
+    include Syntax
+
+    def initialize(string)
+      @tokens = string.scan(TOKEN)
     end
+
+    attr_reader :tokens
+    
   end
+  
 end

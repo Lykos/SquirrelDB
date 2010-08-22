@@ -28,10 +28,6 @@ module Sql
       Division.new(self, other)
     end
 
-    def !@
-      Negation.new(self)
-    end
-
     def +@
       self
     end

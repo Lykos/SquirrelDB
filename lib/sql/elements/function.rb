@@ -1,8 +1,10 @@
+require 'expression'
+
 module Sql
 
   class Function < Expression
 
-    def initialize( name, *parameters )
+    def initialize( name, parameters )
       @name = name
       @parameters = parameters
     end

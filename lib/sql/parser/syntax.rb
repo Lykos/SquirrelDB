@@ -1,4 +1,5 @@
 require 'eregex'
+require 'operators'
 
 module Sql
   
@@ -9,43 +10,33 @@ module Sql
 
     TRUE_K = /true/
     FALSE_K = /false/
-    LESS_OR_EQUAL_THAN = /<=/
-    GREATER_OR_EQUAL_THAN = />=/
-    LESS_THAN = /</
-    GREATER_THAN = />/
-    EQUAL_TO = /=/
-    UNEQUAL_TO = Regexp.union(/!=/, /<>/)
-    BINARY_RELATIONAL_OPERATOR = Regexp.union( LESS_OR_EQUAL_THAN,
-      GREATER_OR_EQUAL_THAN, LESS_THAN, GREATER_THAN, EQUAL_TO,
-      UNEQUAL_TO )
-  
-    OR_K = /or/
-    AND_K = /and/
-    BINARY_BOOLEAN_OPERATOR = Regexp.union( OR_K, AND_K )
-  
-    NOT_K = /not/
-  
-    PLUS = /\+/
-    MINUS = /-/
-    TIMES = /\*/
-    DIVIDED_BY = /\//
-    BINARY_ARITHMETIC_OPERATOR = Regexp.union( PLUS, MINUS, TIMES, DIVIDED_BY )
-  
+    BINARY_OPERATOR = Regexp.union(
+      Operators::ALL_OPERATORS.select { |op| op.is_binary? }.collect { |op| op.to_regexp }
+    )
+    UNARY_OPERATOR = Regexp.union(
+      Operators::ALL_OPERATORS.select { |op| op.is_unary? }.collect { |op| op.to_regexp }
+    )
     PARENTHESE_OPEN = /\(/
     PARENTHESE_CLOSED = /\)/
     PARENTHESE = Regexp.union( PARENTHESE_OPEN, PARENTHESE_CLOSED )
     
     INTEGER = /\d+/
+
+    CONSTANT = INTEGER
   
     IDENTIFIER = /\w+/
 
+    SELECT = /[Ss][Ee][Ll][Ee][Cc][Tt]/
+    AS = /[Aa][Ss]/
+    FROM = /[Ff][Rr][Oo][Mm]/
+    WHERE = /[Ww][Hh][Ee][Rr][Ee]/
+
     KOMMA = /,/
   
-    TOKEN = Regexp.union( TRUE_K, BINARY_COMPARATION_OPERATOR,
-      BINARY_BOOLEAN_OPERATOR, BINARY_ARITHMETIC_OPERATOR, NOT_K, PARENTHESE,
-      INTEGER, IDENTIFIER, KOMMA )
+    TOKEN = Regexp.union( TRUE_K, BINARY_OPERATOR, UNARY_OPERATOR, PARENTHESE,
+      CONSTANT, IDENTIFIER, KOMMA )
 
-    ARITHMETIC_CONTINUE = Regexp.union( PARENTHESE_OPEN, IDENTIFIER, INTEGER )
+    EXPRESSION_CONTINUE = Regexp.union( PARENTHESE_OPEN, IDENTIFIER, CONSTANT )
 
   end
 
