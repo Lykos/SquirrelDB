@@ -8,7 +8,7 @@ module Sql
     end
 
     attr_reader :expression, :name
-
+    
   end
 
 end

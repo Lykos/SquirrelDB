@@ -40,6 +40,11 @@ module Sql
       ALL_OPERATORS.find { |op| symbol =~ op.to_regexp }
     end
 
+    SELECT = Operator.new( 's', :binary, 0 )
+    PROJECT = Operator.new( 'p', :binary, 0 )
+    RENAME = Operator.new( 'r', :binary, 0 )
+    CARTESIAN = Operator.new( 'x', :binary, 0 )
+
   end
 
 end

@@ -2,12 +2,14 @@ module Sql
 
   class Table
 
-    def initialize(name, rename=name)
-      @name = name
+    def initialize( expression, name=expression.to_s )
+      @expression = expression
       @rename = rename
     end
 
-    attr_reader :name, :rename
+    attr_reader :expresion, :expression
+
+    DUAL = Table.new( 'dual' )
 
   end
 

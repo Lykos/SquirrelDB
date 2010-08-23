@@ -2,7 +2,7 @@ require 'table'
 
 module Sql
 
-  class Tables
+  class FromClause < SyntacticUnit
 
     def initialize(*tables)
       @tables = *tables

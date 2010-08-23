@@ -1,16 +1,19 @@
 require 'syntax'
+require 'pre_parser'
 
 module Sql
 
   class LexicalParser
 
-    include Syntax
-
-    def initialize(string)
-      @tokens = string.scan(TOKEN)
+    def initialize( pre_parser=PreParser.new )
+      @pre_parser = pre_parser
     end
 
-    attr_reader :tokens
+    include Syntax
+
+    def parse(string)
+      @pre_parser.parse( string ).scan( TOKEN )
+    end
     
   end
   

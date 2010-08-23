@@ -1,14 +1,14 @@
-require 'column'
+require 'syntactic_unit'
 
 module Sql
 
-  class SelectClause
+  class SelectClause < SyntacticUnit
 
     def initialize(*columns)
       @columns = *columns
     end
 
-    attr_reader :tables
+    attr_reader :columns
 
   end
 

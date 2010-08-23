@@ -30,11 +30,20 @@ module Sql
     AS = /[Aa][Ss]/
     FROM = /[Ff][Rr][Oo][Mm]/
     WHERE = /[Ww][Hh][Ee][Rr][Ee]/
+    INSERT = /[Ii][Nn][Ss][Ee][Rr][Tt]/
+    UPDATE = /[Uu][Pp][Dd][Aa][Tt][Ee]/
+    DELETE = /[Dd][Ee][Ll][Ee][Tt][Ee]/
+    CREATE = /[Cc][Rr][Ee][Aa][Tt][Ee]/
+    DROP = /[Dd][Rr][Oo][Pp]/
+    ALTER = /[Aa][Ll][Tt][Ee][Rr]/
+    GRANT = /[Gg][Rr][Aa][Nn][Tt]/
+    TRUNCATE = /[Tt][Rr][Uu][Nn][Cc][Aa][Tt][Ee]/
 
+    ALL_SYMBOL = /\*/
     KOMMA = /,/
   
     TOKEN = Regexp.union( TRUE_K, BINARY_OPERATOR, UNARY_OPERATOR, PARENTHESE,
-      CONSTANT, IDENTIFIER, KOMMA )
+      CONSTANT, IDENTIFIER, KOMMA, ALL_SYMBOL )
 
     EXPRESSION_CONTINUE = Regexp.union( PARENTHESE_OPEN, IDENTIFIER, CONSTANT )
 

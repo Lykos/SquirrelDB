@@ -2,7 +2,7 @@ require 'state'
 require 'operators'
 
 module Sql
-
+  
   class ExpressionEvaluator
 
     include Operators
@@ -41,6 +41,7 @@ module Sql
       when IMPLIES then !left || right
       when IS_IMPLIED then left || !right
       when EQUIVALENT then left == right
+      end
     end
 
   end
