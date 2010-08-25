@@ -19,7 +19,7 @@ module Storage
       raise if page.length > PAGE_SIZE
       File.open( @filename, File::RDWR ) do |f|
         f.seek( page_no * PAGE_SIZE, IO::SEEK_SET )
-        f.write( page.ljust( PAGE_SIZE ) )
+        f.write( page.ljust( PAGE_SIZE, '\0' ) )
       end
     end
 
