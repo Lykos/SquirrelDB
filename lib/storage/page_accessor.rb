@@ -1,28 +1,33 @@
-module Storage
+require 'storage/constants'
 
-  class PageAccessor
+module RubyDB
 
-    PAGE_SIZE = 128
+  module Storage
 
-    def initialize( filename )
-      @filename = filename
-    end
+    class PageAccessor
 
-    def get(page_no)
-      File.open(@filename, File::RDONLY) do |f|
-        f.seek(page_no * PAGE_SIZE, IO::SEEK_SET)
-        f.read( PAGE_SIZE )
+      include Constants
+
+      def initialize( filename )
+        @file = File.open( filename, File::RDWR )
       end
-    end
 
-    def put(page_no, page)
-      raise if page.length > PAGE_SIZE
-      File.open( @filename, File::RDWR ) do |f|
-        f.seek( page_no * PAGE_SIZE, IO::SEEK_SET )
-        f.write( page.ljust( PAGE_SIZE, '\0' ) )
+      def get( page_no )
+        @file.seek(page_no * PAGE_SIZE, IO::SEEK_SET)
+        @file.read( PAGE_SIZE )
       end
+
+      def put( page_no, page )
+        raise PageLengthException.new( page.length ) if page.length > PAGE_SIZE
+        @file.seek( page_no * PAGE_SIZE, IO::SEEK_SET )
+        @file.write( page.ljust( PAGE_SIZE, "\0" ) )
+      end
+
+      def close
+        @file.close
+      end
+
     end
 
   end
-  
 end

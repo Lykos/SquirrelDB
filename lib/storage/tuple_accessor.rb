@@ -1,4 +1,5 @@
-require 'page_accessor'
+require 'tuple_page_accessor'
+require 'tid'
 
 module Storage
 
@@ -8,13 +9,105 @@ module Storage
       @page_accessor = page_accessor
     end
 
-    def get( *tids )
-      
+    include Constants
+
+    def get( tids )
+      tids.sort!
+      tuple_nos = []
+      results = []
+      moved_tids = []
+      tids.each_with_index do |t, i|
+        tuple_nos.push( t.tuple_no )
+        if i + 1 >= tids.length or tids[i + 1].page_no > t.page_no
+          new_results, new_tids = get_page( t.page_no, tuple_nos )
+          results += new_results
+          moved_tids += new_tids
+          tuple_nos = []
+        elsif tids[i + 1].page_no < t.page_no
+          raise
+        end
+      end
+      results += get( moved_tids ) unless moved_tids.empty?
+      results
+    end
+
+    def get_tuple( tid )
+       results, moved_tids = get_page( tid.page_no, [tid.tuple_no] )
+       unless moved_tids.empty?
+         raise if moved_tids.length > 0 || !results.empty?
+         results, moved_tids = get_page( tid.page_no, moved_tids )
+         raise unless results.length == 1 and moved_tids.empty?
+       end
+       raise if results.length != 1
+       results[0]
+    end
+
+    def set( tids, values )
+      raise "tids and values have different lengths. " if tids.length != values.length
+      tids_values = tids.zip( values )
+      tids_values.sort! { |tv1, tv2| tv1[0] <=> tv2[0] }
+      tuple_nos = []
+      values2 = []
+      tids_values.each_with_index do |tv, i|
+        tuple_nos.push( tv[0].tuple_no )
+        values2.push( tv[1] )
+        if i + 1 >= tids_values.length or tids_values[i + 1][0].page_no > tv[0].page_no
+          set_page( tv[0].page_no, tuple_nos, values2 )
+          tuple_nos = []
+          values2 = []
+        elsif tids[i + 1].page_no < tv[0].page_no
+          raise
+        end
+      end
+    end
+
+    def remove_tuple( tid )
+      remove_page( tid.page_no, [tid.tuple_no] )
+    end
+
+    def remove( tids )
+      tids.sort!
+      tuple_nos = []
+      tids.each_with_index do |t, i|
+        tuple_nos.push( t.tuple_no )
+        if i + 1 >= tids.length or tids[i + 1].page_no > t.page_no
+          remove_page( t.page_no, tuple_nos )
+          tuple_nos = []
+        elsif tids[i + 1].page_no < t.page_no
+          raise
+        end
+      end
+    end
+
+    def set_tuple( tid, value )
+      set_page( tid.page_no, [tid.tuple_no], [value] )
+    end
+
+    def add_tuple( value )
+      page_no = 0
+      tuple_no = nil
+      page = nil
+      # TODO find free page more efficiently
+      loop do
+        page = @page_accessor.get( page_no )
+        raise if page.content == nil
+        if page.free_space > value.length
+          tuple_no = page.add_tuple( value )
+          break
+        end
+        page_no += 1
+      end
+      @page_accessor.put( page )
+      return TID.new( page_no, tuple_no )
+    end
+
+    def close
+      @page_accessor.close
     end
 
     private
 
-    def get_page( page_no, *tuple_nos )
+    def get_page( page_no, tuple_nos )
       results = []
       tids = []
       page = @page_accessor.get( page_no )
@@ -28,10 +121,26 @@ module Storage
       [results, tids]
     end
 
-    def put_page( page_no, tuple_nos, values )
-      @page_accessor.get( page_no )
+    def set_page( page_no, tuple_nos, values )
+      page = @page_accessor.get( page_no )
+      tuple_nos.each_with_index do |t, i|
+        v = values[i]
+        # TODO check for moved
+        if v.length + TUPLE_POINTER_SIZE <= page.free_space
+          page.set_tuple( t, v )
+        else
+          page.set_tid( tuple_no, add_tuple( values ) )
+        end
+      end
+      @page_accessor.put( page )
     end
 
+    def remove_page( page_no, tuple_nos )
+      page = @page_accessor.get( page_no )
+      tuple_nos.each { |t| page.remove_tuple( t ) }
+      @page_accessor.put( page )
+    end
+    
   end
 
 end

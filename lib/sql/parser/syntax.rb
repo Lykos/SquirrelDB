@@ -1,4 +1,3 @@
-require 'eregex'
 require 'operators'
 
 module Sql
