@@ -1,6 +1,6 @@
 require 'tuple_accessor'
 include Storage
-F = '/home/bernhard/Programmiertes/ruby/database/lib/storage/bla'
+F = '/home/bernhard/Programmiertes/ruby/database/try/bla'
 PA = PageAccessor.new(F)
 TPA = TuplePageAccessor.new(PA)
 TA = TupleAccessor.new(TPA)
