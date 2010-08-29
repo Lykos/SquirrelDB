@@ -1,11 +1,11 @@
 require 'storage/exceptions/storage_exception'
 
 module RubyDB
-
+  
   module Storage
 
-    class SpaceException < StorageException
-
+    class AddressException < StorageException
+      
     end
 
   end

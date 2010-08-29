@@ -1,25 +1,28 @@
 require 'storage/page_accessor'
 require 'storage/constants'
+require 'storage/exceptions/format_exception'
+require 'tempfile'
 
-include Storage
+include RubyDB::Storage
 include Constants
 
 describe PageAccessor do
 
   before(:each) do
-    fn = '/home/bernhard/Programmiertes/ruby/database/lib/storage/spec_bla'
-    File.open( fn, 'w' ) do |f|
-      f.puts( "\0" * PAGE_SIZE )
-    end
-    @page_accessor = PageAccessor.new( fn )
+    @content = "\0" * PAGE_SIZE
+    @content[19...23] = "sdad"
+    f = Tempfile.new("tuple_accessor_spec_database")
+    f.puts( @content )
+    f.close
+    @page_accessor = PageAccessor.new( f.path )
   end
 
   after(:each) do
     @page_accessor.close
   end
 
-  it "should initially consist of zeros" do
-    @page_accessor.get( 0 ).should == "\0" * PAGE_SIZE
+  it "should initially return the original content" do
+    @page_accessor.get( 0 ).should == @content
   end
 
   it "should be equal to the thing we put there" do
@@ -28,16 +31,13 @@ describe PageAccessor do
     @page_accessor.get( 0 ).should == content
   end
 
-  it "should pad too short things" do
-    content = "add"
-    @page_accessor.put( 0, content )
-    @page_accessor.get( 0 ).should == content.ljust( PAGE_SIZE, "\0" )
+  it "should raise an exception in case of too short content" do
+    lambda { @page_accessor.put( 0, "dd" ) }.should raise_error( FormatException )
   end
-=begin
+
   it "should raise an exception in case of too long content" do
-    lambda { @pace_accessor.put( 0, "5" * (PAGE_SIZE + 1) ) }.should raise
+    lambda { @page_accessor.put( 0, "5" * (PAGE_SIZE + 1) ) }.should raise_error( FormatException )
   end
-=end
 
 end
 

@@ -1,14 +1,16 @@
-require 'expression'
+module RubyDB
 
-module Sql
+  module Sql
 
-  class Constant < Expression
+    module Constant
 
-    def initialize(value)
-      @value = value
+      def initialize(value)
+        @value = value
+      end
+
+      attr_reader :value
+
     end
-
-    attr_reader :value
 
   end
 

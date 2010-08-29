@@ -1,14 +1,18 @@
-require 'table'
+require 'sql/elements/syntactic_unit'
 
-module Sql
+module RubyDB
 
-  class FromClause < SyntacticUnit
+  module Sql
 
-    def initialize(*tables)
-      @tables = *tables
+    class FromClause < SyntacticUnit
+
+      def initialize(*tables)
+        @tables = *tables
+      end
+
+      attr_reader :tables
+
     end
-
-    attr_reader :tables
 
   end
 

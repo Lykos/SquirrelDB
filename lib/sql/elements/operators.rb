@@ -10,7 +10,7 @@ module Sql
     TIMES = Operator.new( '*', :binary, 100 )
     DIVIDED_BY = Operator.new( '/', :binary, 100 )
     MODULO = Operator.new( '/', :binary, 100 )
-    POWER = Operator.new( '**', :binary, 120 )
+    POWER = Operator.new( '**', :binary, 120, true )
     EQUAL = Operator.new( '=', :binary, 70 )
     UNEQUAL = Operator.new( '!=', :binary, 70 )
     GREATER = Operator.new( '>', :binary, 80 )
