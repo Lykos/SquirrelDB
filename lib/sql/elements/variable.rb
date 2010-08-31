@@ -1,14 +1,22 @@
-require 'expression'
+require 'sql/elements/syntactic_unit'
 
-module Sql
+module RubyDB
 
-  class Variable < Expression
+  module Sql
 
-    def initialize( name )
-      @name = name
+    class Variable < SyntacticUnit
+
+      def initialize( name )
+        @name = name
+      end
+
+      attr_reader :name
+
+      def to_s
+        @name
+      end
+
     end
-
-    attr_reader :name
 
   end
 

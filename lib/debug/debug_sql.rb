@@ -1,9 +1,10 @@
-$:.unshift('lib', 'lib/sql', 'lib/sql/elements', 'lib/sql/parser', 'lib/sql/compiler')
+$:.unshift( 'lib' )
 
-require 'rel_alg_converter'
+require 'sql/parser/syntactic_parser'
 
+include RubyDB
 include Sql
 
 E = "5 * 3434 + 4 * (5 + 1)"
-R = RelAlgConverter.new
+P = SyntacticParser.new
 

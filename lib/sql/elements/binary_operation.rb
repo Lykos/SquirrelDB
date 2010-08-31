@@ -1,8 +1,10 @@
+require 'sql/elements/syntactic_unit'
+
 module RubyDB
 
-  module SQL
+  module Sql
 
-    module BinaryOperation
+    class BinaryOperation < SyntacticUnit
     
       def initialize( operator, left, right )
         @operator = operator
@@ -11,6 +13,10 @@ module RubyDB
       end
 
       attr_reader :operator, :left, :right
+
+      def to_s
+        "(" + @left.to_s + " " + @operator.to_s + " " + @right.to_s + ")"
+      end
 
     end
 

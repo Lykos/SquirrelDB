@@ -1,14 +1,18 @@
-require 'syntactic_unit'
+require 'sql/elements/syntactic_unit'
 
-module Sql
+module RubyDB
 
-  class WhereClause < SyntacticUnit
+  module Sql
 
-    def initialize(expression)
-      @expression = expression
-    end
+    class WhereClause < SyntacticUnit
+
+      def initialize(expression)
+        @expression = expression
+      end
     
-    attr_reader :expression
+      attr_reader :expression
+
+    end
 
   end
   

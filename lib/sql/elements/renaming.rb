@@ -1,10 +1,12 @@
+require 'sql/elements/variable'
+
 module RubyDB
 
   module Sql
 
-    class Column
+    class Renaming < SyntacticUnit
 
-      def initialize( expression, name=expression.to_s )
+      def initialize( expression, name=Variable.new( expression.to_s ) )
         @expression = expression
         @name = name
       end
@@ -12,7 +14,7 @@ module RubyDB
       attr_reader :expression, :name
 
     end
-    
+
   end
 
 end

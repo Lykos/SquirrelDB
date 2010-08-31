@@ -1,18 +1,22 @@
-require 'syntax'
-require 'pre_parser'
+require 'sql/parser/syntax'
+require 'sql/parser/pre_parser'
 
-module Sql
+module RubyDB
 
-  class LexicalParser
+  module Sql
 
-    def initialize( pre_parser=PreParser.new )
-      @pre_parser = pre_parser
-    end
+    class LexicalParser
 
-    include Syntax
+      def initialize( pre_parser=PreParser.new )
+        @pre_parser = pre_parser
+      end
 
-    def parse(string)
-      @pre_parser.parse( string ).scan( TOKEN )
+      include Syntax
+
+      def parse(string)
+        @pre_parser.parse( string ).scan( TOKEN )
+      end
+
     end
     
   end

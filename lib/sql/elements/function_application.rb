@@ -1,15 +1,19 @@
-require 'expression'
+require 'sql/elements/syntactic_unit'
 
-module Sql
+module RubyDB
 
-  class FunctionApplication < Expression
+  module Sql
 
-    def initialize( function, parameters )
-      @function = function
-      @parameters = parameters
+    class FunctionApplication < SyntacticUnit
+
+      def initialize( function, parameters )
+        @function = function
+        @parameters = parameters
+      end
+
+      attr_reader :function, :parameters
+
     end
-
-    attr_reader :function, :parameters
 
   end
   

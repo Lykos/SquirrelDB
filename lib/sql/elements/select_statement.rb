@@ -1,16 +1,20 @@
-require 'statement'
+require 'sql/elements/syntactic_unit'
 
-module Sql
+module RubyDB
 
-  class SelectStatement < Expression
+  module Sql
 
-    def initialize( select_clause, from_clause, where_clause )
-      @select_clause = select_clause
-      @from_clause = from_clause
-      @where_clause = where_clause
+    class SelectStatement < SyntacticUnit
+
+      def initialize( select_clause, from_clause, where_clause )
+        @select_clause = select_clause
+        @from_clause = from_clause
+        @where_clause = where_clause
+      end
+
+      attr_reader :select_clause, :from_clause, :where_clause
+
     end
-
-    attr_reader :select_clause, :from_clause, :where_clause
 
   end
 

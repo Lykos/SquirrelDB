@@ -6,8 +6,8 @@ module RubyDB
 
     class FromClause < SyntacticUnit
 
-      def initialize(*tables)
-        @tables = *tables
+      def initialize( tables )
+        @tables = tables
       end
 
       attr_reader :tables

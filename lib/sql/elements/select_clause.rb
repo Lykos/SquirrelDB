@@ -1,14 +1,18 @@
-require 'syntactic_unit'
+require 'sql/elements/syntactic_unit'
 
-module Sql
+module RubyDB
 
-  class SelectClause < SyntacticUnit
+  module Sql
 
-    def initialize(*columns)
-      @columns = *columns
+    class SelectClause < SyntacticUnit
+
+      def initialize( columns )
+        @columns = columns
+      end
+
+      attr_reader :columns
+
     end
-
-    attr_reader :columns
 
   end
 

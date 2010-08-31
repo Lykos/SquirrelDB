@@ -10,16 +10,20 @@ class String
    
 end
 
- module Sql
+module RubyDB
 
-  class SyntacticUnit
+  module Sql
 
-    def visit(visitor)
-      visitor.send("visit_" + self.class.to_s.underscore, self)
-    end
+    class SyntacticUnit
 
-    def ==(other)
-      self.class == other.class
+      def visit(visitor)
+        visitor.send("visit_" + self.class.to_s.underscore, self)
+      end
+
+      def ==(other)
+        self.class == other.class
+      end
+
     end
 
   end

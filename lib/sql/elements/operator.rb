@@ -1,43 +1,90 @@
-require 'eregex'
+module RubyDB
 
-module Sql
+  module Sql
 
-  class Operator
+    class Operator
 
-    def initialize( symbol, type, precedence=10, right_associative=false, *alternative_symbols )
-      @symbol = symbol
-      @type = type # binary or unary
-      @precedence = precedence
-      @right_associative = right_associative
-      @alternative_symbols = alternative_symbols
-    end
+      def initialize( symbol, cardinality,
+          precedence=10, right_associative=false, *alternative_symbols )
+        @symbol = symbol
+        @cardinality = cardinality # binary or unary
+        @precedence = precedence
+        @right_associative = right_associative
+        @alternative_symbols = alternative_symbols
+      end
 
-    attr_reader :symbol, :type, :right_associative, :precedence
+      attr_reader :symbol, :cardinality, :precedence
 
-    include Comparable
+      include Comparable
 
-    def to_s
-      @symbol
-    end
+      def right_assiociative?
+        right_associative
+      end
 
-    def inspect
-      @type.to_s + " " + @symbol
-    end
+      def to_s
+        @symbol
+      end
 
-    def to_regexp
-      @regexp ||= Regexp.union( @symbol, *@alternative_symbols )
-    end
+      def inspect
+        @cardinality.to_s + " " + @symbol
+      end
 
-    def is_unary?
-      @type == :unary
-    end
+      def to_regexp
+        @regexp ||= Regexp.union( @symbol, *@alternative_symbols )
+      end
 
-    def is_binary?
-      @type == :binary
-    end
+      def is_unary?
+        @cardinality == :unary
+      end
 
-    def <=>(other)
-      @precedence <=> other.precedence
+      def is_binary?
+        @cardinality == :binary
+      end
+
+      def <=>(other)
+        @precedence <=> other.precedence
+      end
+
+      DOT = Operator.new( '.', :binary, 200 )
+      PLUS = Operator.new( '+', :binary, 90 )
+      MINUS = Operator.new( '-', :binary, 90 )
+      TIMES = Operator.new( '*', :binary, 100 )
+      DIVIDED_BY = Operator.new( '/', :binary, 100 )
+      MODULO = Operator.new( '/', :binary, 100 )
+      POWER = Operator.new( '**', :binary, 120, true )
+      EQUAL = Operator.new( '=', :binary, 70 )
+      UNEQUAL = Operator.new( '!=', :binary, 70 )
+      GREATER = Operator.new( '>', :binary, 80 )
+      GREATER_EQUAL = Operator.new( '>=', :binary, 80 )
+      SMALLER = Operator.new( '<', :binary, 80 )
+      SMALLER_EQUAL = Operator.new( '<=', :binary, 80 )
+      OR = Operator.new( '||', :binary, 30 )
+      XOR = Operator.new( '^', :binary, 40 )
+      AND = Operator.new( '&&', :binary, 50 )
+      IMPLIES = Operator.new( '->', :binary, 20, true )
+      IS_IMPLIED = Operator.new( '<-', :binary, 20 )
+      EQUIVALENT = Operator.new( '<->', :binary, 10 )
+      UNARY_PLUS = Operator.new( '+', :unary, 110 )
+      UNARY_MINUS = Operator.new( '-', :unary, 110 )
+      NOT = Operator.new( '!', :unary, 60 )
+      ALL_OPERATORS = [
+        POWER, PLUS, MINUS, TIMES, DIVIDED_BY, EQUAL, UNEQUAL, GREATER,
+        GREATER_EQUAL, SMALLER, SMALLER_EQUAL, OR, XOR, AND, IMPLIES, IS_IMPLIED,
+        EQUIVALENT, UNARY_PLUS, UNARY_MINUS, NOT
+      ]
+
+      def self.choose_unary_operator( symbol )
+        op = ALL_OPERATORS.find { |op| symbol =~ op.to_regexp }
+        raise "No unary Operation for #{symbol.inspect} found." unless op
+        op
+      end
+
+      def self.choose_binary_operator( symbol )
+        op = ALL_OPERATORS.find { |op| symbol =~ op.to_regexp }
+        raise "No binary Operation for #{symbol.inspect} found." unless op
+        op
+      end
+
     end
 
   end

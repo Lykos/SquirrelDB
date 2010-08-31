@@ -1,8 +1,10 @@
+require 'sql/elements/syntactic_unit'
+
 module RubyDB
 
-  module SQL
+  module Sql
 
-    module UnaryOperation
+    class UnaryOperation < SyntacticUnit
 
       def initialize( operator, inner )
         @operator = operator

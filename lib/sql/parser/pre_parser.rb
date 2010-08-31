@@ -1,11 +1,15 @@
-module Sql
+module RubyDB
 
-  class PreParser
+  module Sql
 
-    def parse( string )
-      string.lines.collect do |line|
-        lines.gsub( /--.*?$/, '' )
-      end.join( ' ' ).gsub( /\/\*.*?\*\//, ' ' )
+    class PreParser
+
+      def parse( string )
+        string.lines.collect do |line|
+          line.gsub( /--.*?$/, '' )
+        end.join( ' ' ).gsub( /\/\*.*?\*\//, ' ' )
+      end
+
     end
 
   end
