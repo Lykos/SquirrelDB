@@ -17,8 +17,8 @@ module RubyDB
 
       include Comparable
 
-      def right_assiociative?
-        right_associative
+      def right_associative?
+        @right_associative
       end
 
       def to_s
@@ -67,11 +67,7 @@ module RubyDB
       UNARY_PLUS = Operator.new( '+', :unary, 110 )
       UNARY_MINUS = Operator.new( '-', :unary, 110 )
       NOT = Operator.new( '!', :unary, 60 )
-      ALL_OPERATORS = [
-        POWER, PLUS, MINUS, TIMES, DIVIDED_BY, EQUAL, UNEQUAL, GREATER,
-        GREATER_EQUAL, SMALLER, SMALLER_EQUAL, OR, XOR, AND, IMPLIES, IS_IMPLIED,
-        EQUIVALENT, UNARY_PLUS, UNARY_MINUS, NOT
-      ]
+      ALL_OPERATORS = self.constants.collect { |c| self.const_get( c ) }
 
       def self.choose_unary_operator( symbol )
         op = ALL_OPERATORS.find { |op| symbol =~ op.to_regexp }

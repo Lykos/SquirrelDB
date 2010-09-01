@@ -13,6 +13,14 @@ module RubyDB
 
       attr_reader :expression, :name
 
+      def to_s
+        @expression.to_s + " as " + @name.to_s
+      end
+
+      def inspect
+        @expression.inspect + " as " + @name.to_s
+      end
+
     end
 
   end

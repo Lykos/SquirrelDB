@@ -16,6 +16,10 @@ module RubyDB
         @name
       end
 
+      def inspect
+        @name
+      end
+
     end
 
   end

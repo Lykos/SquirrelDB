@@ -12,6 +12,14 @@ module RubyDB
     
       attr_reader :expression
 
+      def to_s
+        "where " + @expression.to_s
+      end
+
+      def inspect
+        "WhereClause( " + @expression.inspect + " )"
+      end
+
     end
 
   end

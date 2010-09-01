@@ -13,6 +13,14 @@ module RubyDB
 
       attr_reader :operator, :inner
 
+      def to_s
+        "(" + @operator.to_s + @inner.to_s + ")"
+      end
+
+      def inspect
+        "(" + @operator.to_s + @inner.inspect + ")"
+      end
+
     end
 
   end

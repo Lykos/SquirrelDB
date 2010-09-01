@@ -17,6 +17,10 @@ module RubyDB
         @value.to_s
       end
 
+      def inspect
+        @value.to_s + ":" + @type.to_s
+      end
+
     end
 
   end

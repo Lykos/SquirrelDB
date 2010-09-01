@@ -12,6 +12,13 @@ module RubyDB
 
       attr_reader :tables
 
+      def to_s
+        "from " + @tables.collect { |c| c.to_s }.join( ", " )
+      end
+
+      def inspect
+        "FromClause( " + @tables.collect { |c| c.inspect }.join( ", " ) + " )"
+      end
     end
 
   end

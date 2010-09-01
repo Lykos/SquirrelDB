@@ -19,6 +19,10 @@ module RubyDB
         @name == other.name
       end
 
+      def to_s
+        @name
+      end
+
       def converts_to?( other_type )
         self == other_type || conversions.any? { |c| c.to_type == other_type }
       end

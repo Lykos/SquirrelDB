@@ -18,6 +18,10 @@ module RubyDB
         "(" + @left.to_s + " " + @operator.to_s + " " + @right.to_s + ")"
       end
 
+      def inspect
+        "(" + @left.inspect + " " + @operator.to_s + " " + @right.inspect + ")"
+      end
+
     end
 
   end

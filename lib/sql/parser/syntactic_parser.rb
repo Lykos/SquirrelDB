@@ -61,24 +61,26 @@ module RubyDB
         table, after_index = parse_table( after_index )
         tables = [table]
         until @tokens[after_index] =~ WHERE || !@tokens[after_index]
-          table, after_index = parse_table( after_index)
+          raise "Komma expected instead of #{@tokens[after_index]}" unless @tokens[after_index] =~ KOMMA
+          after_index += 1
+          table, after_index = parse_table( after_index )
           tables.push( table )
         end
-        [table, after_index]
+        [FromClause.new( tables ), after_index]
       end
 
       def parse_table( start_index )
         if @tokens[start_index] =~ PARENTHESE_OPEN
           table, after_index = parse_select( start_index + 1 )
-          raise unless @tokens[after_index] =~ PARENTHESE_CLOSED
+          raise "missing right parenthese" unless @tokens[after_index] =~ PARENTHESE_CLOSED
           after_index += 1
         elsif @tokens[start_index] =~ IDENTIFIER
           table, after_index = parse_name( start_index )
         else
-          raise
+          raise "Table #{@tokens[start_index]} is neither an identifier nor a select statement."
         end
         after_index += 1 if @tokens[after_index] =~ AS
-        if @tokens[after_index] =~ IDENTIFIER
+        if @tokens[after_index] =~ IDENTIFIER && !(@tokens[after_index] =~ WHERE)
           return [Renaming.new( table, @tokens[after_index] ), after_index + 1]
         else
           return [Renaming.new( table ), after_index]
@@ -101,7 +103,7 @@ module RubyDB
       def parse_where( start_index )
         return [WhereClause.new( Constant.new( true, Type::BOOLEAN ) ), start_index] unless @tokens[start_index] =~ WHERE
         after_index = start_index + 1
-        expression, after_index = parse_expression( start_index ) { |t| !t }
+        expression, after_index = parse_expression( after_index ) { |t| !t }
         [WhereClause.new( expression ), after_index]
       end
 
@@ -111,10 +113,12 @@ module RubyDB
         column, after_index = parse_column( after_index )
         columns = [column]
         until @tokens[after_index] =~ FROM || !@tokens[after_index]
+          raise unless @tokens[after_index] =~ KOMMA
+          after_index += 1
           column, after_index = parse_column( after_index )
           columns.push( column )
         end
-        [columns, after_index]
+        [SelectClause.new( columns ), after_index]
       end
 
       def parse_column( start_index )
@@ -122,7 +126,7 @@ module RubyDB
           ['*', start_index + 1]
         else
           parse_expression( start_index ) do |token|
-            !token || token =~ AS || token =~ KOMMA
+            !token || token =~ AS || token =~ KOMMA || token =~ FROM
           end
         end
         if @tokens[after_index] =~ AS
@@ -139,7 +143,10 @@ module RubyDB
         @operator_stack = []
         is_infix = false
         parentheses_open = 0
+        puts
+        puts
         until parentheses_open == 0 && is_infix && condition.call( token )
+          p token, is_infix, parentheses_open
           raise "Tokens empty and not finished." unless token
           if !is_infix && @operator_stack.last =~ PARENTHESE_OPEN && token =~ SELECT
             select, after_index = parse_select( after_index )
@@ -165,8 +172,8 @@ module RubyDB
             operator = Operator.choose_binary_operator( token )
             last_op = @operator_stack.last
             while last_op.kind_of?(Operator) && (
-                ( last_op >= operator && !operator.right_associative ) ||
-                ( last_op > operator && operator.right_associative )
+                ( last_op >= operator && !operator.right_associative? ) ||
+                ( last_op > operator && operator.right_associative? )
               )
               pop_operator
               last_op = @operator_stack.last
@@ -183,7 +190,7 @@ module RubyDB
             pop_function if @operator_stack.last =~ IDENTIFIER
             is_infix = true
           else
-            raise "is_infix: #{is_infix}; token: #{token}"
+            raise "Could not find a mapping for token #{token} (is_infix: #{is_infix})"
           end
           after_index += 1
           token = @tokens[after_index]
@@ -200,7 +207,7 @@ module RubyDB
         raise if @operator_stack.empty?
         until @operator_stack.last =~ PARENTHESE_OPEN
           pop_operator
-          raise if @operator_stack.empty?
+          raise "Missing parenthese" if @operator_stack.empty?
         end
       end
 

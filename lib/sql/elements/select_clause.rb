@@ -12,6 +12,14 @@ module RubyDB
 
       attr_reader :columns
 
+      def to_s
+        "select " + @columns.collect { |c| c.to_s }.join( ", " )
+      end
+
+      def inspect
+        "SelectClause( " + @columns.collect { |c| c.inspect }.join( ", " ) + " )"
+      end
+
     end
 
   end
