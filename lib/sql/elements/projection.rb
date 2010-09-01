@@ -12,6 +12,10 @@ module RubyDB
       end
 
       attr_reader :renamings, :expressions
+
+      def ==(other)
+        
+      end
       
     end
 

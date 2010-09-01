@@ -48,6 +48,8 @@ module RubyDB
         end
       end
 
+      private
+
       def parse_select( start_index )
         select_clause, after_index = parse_select_clause( start_index )
         from_clause, after_index = parse_from( after_index )

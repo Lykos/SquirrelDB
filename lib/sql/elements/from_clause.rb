@@ -19,6 +19,11 @@ module RubyDB
       def inspect
         "FromClause( " + @tables.collect { |c| c.inspect }.join( ", " ) + " )"
       end
+
+      def ==(other)
+        super && @tables == other.tables
+      end
+
     end
 
   end

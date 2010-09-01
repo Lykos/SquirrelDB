@@ -14,6 +14,10 @@ module RubyDB
 
       attr_reader :operator, :left, :right
 
+      def ==(other)
+        super && @operator == other.operator && @left == other.left && @right == other.right
+      end
+
       def to_s
         "(" + @left.to_s + " " + @operator.to_s + " " + @right.to_s + ")"
       end

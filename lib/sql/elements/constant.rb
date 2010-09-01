@@ -21,6 +21,10 @@ module RubyDB
         @value.to_s + ":" + @type.to_s
       end
 
+      def ==(other)
+        super && @type == other.type && @value == other.value
+      end
+
     end
 
   end
