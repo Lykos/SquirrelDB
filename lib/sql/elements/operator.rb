@@ -1,8 +1,10 @@
+require 'sql/elements/syntactic_unit'
+
 module RubyDB
 
   module Sql
 
-    class Operator
+    class Operator < SyntacticUnit
 
       def initialize( symbol, cardinality,
           precedence=10, right_associative=false, *alternative_symbols )
@@ -41,8 +43,8 @@ module RubyDB
         @cardinality == :binary
       end
 
-      def <=>(other)
-        @precedence <=> other.precedence
+      def ==(other)
+        super && @symbol == other.symbol && @cardinality == other.cardinality
       end
 
       DOT = Operator.new( '.', :binary, 200 )
@@ -70,13 +72,13 @@ module RubyDB
       ALL_OPERATORS = self.constants.collect { |c| self.const_get( c ) }
 
       def self.choose_unary_operator( symbol )
-        op = ALL_OPERATORS.find { |op| symbol =~ op.to_regexp }
+        op = ALL_OPERATORS.find { |op| symbol =~ op.to_regexp and op.is_unary? }
         raise "No unary Operation for #{symbol.inspect} found." unless op
         op
       end
 
       def self.choose_binary_operator( symbol )
-        op = ALL_OPERATORS.find { |op| symbol =~ op.to_regexp }
+        op = ALL_OPERATORS.find { |op| symbol =~ op.to_regexp and op.is_binary? }
         raise "No binary Operation for #{symbol.inspect} found." unless op
         op
       end

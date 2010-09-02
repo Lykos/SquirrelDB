@@ -21,6 +21,10 @@ module RubyDB
         "(" + @operator.to_s + @inner.inspect + ")"
       end
 
+      def ==(other)
+        super && @operator == other.operator && @inner == other.inner
+      end
+
     end
 
   end

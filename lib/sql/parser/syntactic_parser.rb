@@ -1,5 +1,6 @@
 require 'sql/parser/syntax'
 require 'sql/elements/binary_operation'
+require 'sql/elements/unary_operation'
 require 'sql/elements/operator'
 require 'sql/elements/constant'
 require 'sql/elements/function_application'
@@ -145,10 +146,7 @@ module RubyDB
         @operator_stack = []
         is_infix = false
         parentheses_open = 0
-        puts
-        puts
         until parentheses_open == 0 && is_infix && condition.call( token )
-          p token, is_infix, parentheses_open
           raise "Tokens empty and not finished." unless token
           if !is_infix && @operator_stack.last =~ PARENTHESE_OPEN && token =~ SELECT
             select, after_index = parse_select( after_index )
@@ -158,14 +156,15 @@ module RubyDB
             @expression_stack.push( parse_constant( token ) )
             is_infix = true
           elsif !is_infix && token =~ IDENTIFIER
-            @expression_stack.push( Variable.new( token ) )
-            if token[after_index + 1] =~ PARENTHESE_OPEN
+            if @tokens[after_index + 1] =~ PARENTHESE_OPEN
+              @operator_stack.push( Variable.new( token ) )
               @expression_stack.push( :func )
             else
+              @expression_stack.push( Variable.new( token ) )
               is_infix = true
             end
           elsif !is_infix && token =~ UNARY_OPERATOR
-            @expression_stack.push( Operator.choose_unary_operator( token ) )
+            @operator_stack.push( Operator.choose_unary_operator( token ) )
           elsif is_infix && token =~ KOMMA
             until_parenthese
             raise unless @operator_stack.last == "("
@@ -174,8 +173,8 @@ module RubyDB
             operator = Operator.choose_binary_operator( token )
             last_op = @operator_stack.last
             while last_op.kind_of?(Operator) && (
-                ( last_op >= operator && !operator.right_associative? ) ||
-                ( last_op > operator && operator.right_associative? )
+                ( last_op.precedence >= operator.precedence && !operator.right_associative? ) ||
+                ( last_op.precedence > operator.precedence && operator.right_associative? )
               )
               pop_operator
               last_op = @operator_stack.last
@@ -219,6 +218,8 @@ module RubyDB
           pop_binary_operator
         elsif operator.kind_of?( Operator ) && operator.is_unary?
           pop_unary_operator
+        elsif operator.kind_of?( Variable )
+          pop_function
         else
           raise
         end
@@ -255,7 +256,7 @@ module RubyDB
         raise if @operator_stack.empty?
         operator = @operator_stack.pop
         raise unless operator.kind_of?( Operator ) && operator.is_unary?
-        raise if @expression_stack.empty || !@expression_stack.last.kind_of?( SyntacticUnit )
+        raise if @expression_stack.empty? || !@expression_stack.last.kind_of?( SyntacticUnit )
         @expression_stack.push( UnaryOperation.new(
             operator, @expression_stack.pop
           ) )

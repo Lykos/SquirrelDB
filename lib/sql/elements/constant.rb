@@ -18,7 +18,7 @@ module RubyDB
       end
 
       def inspect
-        @value.to_s + ":" + @type.to_s
+        @value.to_s + "::" + @type.to_s
       end
 
       def ==(other)

@@ -20,6 +20,10 @@ module RubyDB
         "WhereClause( " + @expression.inspect + " )"
       end
 
+      def ==(other)
+        super && @expression == other.expression
+      end
+
     end
 
   end

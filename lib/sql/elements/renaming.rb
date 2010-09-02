@@ -21,6 +21,10 @@ module RubyDB
         @expression.inspect + " as " + @name.to_s
       end
 
+      def ==(other)
+        super && @expression == other.name && @name == other.name
+      end
+
     end
 
   end

@@ -23,6 +23,10 @@ module RubyDB
           @from_clause.inspect + ", " + @where_clause.inspect + " )"
       end
 
+      def ==(other)
+        super && @select_clause == other.select_clause && @from_clause == other.from_clause && @where_clause == other.where_clause
+      end
+
     end
 
   end

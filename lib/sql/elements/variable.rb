@@ -20,6 +20,10 @@ module RubyDB
         @name
       end
 
+      def ==(other)
+        super &&  @name == other.name
+      end
+
     end
 
   end

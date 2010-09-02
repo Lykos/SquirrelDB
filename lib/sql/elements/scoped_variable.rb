@@ -1,4 +1,6 @@
-require RubyDB
+require 'syntactic_unit'
+
+module RubyDB
 
   module Sql
 
@@ -10,6 +12,18 @@ require RubyDB
       end
 
       attr_reader :scope, :variable
+
+      def to_s
+        @scope.to_s + "." + @variable.to_s
+      end
+
+      def inspect
+        @scope.inspect + "." + @variable.inspect
+      end
+
+      def ==(other)
+        super && @scope == other.scope && @variable == other.variable
+      end
 
     end
 

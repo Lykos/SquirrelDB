@@ -14,7 +14,7 @@ module RubyDB
       attr_reader :renamings, :expressions
 
       def ==(other)
-        
+        super && @renamings == other.renamings && @expression == other.expression
       end
       
     end
