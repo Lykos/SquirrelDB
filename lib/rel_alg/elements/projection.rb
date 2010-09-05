@@ -2,9 +2,9 @@ require 'sql/elements/syntactic_unit'
 
 module RubyDB
 
-  module Sql
+  module RelAlg
 
-    class Projection < SyntacticUnit
+    class Projection < Sql::SyntacticUnit
 
       def initialize( renamings, expression )
         @renamings = renamings

@@ -8,7 +8,7 @@ require 'sql/elements/cartesian'
 
 module RubyDB
 
-  module Sql
+  module RelAlg
 
     class RelAlgConverter
 

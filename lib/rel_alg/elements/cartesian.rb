@@ -1,4 +1,4 @@
-require 'sql/rel_alg/join'
+require 'rel_alg/elements/join'
 require 'schema/type'
 
 module RubyDB
@@ -12,7 +12,7 @@ module RubyDB
       end
 
       def visit( visitor )
-        let_visit( visitor, t )
+        let_visit( visitor, @left.visit( visitor ), @right.visit( visitor ) )
       end
 
     end

@@ -1,6 +1,6 @@
 require 'sql/parser/syntactic_parser'
 require 'sql/elements/operator'
-require 'sql/elements/type'
+require 'schema/type'
 
 include RubyDB
 include Sql

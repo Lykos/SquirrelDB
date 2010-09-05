@@ -4,7 +4,7 @@ require 'sql/elements/unary_operation'
 require 'sql/elements/operator'
 require 'sql/elements/constant'
 require 'sql/elements/function_application'
-require 'sql/schema/type'
+require 'schema/type'
 require 'sql/elements/renaming'
 require 'sql/elements/select_clause'
 require 'sql/elements/from_clause'
@@ -86,7 +86,7 @@ module RubyDB
         if @tokens[after_index] =~ IDENTIFIER && !(@tokens[after_index] =~ WHERE)
           return [Renaming.new( table, @tokens[after_index] ), after_index + 1]
         else
-          return [Renaming.new( table ), after_index]
+          return [Renaming.new( table, table.to_s ), after_index]
         end
       end
 
@@ -135,7 +135,7 @@ module RubyDB
         if @tokens[after_index] =~ AS
           return [Renaming.new( expression, @tokens[after_index + 1] ), after_index + 2]
         else
-          return [Renaming.new( expression ), after_index]
+          return [Renaming.new( expression, expression.to_s ), after_index]
         end
       end
 

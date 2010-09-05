@@ -1,6 +1,8 @@
+require 'rel_alg/elements/rel_alg_operation'
+
 module RubyDB
 
-  module Sql
+  module RelAlg
 
     class Join < RelAlgOperation
 
