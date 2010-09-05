@@ -26,8 +26,6 @@ module RubyDB
 
       def rewind
         raise unless @open
-        close
-        open
       end
 
     end

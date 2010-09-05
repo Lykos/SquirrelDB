@@ -30,6 +30,10 @@ module RubyDB
         @tuple_wrapper ||= TupleWrapper.new( tuple_accessor )
       end
 
+      def tid_wrapper
+        @tid_wrapper ||= TidWrapper.new( tuple_accessor )
+      end
+
     end
 
   end

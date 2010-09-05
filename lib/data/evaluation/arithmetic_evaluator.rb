@@ -1,11 +1,10 @@
-require 'state'
-require 'operators'
+require 'sql/elements/operator'
 
 module Sql
   
-  class ExpressionEvaluator
+  class Evaluator
 
-    include Operators
+    include Operator
 
     def evaluate( expression, state )
       expression.visit( self )

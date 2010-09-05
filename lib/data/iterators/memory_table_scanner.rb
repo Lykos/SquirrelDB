@@ -21,7 +21,7 @@ module RubyDB
         super
         schema = @schema_manager.get( @table_name )
         tids = @table_manager.get_tids( @table_name )        
-        @tuple_wrapper.get( tids, schema )
+        @tuples = @tuple_wrapper.get( tids, schema )
         @index = 0
       end
 
@@ -32,10 +32,11 @@ module RubyDB
 
       def close
         super
+        @tuples = nil
       end
 
       def rewind
-        raise unless @open
+        super
         @index = 0
       end
       
