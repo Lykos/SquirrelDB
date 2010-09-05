@@ -4,6 +4,7 @@ require 'sql/elements/operator'
 require 'sql/elements/constant'
 require 'sql/elements/variable'
 require 'sql/parser/syntactic_parser'
+require 'sql/elements/cartesian'
 
 module RubyDB
 
@@ -15,8 +16,8 @@ module RubyDB
         @parser = parser
       end
 
-      def compile( string )
-        select_statement = @parser.parse( string )
+      def process( string )
+        select_statement = @parser.process( string )
         select_statement.visit( self )
       end
 
@@ -85,7 +86,7 @@ module RubyDB
       end
 
       def visit_constant( constant )
-        Constant.new( constant.name )
+        Constant.new( constant.value, constant.type )
       end
 
       def visit_variable( variable )
@@ -97,7 +98,7 @@ module RubyDB
       end
 
       def visit_from_clause( from_clause )
-        from_clause.collect { |t| t.visit( self ) }
+        from_clause.tables.collect { |t| t.visit( self ) }
       end
 
       def visit_renaming( renaming )

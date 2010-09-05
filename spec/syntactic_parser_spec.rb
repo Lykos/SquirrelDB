@@ -12,8 +12,9 @@ describe SyntacticParser do
   end
 
   it "should parse a scoped function application correctly" do
-    @syntactic_parser.parse( "select scope.f( scope.var, 2*4 )" ).should == SelectStatement.new(
+    @syntactic_parser.process( "select scope.f( scope.var, 2*4 )" ).should == SelectStatement.new(
       SelectClause.new( [
+        Renaming.new(
           BinaryOperation.new(
             Operator::DOT,
             Variable.new( "scope" ),
@@ -33,6 +34,7 @@ describe SyntacticParser do
               ]
             )
           )
+        )
       ] ),
       FromClause.new( [] ),
       WhereClause.new( Constant.new( true, Type::BOOLEAN ) )
@@ -40,7 +42,7 @@ describe SyntacticParser do
   end
 
   it "should parse a select with a complex arithmetic expression correctly" do
-    @syntactic_parser.parse( "select +22 * 3 + (-4) * 3 + (2 / -3 - 1 + - -(4*zebra)) * f(3)" ).should == SelectStatement.new(
+    @syntactic_parser.process( "select +2 * 3 + (-4) * 3 + (2 / -3 - 1 + - -(4*zebra)) * f(3)" ).should == SelectStatement.new(
       SelectClause.new( [
         Renaming.new(
           BinaryOperation.new(
@@ -61,7 +63,7 @@ describe SyntacticParser do
                   Operator::UNARY_MINUS,
                   Constant.new( 4, Type::INTEGER )
                 ),
-                Constant.new( 4, Type::INTEGER )
+                Constant.new( 3, Type::INTEGER )
               )
             ),
             BinaryOperation.new(
@@ -106,7 +108,7 @@ describe SyntacticParser do
   end
 
   it "should parse * before + correctly" do
-    @syntactic_parser.parse( "select 2 + b * a" ).should == SelectStatement.new(
+    @syntactic_parser.process( "select 2 + b * a" ).should == SelectStatement.new(
       SelectClause.new( [
         Renaming.new(
           BinaryOperation.new(
@@ -114,8 +116,8 @@ describe SyntacticParser do
             Constant.new( 2, Type::INTEGER ),
             BinaryOperation.new(
               Operator::TIMES,
-              Variable.new( "a" ),
-              Variable.new( "b" )
+              Variable.new( "b" ),
+              Variable.new( "a" )
             )
           )
         )
@@ -126,7 +128,7 @@ describe SyntacticParser do
   end
 
   it "should parse a select with a ** correctly" do
-    @syntactic_parser.parse( "select 2 ** 3" ).should == SelectStatement.new(
+    @syntactic_parser.process( "select 2 ** 3" ).should == SelectStatement.new(
       SelectClause.new( [
         Renaming.new(
           BinaryOperation.new(

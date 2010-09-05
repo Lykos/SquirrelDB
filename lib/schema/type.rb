@@ -1,6 +1,6 @@
 module RubyDB
 
-  module Sql
+  module Schema
 
     class Type
 

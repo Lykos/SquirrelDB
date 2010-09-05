@@ -24,6 +24,10 @@ module RubyDB
         super && @tables == other.tables
       end
 
+      def visit( visitor )
+        let_visit( visitor, @tables.collect { |t| t.visit( visitor ) } )
+      end
+
     end
 
   end

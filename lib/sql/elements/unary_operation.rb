@@ -25,6 +25,10 @@ module RubyDB
         super && @operator == other.operator && @inner == other.inner
       end
 
+      def visit( visitor )
+        let_visit( visitor, @operator, @inner.visit( visitor ) )
+      end
+
     end
 
   end

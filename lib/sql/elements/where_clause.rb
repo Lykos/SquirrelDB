@@ -24,6 +24,10 @@ module RubyDB
         super && @expression == other.expression
       end
 
+      def visit( visitor )
+        let_visit( visitor, @expression.visit( visitor ) )
+      end
+
     end
 
   end

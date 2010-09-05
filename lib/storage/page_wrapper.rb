@@ -1,4 +1,5 @@
-require 'storage/page/tuple_page'
+require 'storage/constants'
+require 'storage/raw_util'
 
 module RubyDB
   
@@ -6,15 +7,19 @@ module RubyDB
 
     class PageWrapper
     
-      def initialize( page_accessor, type )
+      def initialize( page_accessor )
         @page_accessor = page_accessor
-        @type = type
       end
 
       attr_reader :type
 
+      include RawUtil
+
       def get( page_no )
-        @type.new( page_no, @page_accessor.get( page_no ) )
+        content = @page_accessor.get( page_no )
+        type_id = extract_int( content[0...TYPE_SIZE] ) # TODO
+        type = Storage.const_get( TYPE_IDS[type_id] )
+        type.new( page_no, @page_accessor.get( page_no ) )
       end
 
       def put( page )

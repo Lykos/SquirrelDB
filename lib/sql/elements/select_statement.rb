@@ -27,6 +27,10 @@ module RubyDB
         super && @select_clause == other.select_clause && @from_clause == other.from_clause && @where_clause == other.where_clause
       end
 
+      def visit( visitor )
+        let_visit( visitor, @select_clause.visit( visitor ), @from_clause.visit( visitor ), @where_clause.visit( visitor ) )
+      end
+
     end
 
   end

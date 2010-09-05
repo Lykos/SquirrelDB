@@ -8,7 +8,7 @@ module RubyDB
 
   module Storage
 
-    class TuplePage < VaritemPage
+    class VarTuplePage < VaritemPage
 
       def initialize( page_no, content )
         super

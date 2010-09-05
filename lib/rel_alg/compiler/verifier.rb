@@ -8,8 +8,8 @@ module Sql
       @syntactic_parser = syntactic_parser
     end
 
-    def verify( string )
-      statement = @syntactic_parser.parse( string )
+    def process( string )
+      statement = @syntactic_parser.process( string )
       return statement
       raise unless statement.kind_of?( Statement )
       statement.visit( self )

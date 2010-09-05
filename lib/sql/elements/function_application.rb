@@ -25,6 +25,10 @@ module RubyDB
         super && @function == other.function && @parameters == other.parameters
       end
 
+      def visit( visitor )
+        let_visit( visitor, @function.visit( visitor ), @parameters.collect { |p| p.visit( visitor ) } )
+      end
+
     end
 
   end

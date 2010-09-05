@@ -25,6 +25,10 @@ module RubyDB
         super && @type == other.type && @value == other.value
       end
 
+      def visit( visitor )
+        let_visit( visitor, @value, @type )
+      end
+
     end
 
   end

@@ -24,6 +24,10 @@ module RubyDB
         super &&  @name == other.name
       end
 
+      def visit( visitor )
+        let_visit( visitor, @name )
+      end
+
     end
 
   end

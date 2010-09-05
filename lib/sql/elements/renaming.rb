@@ -6,7 +6,7 @@ module RubyDB
 
     class Renaming < SyntacticUnit
 
-      def initialize( expression, name=Variable.new( expression.to_s ) )
+      def initialize( expression, name )
         @expression = expression
         @name = name
       end
@@ -18,11 +18,15 @@ module RubyDB
       end
 
       def inspect
-        @expression.inspect + " as " + @name.to_s
+        @expression.inspect + " as " + @name.inspect
       end
 
       def ==(other)
-        super && @expression == other.name && @name == other.name
+        super && @expression == other.expression && @name == other.name
+      end
+
+      def visit( visitor )
+        let_visit( visitor, @expression.visit( visitor ), @name.visit( visitor ) )
       end
 
     end

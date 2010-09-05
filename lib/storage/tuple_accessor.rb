@@ -98,6 +98,11 @@ module RubyDB
         return TID.new( page_no, tuple_no )
       end
 
+      def add_tuples( values )
+        # TODO naiv!
+        values.collect { |v| add_tuple( v ) }
+      end
+
       def close
         @page_accessor.close
       end

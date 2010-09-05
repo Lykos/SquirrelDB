@@ -13,8 +13,8 @@ module RubyDB
 
       include Syntax
 
-      def parse(string)
-        @pre_parser.parse( string ).scan( TOKEN )
+      def process(string)
+        @pre_parser.process( string ).scan( TOKEN )
       end
 
     end

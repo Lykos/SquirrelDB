@@ -4,7 +4,7 @@ module RubyDB
 
     class PreParser
 
-      def parse( string )
+      def process( string )
         string.lines.collect do |line|
           line.gsub( /--.*?$/, '' )
         end.join( ' ' ).gsub( /\/\*.*?\*\//, ' ' )

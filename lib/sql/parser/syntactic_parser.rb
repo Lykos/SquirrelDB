@@ -4,7 +4,7 @@ require 'sql/elements/unary_operation'
 require 'sql/elements/operator'
 require 'sql/elements/constant'
 require 'sql/elements/function_application'
-require 'sql/elements/type'
+require 'sql/schema/type'
 require 'sql/elements/renaming'
 require 'sql/elements/select_clause'
 require 'sql/elements/from_clause'
@@ -24,8 +24,8 @@ module RubyDB
 
       include Syntax
 
-      def parse( string )
-        @tokens = @lexical_parser.parse( string )
+      def process( string )
+        @tokens = @lexical_parser.process( string )
         if @tokens[0] =~ SELECT
           parse_select( 0 )
         elsif @tokens[0] =~ INSERT
@@ -104,7 +104,7 @@ module RubyDB
       end
 
       def parse_where( start_index )
-        return [WhereClause.new( Constant.new( true, Type::BOOLEAN ) ), start_index] unless @tokens[start_index] =~ WHERE
+        return [WhereClause.new( Constant.new( true, Schema::Type::BOOLEAN ) ), start_index] unless @tokens[start_index] =~ WHERE
         after_index = start_index + 1
         expression, after_index = parse_expression( after_index ) { |t| !t }
         [WhereClause.new( expression ), after_index]
@@ -237,7 +237,7 @@ module RubyDB
           raise if @expression_stack.empty?
           expression = @expression_stack.pop
         end
-        @expression_stack.push( FunctionApplication.new( operator, parameters ) )
+        @expression_stack.push( FunctionApplication.new( operator, parameters.reverse ) )
       end
 
       def pop_binary_operator
@@ -265,21 +265,21 @@ module RubyDB
       def parse_constant( token )
         if token =~ BOOLEAN
           if token =~ TRUE_K
-            Constant.new( true, Type::BOOLEAN )
+            Constant.new( true, Schema::Type::BOOLEAN )
           elsif token =~ FALSE_K
-            Constant.new( false, Type::BOOLEAN )
+            Constant.new( false, Schema::Type::BOOLEAN )
           elsif token =~ UNKNOWN
-            Constant.new( nil, Type::BOOLEAN )
+            Constant.new( nil, Schema::Type::BOOLEAN )
           else
             raise
           end
         elsif token =~ INTEGER
-          Constant.new( token.to_i, Type::INTEGER )
+          Constant.new( token.to_i, Schema::Type::INTEGER )
         elsif token =~ DOUBLE
-          Constant.new( token.to_i, Type::DOUBLE )
+          Constant.new( token.to_i, Schema::Type::DOUBLE )
         elsif token =~ STRING
           # TODO String escaping etc
-          Constant.new( token[1..-2], Type::STRING)
+          Constant.new( token[1..-2], Schema::Type::STRING)
         end
       end
 

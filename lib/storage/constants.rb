@@ -18,9 +18,10 @@ module RubyDB
       LENGTH_MASK = 0x7FFF
       BYTE_MASK = 0xFF
       TYPE_IDS = {
-        :TuplePage => 0,
-        :IndexPage => 1,
-        :VarindexPage => 2
+        1 => :VarTuplePage,
+        2 => :IndexPage,
+        3 => :VarindexPage,
+        4 => :TidListPage
       }
 
       # Check some constraints for the constants
