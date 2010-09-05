@@ -10,8 +10,6 @@ module RubyDB
         @file = file
       end
 
-      private
-
       def page_accessor
         @page_accessor ||= PageAccessor.new( @file )
       end
@@ -26,6 +24,10 @@ module RubyDB
 
       def tid_list_accessor
         @tid_list_accessor ||= TidListAccessor.new( page_wrapper )
+      end
+
+      def tuple_wrapper
+        @tuple_wrapper ||= TupleWrapper.new( tuple_accessor )
       end
 
     end

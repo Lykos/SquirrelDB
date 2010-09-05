@@ -7,7 +7,8 @@ module Sql
 
     include Operators
 
-    def initialize( state=State.new )
+    def evaluate( expression, state )
+      expression.visit( self )
       @state = state
     end
 
@@ -19,10 +20,8 @@ module Sql
       @state.get_variable( variable.name )
     end
 
-    def visit_binary_operation( binary_operation )
-      left = binary_operation.left.visit( self )
-      right = binary_operation.right.visit( self )
-      case binary_operation.operator
+    def visit_binary_operation( operator, left, right )
+      case operator
       when PLUS then left + right
       when MINUS then left - right
       when TIMES then left * right
@@ -41,6 +40,18 @@ module Sql
       when IMPLIES then !left || right
       when IS_IMPLIED then left || !right
       when EQUIVALENT then left == right
+      else
+        raise
+      end
+    end
+
+    def visit_unary_operation( operator, inner )
+      case operator
+      when UNARY_PLUS then inner
+      when UNARY_MINUS then -inner
+      when NOT then !inner
+      else
+        raise
       end
     end
 

@@ -6,6 +6,7 @@ module RubyDB
 
       def initialize( columns )
         @columns = columns
+        @indices = {}
       end
 
       attr_reader :columns
@@ -23,6 +24,10 @@ module RubyDB
       def tuple_to_raw( tuple )
         raise if tuple.fields.length != @columns.length
         (0...@columns.length).inject( "" ) { |raw, i| raw + @columns[i].to_raw( tuple[i] ) }
+      end
+
+      def get_index( column_name )
+        @indices[column_name] ||= @columns.find_index { |col| col.name == column_name }
       end
 
     end

@@ -6,11 +6,11 @@ module Sql
       @variables = {}
     end
 
-    def get_variable(name)
+    def []( name )
       @variable[name]
     end
 
-    def set_variable(name, value)
+    def []=( name, value )
       @variable[name] = value
     end
 

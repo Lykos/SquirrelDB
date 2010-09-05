@@ -9,9 +9,8 @@ module RubyDB
       INTERNAL_TABLESPACE = "#internal#"
       SCHEMA_TABLE_NAME = "schema"
 
-      def initialize( tuple_accessor, data_manager )
+      def initialize( tuple_accessor )
         @tuple_accessor = tuple_accessor
-        @data_manager = data_manager
       end
 
       def get( object_name )

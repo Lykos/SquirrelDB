@@ -16,7 +16,7 @@ module RubyDB
         @tuple_accessor.get( tids ).collect { |t| table_schema.raw_to_tuple( t ) }
       end
 
-      def get_tuple( tids, table_schema )
+      def get_tuple( tid, table_schema )
         table_schema.raw_to_tuple( @tuple_accessor.get( tid ) )
       end
 

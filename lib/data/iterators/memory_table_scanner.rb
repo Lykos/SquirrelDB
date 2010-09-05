@@ -1,5 +1,4 @@
-require 'data/iterators/rel_alg_iterator'
-require 'data/iterators/table_scanner'
+require 'data/iterators/iterator'
 
 module RubyDB
 
@@ -10,20 +9,19 @@ module RubyDB
     #
     class MemoryTableScanner < RelAlgIterator
 
-      def initialize( table_name )
+      def initialize( table_name, tuple_wrapper, schema_manager, table_manager )
         super
         @table_name = table_name
+        @tuple_wrapper = tuple_wrapper
+        @schema_manager = schema_manager
+        @table_manager = table_manager
       end
 
       def open
         super
-        table_scanner = TableScanner.new( @table_name )
-        table_scanner.open
-        @tuples = []
-        while (t = table_scanner.next_item)
-          @tuples.push( t )
-        end
-        table_scanner.close
+        schema = @schema_manager.get( @table_name )
+        tids = @table_manager.get_tids( @table_name )        
+        @tuple_wrapper.get( tids, schema )
         @index = 0
       end
 
