@@ -9,9 +9,10 @@ module RubyDB
       PAGE_SIZE = 8192 # byte
       TID_SIZE = 8 # byte
       TUPLE_NO_SIZE = 3 # byte
+      PAGE_NO_SIZE = TID_SIZE - TUPLE_NO_SIZE
       ITEM_HEADER_SIZE = 4 # byte
-      HEADER_SIZE = 4 # byte
-      TYPE_SIZE = 1 # byte
+      HEADER_SIZE = 12 # byte
+      TYPE_SIZE = 4 # byte
       OFFSET_SIZE = 2 # byte
       INDEX_HEADER_SIZE = 8 # byte
       BYTE_SIZE = 8 # bit
@@ -50,9 +51,13 @@ module RubyDB
         raise ConstantException.new(
           "Not all types can be represented with this type size."
         )
-      elsif INDEX_HEADER_SIZE <= TID_SIZE - TUPLE_NO_SIZE
+      elsif INDEX_HEADER_SIZE <= PAGE_NO_SIZE
         raise ConstantException.new(
           "The index header can't point to the upper index page and include the level."
+        )
+      elsif HEADER_SIZE < TUPLE_NO_SIZE + PAGE_NO_SIZE + TYPE_SIZE
+        raise ConstantException.new(
+          ""
         )
       end
       

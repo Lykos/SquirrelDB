@@ -33,7 +33,7 @@ module RubyDB
           new_tid = new_tid.to_raw
         end
         if new_tid.bytesize != TID_SIZE
-          raise TIDFormatException.new(
+          raise FormatException.new(
             "The new tid doesn't have the correct length."
           )
         end

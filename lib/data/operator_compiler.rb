@@ -1,7 +1,11 @@
-module Data
-  class OperatorCompiler
-    def initialize
+module RubyDB
+
+  module Data
+
+    class OperatorCompiler
       
     end
+
   end
+
 end
