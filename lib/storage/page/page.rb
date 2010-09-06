@@ -21,6 +21,12 @@ module RubyDB
         @page_no = page_no
       end
 
+      def self.new_empty
+        new_page = self.allocate
+        new_page.init_empty
+        new_page
+      end
+
       attr_reader :page_no, :content
 
       include RawUtil
@@ -32,6 +38,12 @@ module RubyDB
         @type ||= extract_int( content[0...TYPE_SIZE] )
       end
 
+      def init_empty
+        @content = "\x00" * PAGE_SIZE
+        @type = TYPE_IDS[type]
+        @content[0...TYPE_SIZE] = encode_int( type, TYPE_SIZE )
+      end
+      
     end
 
   end

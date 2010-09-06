@@ -31,7 +31,10 @@ module RubyDB
       end
 
       def get_all( page_no )
-        
+          page = @page_accessor.get( page_no )
+          until page_no == 0
+            
+          end
       end
 
       def get_tuple( tid )
