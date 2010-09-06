@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module RubyDB
 
   module Data
@@ -7,6 +9,8 @@ module RubyDB
       def initialize
         @open = false
       end
+
+      extend Forwardable
 
       def open?
         @open

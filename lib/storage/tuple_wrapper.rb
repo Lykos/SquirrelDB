@@ -12,6 +12,8 @@ module RubyDB
 
       extend Forwardable
 
+      def_delegators :@tuple_accessor, :remove, :remove_tuple, :close
+
       def get( tids, table_schema )
         @tuple_accessor.get( tids ).collect { |t| table_schema.raw_to_tuple( t ) }
       end
@@ -28,7 +30,6 @@ module RubyDB
         table_schema.raw_to_tuple( @tuple_accessor.tuple_to_raw( tid ) )
       end
 
-      def_delegators :@tuple_accessor, :add, :add_tuple, :remove, :remove_tuple, :close
     end
 
   end

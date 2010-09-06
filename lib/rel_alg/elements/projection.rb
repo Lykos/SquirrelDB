@@ -6,15 +6,15 @@ module RubyDB
 
     class Projection < Sql::SyntacticUnit
 
-      def initialize( renamings, expression )
+      def initialize( renamings, inner )
         @renamings = renamings
-        @expression = expression
+        @inner = inner
       end
 
-      attr_reader :renamings, :expressions
+      attr_reader :renamings, :inner
 
       def ==(other)
-        super && @renamings == other.renamings && @expression == other.expression
+        super && @renamings == other.renamings && @inner == other.inner
       end
       
     end

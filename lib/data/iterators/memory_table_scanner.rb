@@ -10,7 +10,7 @@ module RubyDB
     class MemoryTableScanner < RelAlgIterator
 
       def initialize( table_name, tuple_wrapper, schema_manager, table_manager )
-        super
+        super()
         @table_name = table_name
         @tuple_wrapper = tuple_wrapper
         @schema_manager = schema_manager

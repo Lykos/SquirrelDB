@@ -16,6 +16,10 @@ module Data
       @values[column] = value
     end
 
+    def +(other)
+      Tuple.new( @values + other.values )
+    end
+
   end
 
 end

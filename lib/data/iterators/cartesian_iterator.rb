@@ -1,41 +1,56 @@
+require 'data/iterators/iterator'
+
 module RubyDB
 
   module Data
 
-    class CartesianIterator
+    class CartesianIterator < Iterator
 
       def initialize( left, right )
-        @left.open
-        @right.open
+        super()
+        @left = left
+        @right = right
       end
 
       def open
+        super
         @left.open
         @right.open
-        @leftitem = @left.next_item
+        @left_item = @left.next_item
       end
 
       def next_item
-        if (t = @right.next_item)
-          return 
+        super
+        return nil unless @left_item
+        t = @right.next_item
+        unless t
+          @left_item = @left.next_item
+          @right.rewind
+          t = @right.next_item
         end
+        return nil unless @left_item
+        @left_item + t
       end
 
       def close
+        super
         @left.close
         @right.close
       end
 
       def rewind
+        super
         @left.rewind
         @right.rewind
       end
 
       def size
+        super
         @left.size * @right.size
       end
 
       def cost
+        super
         @left.cost * @right.cost
       end
       

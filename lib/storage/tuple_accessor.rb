@@ -30,6 +30,10 @@ module RubyDB
         results
       end
 
+      def get_all( page_no )
+        
+      end
+
       def get_tuple( tid )
         results, moved_tids = get_page( tid.page_no, [tid.tuple_no] )
         unless moved_tids.empty?
@@ -80,8 +84,7 @@ module RubyDB
         set_page( tid.page_no, [tid.tuple_no], [value] )
       end
 
-      def add_tuple( value )
-        page_no = 0
+      def add_tuple( value, page_no )
         tuple_no = nil
         page = nil
         length = value.bytesize
@@ -92,13 +95,13 @@ module RubyDB
             tuple_no = page.add_tuple( value )
             break
           end
-          page_no += 1
+          page_no = page.next_page
         end
         @page_accessor.put( page )
         return TID.new( page_no, tuple_no )
       end
 
-      def add_tuples( values )
+      def add_tuples( values, page_no )
         # TODO naiv!
         values.collect { |v| add_tuple( v ) }
       end
