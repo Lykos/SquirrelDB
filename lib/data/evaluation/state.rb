@@ -4,6 +4,7 @@ module Sql
 
     def initialize
       @variables = {}
+      @scopes = {}
     end
 
     def []( name )

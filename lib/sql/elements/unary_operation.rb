@@ -29,6 +29,16 @@ module RubyDB
         let_visit( visitor, @operator, @inner.visit( visitor ) )
       end
 
+      def evaluate( state )
+        case operator
+        when UNARY_PLUS then @inner.evaluate( state )
+        when UNARY_MINUS then -@inner.evaluate( state )
+        when NOT then @inner.evaluate( state )
+        else
+          raise
+        end
+      end
+
     end
 
   end

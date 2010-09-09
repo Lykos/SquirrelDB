@@ -29,6 +29,12 @@ module RubyDB
         let_visit( visitor, @scope.collect { |s| s.visit( visitor ) }, @variable.visit( visitor ) )
       end
 
+      def evaluate( state )
+        st = state
+        @scope.collect { |s| st = st.get_scope( s ) }
+        st.get_variable( @variable )
+      end
+
     end
 
   end

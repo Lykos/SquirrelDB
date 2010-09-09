@@ -30,6 +30,31 @@ module RubyDB
         let_visit( visitor, @operator, @left.visit( visitor ), @right.visit( visitor ) )
       end
 
+      def evaluate( state )
+        case @operator
+        when PLUS then @left.evaluate( state ) + @right.evaluate( state )
+        when MINUS then @left.evaluate( state ) - @right.evaluate( state )
+        when TIMES then @left.evaluate( state ) * @right.evaluate( state )
+        when DIVIDED_BY then @left.evaluate( state ) / @right.evaluate( state )
+        when MODULO then @left.evaluate( state ) % @right.evaluate( state )
+        when POWER then @left.evaluate( state ) ** @right.evaluate( state )
+        when EQUAL then @left.evaluate( state ) == @right.evaluate( state )
+        when UNEQUAL then @left.evaluate( state ) != @right.evaluate( state )
+        when GREATER then @left.evaluate( state ) > @right.evaluate( state )
+        when GREATER_EQUAL then @left.evaluate( state ) >= @right.evaluate( state )
+        when SMALLER then @left.evaluate( state ) < @right.evaluate( state )
+        when SMALLER_EQUAL then @left.evaluate( state ) <= @right.evaluate( state )
+        when OR then @left.evaluate( state ) || @right.evaluate( state )
+        when XOR then @left.evaluate( state ) != @right.evaluate( state )
+        when AND then @left.evaluate( state ) && @right.evaluate( state )
+        when IMPLIES then !@left.evaluate( state ) || @right.evaluate( state )
+        when IS_IMPLIED then @left.evaluate( state ) || !@right.evaluate( state )
+        when EQUIVALENT then @left.evaluate( state ) == @right.evaluate( state )
+        else
+          raise
+        end
+      end
+
     end
 
   end

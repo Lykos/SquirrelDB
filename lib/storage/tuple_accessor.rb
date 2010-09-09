@@ -31,10 +31,18 @@ module RubyDB
       end
 
       def get_all( page_no )
-          page = @page_accessor.get( page_no )
-          until page_no == 0
-            
-          end
+        # TODO May not terminate
+        results = []
+        moved_tids = []
+        new_results, new_tids, has_next_page, page_no = get_page( page_no, :all )
+        moved_tids += new_tids
+        results += new_results
+        while has_next_page
+          new_results, new_tids, has_next_page, page_no = get_page( page_no, :all )
+          moved_tids += new_tids
+        end
+        results += get( moved_tids ) unless moved_tids.empty?
+        results
       end
 
       def get_tuple( tid )
@@ -65,6 +73,10 @@ module RubyDB
         end
       end
 
+      def new_page
+        @page_accessor.add( TYPE_IDS.key( :VarTuplePage ) ).page_no
+      end
+
       def remove_tuple( tid )
         remove_page( tid.page_no, [tid.tuple_no] )
       end
@@ -89,24 +101,16 @@ module RubyDB
 
       def add_tuple( value, page_no )
         tuple_no = nil
-        page = nil
         length = value.bytesize
-        # TODO find free page more efficiently
-        loop do
-          page = @page_accessor.get( page_no )
-          if page.has_space?( length )
-            tuple_no = page.add_tuple( value )
-            break
-          end
-          page_no = page.next_page
-        end
-        @page_accessor.put( page )
-        return TID.new( page_no, tuple_no )
+        page = free_page( length, page_no )
+        page.add( value )
+        @page_accessor.set( page )
+        return TID.new( page.page_no, tuple_no )
       end
 
       def add_tuples( values, page_no )
-        # TODO naiv!
-        values.collect { |v| add_tuple( v ) }
+        # TODO naiv! (although a good solution is NP complete)
+        values.collect { |v| add_tuple( v, page_no ) }
       end
 
       def close
@@ -119,6 +123,9 @@ module RubyDB
         results = []
         tids = []
         page = @page_accessor.get( page_no )
+        if tuple_nos == :all
+          tuple_nos = (0...page.no_tuples).to_a
+        end
         tuple_nos.each do |tuple_no|
           if page.moved?( tuple_no )
             tids.push( page.get_tid( tuple_no ) )
@@ -126,7 +133,7 @@ module RubyDB
             results.push( page.get_tuple( tuple_no ) )
           end
         end
-        [results, tids]
+        [results, tids, page.has_next_page?, page.next_page]
       end
 
       def set_page( page_no, tuple_nos, values )
@@ -140,13 +147,28 @@ module RubyDB
             page.set_tid( t, add_tuple( values ) )
           end
         end
-        @page_accessor.put( page )
+        @page_accessor.set( page )
       end
 
       def remove_page( page_no, tuple_nos )
         page = @page_accessor.get( page_no )
         tuple_nos.each { |t| page.remove_tuple( t ) }
-        @page_accessor.put( page )
+        @page_accessor.set( page )
+      end
+
+      def free_page( length, page_no )
+        # TODO naiv! May not terminate.
+        loop do
+          page = @page_accessor.get( page_no )
+          return page if page.has_space?( length )
+          unless page_no.has_next_page?
+            new_page = @page_accessor.add( page.type )
+            page.next_page = new_page.page_no
+            @page_accessor.set( page )
+            return new_page
+          end
+          page_no = page.next_page
+        end
       end
       
     end

@@ -22,8 +22,15 @@ module RubyDB
         type.new( page_no, @page_accessor.get( page_no ) )
       end
 
-      def put( page )
-        @page_accessor.put( page.page_no, page.content )
+      def set( page )
+        @page_accessor.set( page.page_no, page.content )
+      end
+
+      def add_tuple_page( type_id )
+        type = Storage.const_get( TYPE_IDS[type_id] )
+        new_page = type.new_empty
+        page_no = @page_accessor.add( new_page )
+        type.new( page_no, new_page.content )
       end
 
       def close

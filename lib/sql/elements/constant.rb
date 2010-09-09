@@ -29,6 +29,10 @@ module RubyDB
         let_visit( visitor, @value, @type )
       end
 
+      def evaluate( state )
+        @value
+      end
+
     end
 
   end

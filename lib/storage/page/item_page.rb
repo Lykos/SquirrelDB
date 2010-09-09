@@ -19,15 +19,16 @@ module RubyDB
         internal_next_page
       end
 
+      def no_items
+        @no_items ||= extract_int( @content[TYPE_SIZE + PAGE_NO_SIZE...TYPE_SIZE + TID_SIZE] )
+      end
+      
       private
 
       def internal_next_page
         @next_page ||= extract_int( @content[TYPE_SIZE...TYPE_SIZE + PAGE_NO_SIZE] )
       end
 
-      def no_items
-        @no_items ||= extract_int( @content[TYPE_SIZE + PAGE_NO_SIZE...TYPE_SIZE + TID_SIZE] )
-      end
 
       def no_items=( new_no_items )
         @no_items = new_no_items
@@ -44,6 +45,11 @@ module RubyDB
             "Negative item numbers are not allowed."
           )
         end
+      end
+
+      def init_empty
+        super
+        no_items = 0
       end
 
     end

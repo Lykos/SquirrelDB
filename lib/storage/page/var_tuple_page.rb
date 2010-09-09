@@ -21,18 +21,11 @@ module RubyDB
         @moved[tuple_no] ||= extract_int( @content[header_start( tuple_no + 1 ) - OFFSET_SIZE - 1] ) >> 7 == 1
       end
 
-      def get_all
-        (0...no_tuples).collect do |tuple_no|
-          @content[get_offset( tuple_no )...get_offset( tuple_no ) + get_length( tuple_no )]
-        end
-      end
-      
       def get_tid( tuple_no )
         check_address( tuple_no )
         raise AddressException.new( "This tuple is not moved and has no tid." ) unless moved?( tuple_no )
         @tids[tuple_no] ||= internal_get_tid( tuple_no )
       end
-
 
       def set_tid( tuple_no, new_tid )
         check_address( tuple_no )
@@ -100,9 +93,9 @@ module RubyDB
         set_moved( tuple_no, false )
       end
 
-      private
-
       alias :no_tuples :no_items
+
+      private
 
       alias :no_tuples= :no_items=
 

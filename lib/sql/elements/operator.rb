@@ -60,25 +60,25 @@ module RubyDB
       GREATER_EQUAL = Operator.new( '>=', :binary, 80 )
       SMALLER = Operator.new( '<', :binary, 80 )
       SMALLER_EQUAL = Operator.new( '<=', :binary, 80 )
-      OR = Operator.new( '||', :binary, 30 )
-      XOR = Operator.new( '^', :binary, 40 )
-      AND = Operator.new( '&&', :binary, 50 )
-      IMPLIES = Operator.new( '->', :binary, 20, true )
+      OR = Operator.new( '||', :binary, 30, false, ['OR'] )
+      XOR = Operator.new( '^', :binary, 40, false, ['XOR'] )
+      AND = Operator.new( '&&', :binary, 50, false ['AND'] )
+      IMPLIES = Operator.new( '->', :binary, 20, true, ['IMPLIES'] )
       IS_IMPLIED = Operator.new( '<-', :binary, 20 )
-      EQUIVALENT = Operator.new( '<->', :binary, 10 )
+      EQUIVALENT = Operator.new( '<->', :binary, 10, false ['EQUIVALENT'] )
       UNARY_PLUS = Operator.new( '+', :unary, 110 )
       UNARY_MINUS = Operator.new( '-', :unary, 110 )
-      NOT = Operator.new( '!', :unary, 60 )
+      NOT = Operator.new( '!', :unary, 60, ['NOT'] )
       ALL_OPERATORS = self.constants.collect { |c| self.const_get( c ) }
 
       def self.choose_unary_operator( symbol )
-        op = ALL_OPERATORS.find { |op| symbol =~ op.to_regexp and op.is_unary? }
+        op = ALL_OPERATORS.find { |o| symbol =~ o.to_regexp and o.is_unary? }
         raise "No unary Operation for #{symbol.inspect} found." unless op
         op
       end
 
       def self.choose_binary_operator( symbol )
-        op = ALL_OPERATORS.find { |op| symbol =~ op.to_regexp and op.is_binary? }
+        op = ALL_OPERATORS.find { |o| symbol =~ o.to_regexp and o.is_binary? }
         raise "No binary Operation for #{symbol.inspect} found." unless op
         op
       end

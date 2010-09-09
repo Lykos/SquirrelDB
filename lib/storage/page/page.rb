@@ -32,11 +32,11 @@ module RubyDB
       include RawUtil
       include Constants
 
-      private
-
       def type
         @type ||= extract_int( content[0...TYPE_SIZE] )
       end
+
+      private
 
       def init_empty
         @content = "\x00" * PAGE_SIZE

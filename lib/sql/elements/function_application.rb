@@ -29,6 +29,10 @@ module RubyDB
         let_visit( visitor, @function.visit( visitor ), @parameters.collect { |p| p.visit( visitor ) } )
       end
 
+      def evaluate( state )
+        state.get_function( @function ).call( *@parameters )
+      end
+
     end
 
   end
