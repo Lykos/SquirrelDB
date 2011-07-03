@@ -18,14 +18,10 @@ module RubyDB
 
     class SyntacticParser
 
-      def initialize( lexical_parser=LexicalParser.new )
-        @lexical_parser = lexical_parser
-      end
-
       include Syntax
 
-      def process( string )
-        @tokens = @lexical_parser.process( string )
+      def process( tokens )
+        @tokens = tokens
         if @tokens[0] =~ SELECT
           parse_select( 0 )
         elsif @tokens[0] =~ INSERT

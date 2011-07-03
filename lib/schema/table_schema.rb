@@ -30,6 +30,10 @@ module RubyDB
         @indices[column_name] ||= @columns.find_index { |col| col.name == column_name }
       end
 
+      def +( other )
+        TableSchema.new( @columns + other.columns )
+      end
+
     end
   
   end

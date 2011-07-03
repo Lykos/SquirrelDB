@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+
+  <title>Class: RubyDB::Data::ValueSelectEvaluator</title>
+
+  <link rel="stylesheet" href="../../rdoc.css" type="text/css" media="screen" />
+
+  <script src="../../js/jquery.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../../js/thickbox-compressed.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../../js/quicksearch.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../../js/darkfish.js" type="text/javascript" charset="utf-8"></script>
+
+</head>
+<body id="top" class="class">
+
+  <div id="metadata">
+    <div id="home-metadata">
+      <div id="home-section" class="section">
+        <h3 class="section-header">
+          <a href="../../index.html">Home</a>
+          <a href="../../index.html#classes">Classes</a>
+          <a href="../../index.html#methods">Methods</a>
+        </h3>
+      </div>
+    </div>
+
+    <div id="file-metadata">
+      <div id="file-list-section" class="section">
+        <h3 class="section-header">In Files</h3>
+        <div class="section-body">
+          <ul>
+          
+            <li><a href="../../lib/data/evaluation/value_select_evaluator_rb.html?TB_iframe=true&amp;height=550&amp;width=785"
+              class="thickbox" title="lib/data/evaluation/value_select_evaluator.rb">lib/data/evaluation/value_select_evaluator.rb</a></li>
+          
+          </ul>
+        </div>
+      </div>
+
+      
+    </div>
+
+    <div id="class-metadata">
+      
+      <!-- Parent Class -->
+      <div id="parent-class-section" class="section">
+        <h3 class="section-header">Parent</h3>
+        
+        <p class="link"><a href="../../Object.html">Object</a></p>
+        
+      </div>
+      
+
+      
+
+      
+
+      
+      <!-- Method Quickref -->
+      <div id="method-list-section" class="section">
+        <h3 class="section-header">Methods</h3>
+        <ul class="link-list">
+          
+          <li><a href="#method-c-new">::new</a></li>
+          
+        </ul>
+      </div>
+      
+
+      
+    </div>
+
+    <div id="project-metadata">
+      
+      
+
+      <div id="classindex-section" class="section project-section">
+        <h3 class="section-header">Class/Module Index
+          <span class="search-toggle"><img src="../../images/find.png"
+            height="16" width="16" alt="[+]"
+            title="show/hide quicksearch" /></span></h3>
+        <form action="#" method="get" accept-charset="utf-8" class="initially-hidden">
+        <fieldset>
+          <legend>Quicksearch</legend>
+          <input type="text" name="quicksearch" value=""
+            class="quicksearch-field" />
+        </fieldset>
+        </form>
+
+        <ul class="link-list">
+        
+          <li><a href="../../RubyDB.html">RubyDB</a></li>
+        
+          <li><a href="../../RubyDB/Compiler.html">RubyDB::Compiler</a></li>
+        
+          <li><a href="../../RubyDB/Data.html">RubyDB::Data</a></li>
+        
+          <li><a href="../../RubyDB/Data/CartesianIterator.html">RubyDB::Data::CartesianIterator</a></li>
+        
+          <li><a href="../../RubyDB/Data/Expression.html">RubyDB::Data::Expression</a></li>
+        
+          <li><a href="../../RubyDB/Data/InternalEvaluator.html">RubyDB::Data::InternalEvaluator</a></li>
+        
+          <li><a href="../../RubyDB/Data/MemoryTableScanner.html">RubyDB::Data::MemoryTableScanner</a></li>
+        
+          <li><a href="../../RubyDB/Data/OperatorCompiler.html">RubyDB::Data::OperatorCompiler</a></li>
+        
+          <li><a href="../../RubyDB/Data/Projector.html">RubyDB::Data::Projector</a></li>
+        
+          <li><a href="../../RubyDB/Data/RelAlgIterator.html">RubyDB::Data::RelAlgIterator</a></li>
+        
+          <li><a href="../../RubyDB/Data/TableManager.html">RubyDB::Data::TableManager</a></li>
+        
+          <li><a href="../../RubyDB/Data/TupleState.html">RubyDB::Data::TupleState</a></li>
+        
+          <li><a href="../../RubyDB/Data/TupleWrapper.html">RubyDB::Data::TupleWrapper</a></li>
+        
+          <li><a href="../../RubyDB/Data/ValueSelectEvaluator.html">RubyDB::Data::ValueSelectEvaluator</a></li>
+        
+          <li><a href="../../RubyDB/RelAlg.html">RubyDB::RelAlg</a></li>
+        
+          <li><a href="../../RubyDB/RelAlg/AlwaysOptimizer.html">RubyDB::RelAlg::AlwaysOptimizer</a></li>
+        
+          <li><a href="../../RubyDB/RelAlg/Cartesian.html">RubyDB::RelAlg::Cartesian</a></li>
+        
+          <li><a href="../../RubyDB/RelAlg/Converter.html">RubyDB::RelAlg::Converter</a></li>
+        
+          <li><a href="../../RubyDB/RelAlg/ConverterManager.html">RubyDB::RelAlg::ConverterManager</a></li>
+        
+          <li><a href="../../RubyDB/RelAlg/Join.html">RubyDB::RelAlg::Join</a></li>
+        
+          <li><a href="../../RubyDB/RelAlg/Projection.html">RubyDB::RelAlg::Projection</a></li>
+        
+          <li><a href="../../RubyDB/RelAlg/RelAlgConverter.html">RubyDB::RelAlg::RelAlgConverter</a></li>
+        
+          <li><a href="../../RubyDB/RelAlg/RelAlgOperation.html">RubyDB::RelAlg::RelAlgOperation</a></li>
+        
+          <li><a href="../../RubyDB/RelAlg/Selection.html">RubyDB::RelAlg::Selection</a></li>
+        
+          <li><a href="../../RubyDB/Schema.html">RubyDB::Schema</a></li>
+        
+          <li><a href="../../RubyDB/Schema/Column.html">RubyDB::Schema::Column</a></li>
+        
+          <li><a href="../../RubyDB/Schema/ConversionUtil.html">RubyDB::Schema::ConversionUtil</a></li>
+        
+          <li><a href="../../RubyDB/Schema/SchemaManager.html">RubyDB::Schema::SchemaManager</a></li>
+        
+          <li><a href="../../RubyDB/Schema/TableSchema.html">RubyDB::Schema::TableSchema</a></li>
+        
+          <li><a href="../../RubyDB/Schema/Type.html">RubyDB::Schema::Type</a></li>
+        
+          <li><a href="../../RubyDB/Sql.html">RubyDB::Sql</a></li>
+        
+          <li><a href="../../RubyDB/Sql/BinaryOperation.html">RubyDB::Sql::BinaryOperation</a></li>
+        
+          <li><a href="../../RubyDB/Sql/Constant.html">RubyDB::Sql::Constant</a></li>
+        
+          <li><a href="../../RubyDB/Sql/Conversion.html">RubyDB::Sql::Conversion</a></li>
+        
+          <li><a href="../../RubyDB/Sql/FromClause.html">RubyDB::Sql::FromClause</a></li>
+        
+          <li><a href="../../RubyDB/Sql/FunctionApplication.html">RubyDB::Sql::FunctionApplication</a></li>
+        
+          <li><a href="../../RubyDB/Sql/LexicalParser.html">RubyDB::Sql::LexicalParser</a></li>
+        
+          <li><a href="../../RubyDB/Sql/Operator.html">RubyDB::Sql::Operator</a></li>
+        
+          <li><a href="../../RubyDB/Sql/Parser.html">RubyDB::Sql::Parser</a></li>
+        
+          <li><a href="../../RubyDB/Sql/ParserManager.html">RubyDB::Sql::ParserManager</a></li>
+        
+          <li><a href="../../RubyDB/Sql/PreParser.html">RubyDB::Sql::PreParser</a></li>
+        
+          <li><a href="../../RubyDB/Sql/Renaming.html">RubyDB::Sql::Renaming</a></li>
+        
+          <li><a href="../../RubyDB/Sql/ScopedVariable.html">RubyDB::Sql::ScopedVariable</a></li>
+        
+          <li><a href="../../RubyDB/Sql/SelectClause.html">RubyDB::Sql::SelectClause</a></li>
+        
+          <li><a href="../../RubyDB/Sql/SelectStatement.html">RubyDB::Sql::SelectStatement</a></li>
+        
+          <li><a href="../../RubyDB/Sql/SyntacticParser.html">RubyDB::Sql::SyntacticParser</a></li>
+        
+          <li><a href="../../RubyDB/Sql/SyntacticUnit.html">RubyDB::Sql::SyntacticUnit</a></li>
+        
+          <li><a href="../../RubyDB/Sql/Syntax.html">RubyDB::Sql::Syntax</a></li>
+        
+          <li><a href="../../RubyDB/Sql/UnaryOperation.html">RubyDB::Sql::UnaryOperation</a></li>
+        
+          <li><a href="../../RubyDB/Sql/Variable.html">RubyDB::Sql::Variable</a></li>
+        
+          <li><a href="../../RubyDB/Sql/WhereClause.html">RubyDB::Sql::WhereClause</a></li>
+        
+          <li><a href="../../RubyDB/Storage.html">RubyDB::Storage</a></li>
+        
+          <li><a href="../../RubyDB/Storage/AddressException.html">RubyDB::Storage::AddressException</a></li>
+        
+          <li><a href="../../RubyDB/Storage/ConstantException.html">RubyDB::Storage::ConstantException</a></li>
+        
+          <li><a href="../../RubyDB/Storage/Constants.html">RubyDB::Storage::Constants</a></li>
+        
+          <li><a href="../../RubyDB/Storage/FormatException.html">RubyDB::Storage::FormatException</a></li>
+        
+          <li><a href="../../RubyDB/Storage/IndexPage.html">RubyDB::Storage::IndexPage</a></li>
+        
+          <li><a href="../../RubyDB/Storage/ItemPage.html">RubyDB::Storage::ItemPage</a></li>
+        
+          <li><a href="../../RubyDB/Storage/Page.html">RubyDB::Storage::Page</a></li>
+        
+          <li><a href="../../RubyDB/Storage/PageAccessor.html">RubyDB::Storage::PageAccessor</a></li>
+        
+          <li><a href="../../RubyDB/Storage/PageWrapper.html">RubyDB::Storage::PageWrapper</a></li>
+        
+          <li><a href="../../RubyDB/Storage/RawUtil.html">RubyDB::Storage::RawUtil</a></li>
+        
+          <li><a href="../../RubyDB/Storage/SpaceException.html">RubyDB::Storage::SpaceException</a></li>
+        
+          <li><a href="../../RubyDB/Storage/StorageException.html">RubyDB::Storage::StorageException</a></li>
+        
+          <li><a href="../../RubyDB/Storage/StorageManager.html">RubyDB::Storage::StorageManager</a></li>
+        
+          <li><a href="../../RubyDB/Storage/TID.html">RubyDB::Storage::TID</a></li>
+        
+          <li><a href="../../RubyDB/Storage/TidListAccessor.html">RubyDB::Storage::TidListAccessor</a></li>
+        
+          <li><a href="../../RubyDB/Storage/TidListPage.html">RubyDB::Storage::TidListPage</a></li>
+        
+          <li><a href="../../RubyDB/Storage/TidWrapper.html">RubyDB::Storage::TidWrapper</a></li>
+        
+          <li><a href="../../RubyDB/Storage/TupleAccessor.html">RubyDB::Storage::TupleAccessor</a></li>
+        
+          <li><a href="../../RubyDB/Storage/VarTuplePage.html">RubyDB::Storage::VarTuplePage</a></li>
+        
+          <li><a href="../../RubyDB/Storage/VaritemPage.html">RubyDB::Storage::VaritemPage</a></li>
+        
+          <li><a href="../../Data.html">Data</a></li>
+        
+          <li><a href="../../Data/Selector.html">Data::Selector</a></li>
+        
+          <li><a href="../../Data/Tuple.html">Data::Tuple</a></li>
+        
+          <li><a href="../../Server.html">Server</a></li>
+        
+          <li><a href="../../Server/Server.html">Server::Server</a></li>
+        
+          <li><a href="../../Server/SessionCommunicator.html">Server::SessionCommunicator</a></li>
+        
+          <li><a href="../../Sql.html">Sql</a></li>
+        
+          <li><a href="../../Sql/State.html">Sql::State</a></li>
+        
+          <li><a href="../../Sql/Verifier.html">Sql::Verifier</a></li>
+        
+          <li><a href="../../Schema.html">Schema</a></li>
+        
+          <li><a href="../../Schema/TableSchemaAccessor.html">Schema::TableSchemaAccessor</a></li>
+        
+          <li><a href="../../Object.html">Object</a></li>
+        
+          <li><a href="../../String.html">String</a></li>
+        
+        </ul>
+        <div id="no-class-search-results" style="display: none;">No matching classes.</div>
+      </div>
+
+      
+    </div>
+  </div>
+
+  <div id="documentation">
+    <h1 class="class">RubyDB::Data::ValueSelectEvaluator</h1>
+
+    <div id="description" class="description">
+      
+<p>An evaluator for a select in an expression that should return exactly one
+tuple</p>
+
+    </div><!-- description -->
+
+    
+    <div id="5Buntitled-5D" class="documentation-section">
+      
+
+      
+
+      
+
+      
+
+      <!-- Methods -->
+      
+      <div id="public-class-method-details" class="method-section section">
+        <h3 class="section-header">Public Class Methods</h3>
+
+      
+        <div id="new-method" class="method-detail ">
+          <a name="method-c-new"></a>
+
+          
+          <div class="method-heading">
+            <span class="method-name">new</span><span
+              class="method-args">()</span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+          
+
+          <div class="method-description">
+            
+            
+            
+
+            
+            <div class="method-source-code" id="new-source">
+<pre>
+<span class="ruby-comment"># File lib/data/evaluation/value_select_evaluator.rb, line 9</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>
+  
+<span class="ruby-keyword">end</span></pre>
+            </div><!-- new-source -->
+            
+          </div>
+
+          
+
+          
+        </div><!-- new-method -->
+
+      
+      </div><!-- public-class-method-details -->
+    
+    </div><!-- 5Buntitled-5D -->
+  
+
+  </div><!-- documentation -->
+
+  <div id="validator-badges">
+    <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+    <p><small>Generated with the <a href="http://deveiate.org/projects/Darkfish-Rdoc/">Darkfish
+      Rdoc Generator</a> 2</small>.</p>
+  </div>
+
+</body>
+</html>
+

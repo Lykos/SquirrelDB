@@ -9,19 +9,16 @@ module RubyDB
     #
     class MemoryTableScanner < RelAlgIterator
 
-      def initialize( table_name, tuple_wrapper, schema_manager, table_manager )
+      def initialize( page_no, tuple_wrapper, schema )
         super()
-        @table_name = table_name
+        @page_no = page_no
         @tuple_wrapper = tuple_wrapper
-        @schema_manager = schema_manager
-        @table_manager = table_manager
+        @schema = schema
       end
 
       def open
         super
-        schema = @schema_manager.get( @table_name )
-        tids = @table_manager.get_tids( @table_name )        
-        @tuples = @tuple_wrapper.get( tids, schema )
+        @tuples = @tuple_wrapper.get_all( @table_page_no, @schema )
         @index = 0
       end
 

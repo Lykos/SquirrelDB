@@ -12,10 +12,10 @@ module RubyDB
         @right = right
       end
 
-      def open
+      def open( state )
         super
-        @left.open
-        @right.open
+        @left.open( state )
+        @right.open( state )
         @left_item = @left.next_item
       end
 

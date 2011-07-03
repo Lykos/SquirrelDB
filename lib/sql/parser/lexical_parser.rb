@@ -7,14 +7,10 @@ module RubyDB
 
     class LexicalParser
 
-      def initialize( pre_parser=PreParser.new )
-        @pre_parser = pre_parser
-      end
-
       include Syntax
 
-      def process(string)
-        @pre_parser.process( string ).scan( TOKEN )
+      def process( string )
+        string.scan( TOKEN )
       end
 
     end

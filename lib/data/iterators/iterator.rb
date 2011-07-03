@@ -16,8 +16,9 @@ module RubyDB
         @open
       end
 
-      def open
+      def open( state )
         raise if @open
+        @state = state
       end
 
       def next_item
@@ -30,6 +31,15 @@ module RubyDB
 
       def rewind
         raise unless @open
+      end
+
+      def evaluate( state )
+        open(state)
+        res = next_item
+        raise unless res
+        raise if next_item
+        close
+        res.length == 1 ? res[0] : res
       end
 
     end

@@ -6,10 +6,9 @@ module RubyDB
 
     class Projector < Iterator
 
-      def initialize( renamings, inner, evaluator )
+      def initialize( renamings, inner )
         @renamings = renamings
         @inner = inner
-        @evaluator = evaluator
       end
 
       def_delegators :@inner, :open, :close, :size, :rewind
@@ -18,7 +17,7 @@ module RubyDB
         t = @inner.next_element
         return nil unless t
         @renamings.collect do |r|
-          evaluator.evaluate( r.expression, TupleState.new( t ) )
+          r.evaluate( TupleState.new( @state, t ) )
         end
       end
 

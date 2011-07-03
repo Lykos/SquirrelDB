@@ -15,7 +15,7 @@ module Data
 
     def next_item
       while (t = @inner.next_item)
-        return t if @evaluator.evaluate( @expression, TupleState.new( t ) )
+        return t if @expression.evaluate( TupleState.new( @state, t ) )
       end
       nil
     end

@@ -38,6 +38,10 @@ module RubyDB
         @tuple_accessor.add_tuple( table_schema.tuple_to_raw( tuple ) )
       end
 
+      def get_all( page_no, table_schema )
+        @tuple_accessor.get_all( page_no ).collect { |t| table_schema.tuple_to_raw( t ) }
+      end
+
     end
 
   end
