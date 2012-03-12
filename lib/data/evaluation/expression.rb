@@ -12,6 +12,8 @@ module RubyDB
 
       include Operator
 
+      # Evaluate this expression in the given state
+      #
       def evaluate( state )
         @state = state
         @expression.visit( self )
@@ -46,7 +48,7 @@ module RubyDB
         when IS_IMPLIED then left || !right
         when EQUIVALENT then left == right
         else
-          raise
+          raise "Unknown operator #{operator}"
         end
       end
 

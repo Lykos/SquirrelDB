@@ -14,6 +14,7 @@ module RubyDB
       STRING = Type.new( "String" )
       BOOLEAN = Type.new( "Boolean" )
       DOUBLE = Type.new( "Double" )
+      SHORT = Type.new( "Short" )
 
       def ==(other)
         @name == other.name

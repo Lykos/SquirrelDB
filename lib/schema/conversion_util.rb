@@ -7,10 +7,14 @@ module RubyDB
 
     module ConversionUtil
 
+      # Size of long integers (which are short compared to ruby integers)
       SHORT_SIZE = 8
-
+      
       include Storage::RawUtil
 
+      # Converts a rawstring which is interpreted as type to a field and returns
+      # the result and the remaining raw string.
+      #
       def raw_to_field( raw_string, type )
         case type
         when Type::SHORT

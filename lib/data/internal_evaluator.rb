@@ -16,7 +16,7 @@ module RubyDB
         query = Projection.new(
           Renaming.new( Variable.new( select_column ), select_column ),
           Selection.new( BinaryOperation.new(
-              Operator::PLUS,
+              Operator::EQUAL,
               Variable.new( where_column ),
               Constant.new( is_constant, is_type )
             ),
