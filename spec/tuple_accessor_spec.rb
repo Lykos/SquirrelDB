@@ -5,7 +5,7 @@ require 'storage/page_accessor'
 require 'storage/exceptions/address_exception'
 require 'tempfile'
 
-include RubyDB::Storage
+include SquirrelDB::Storage
 include Constants
 
 describe TupleAccessor do

@@ -10,7 +10,7 @@ class String
    
 end
 
-module RubyDB
+module SquirrelDB
 
   module Sql
 

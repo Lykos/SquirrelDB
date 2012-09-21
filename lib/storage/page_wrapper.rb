@@ -1,7 +1,7 @@
 require 'storage/constants'
 require 'storage/raw_util'
 
-module RubyDB
+module SquirrelDB
   
   module Storage
 

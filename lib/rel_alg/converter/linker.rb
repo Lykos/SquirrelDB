@@ -5,7 +5,7 @@ require 'sql/elements/constant'
 require 'sql/elements/variable'
 require 'sql/elements/visitor'
 
-module RubyDB
+module SquirrelDB
 
   module RelAlg
 

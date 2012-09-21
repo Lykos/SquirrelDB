@@ -4,7 +4,7 @@ require 'schema/table_schema'
 require 'schema/type'
 require 'data/table_manager'
 
-module RubyDB
+module SquirrelDB
 
   module Schema
   

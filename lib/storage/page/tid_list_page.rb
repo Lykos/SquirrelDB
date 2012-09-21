@@ -3,7 +3,7 @@ require 'storage/tid'
 
 # TODO probably delete this
 
-module RubyDB
+module SquirrelDB
 
   module Storage
 

@@ -1,6 +1,6 @@
 require 'sql/elements/type'
 
-module RubyDB
+module SquirrelDB
 
   module Sql
 

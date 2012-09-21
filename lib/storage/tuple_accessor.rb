@@ -1,6 +1,6 @@
 require 'storage/tid'
 
-module RubyDB
+module SquirrelDB
 
   module Storage
 

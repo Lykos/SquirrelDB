@@ -13,7 +13,7 @@ require 'sql/elements/wild_card'
 require 'schema/type'
 require 'sql/parser/lexical_parser'
 
-module RubyDB
+module SquirrelDB
 
   module Sql
 

@@ -1,7 +1,7 @@
 require 'rel_alg/elements/join'
 require 'schema/type'
 
-module RubyDB
+module SquirrelDB
 
   module RelAlg
 

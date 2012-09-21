@@ -1,6 +1,6 @@
 require 'sql/elements/syntactic_unit'
 
-module RubyDB
+module SquirrelDB
 
   module Sql
 

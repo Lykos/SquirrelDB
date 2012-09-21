@@ -6,7 +6,7 @@ require 'sql/elements/binary_operation'
 require 'rel_alg/elements/selection'
 require 'rel_alg/elements/projection'
 
-module RubyDB
+module SquirrelDB
 
   module Data
 

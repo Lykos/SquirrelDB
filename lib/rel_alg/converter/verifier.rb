@@ -1,6 +1,6 @@
 require 'syntactic_parser'
 
-module RubyDB
+module SquirrelDB
   
   module RelAlg
 

@@ -2,7 +2,7 @@ require 'sql/parser/syntactic_parser'
 require 'sql/elements/operator'
 require 'schema/type'
 
-include RubyDB
+include SquirrelDB
 include Sql
 
 describe SyntacticParser do

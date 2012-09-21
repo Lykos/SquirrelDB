@@ -1,7 +1,7 @@
 require 'sql/parser/syntax'
 require 'sql/parser/pre_parser'
 
-module RubyDB
+module SquirrelDB
 
   module Sql
 

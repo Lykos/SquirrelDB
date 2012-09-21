@@ -1,7 +1,7 @@
 require 'sql/elements/operator'
 require 'data/evaluation/expression_cost_calculator'
 
-module RubyDB
+module SquirrelDB
 
   module Data
   

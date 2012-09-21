@@ -1,7 +1,7 @@
 require 'sql/elements/scoped_variable'
 require 'sql/elements/variable'
 
-module RubyDB
+module SquirrelDB
   
   module Data
 

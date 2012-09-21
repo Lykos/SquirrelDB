@@ -1,6 +1,6 @@
 require 'storage/raw_util'
 
-include RubyDB::Storage
+include SquirrelDB::Storage
 include RawUtil
 
 describe RawUtil do

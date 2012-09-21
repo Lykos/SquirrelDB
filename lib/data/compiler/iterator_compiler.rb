@@ -8,7 +8,7 @@ require 'rel_alg/elements/selection'
 require 'rel_alg/elements/projection'
 require 'data/compiler/unlinked_table'
 
-module RubyDB
+module SquirrelDB
 
   module Data
 

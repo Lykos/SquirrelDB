@@ -2,7 +2,7 @@ require 'storage/raw_util'
 require 'storage/constants'
 require 'storage/exceptions/format_exception'
 
-module RubyDB
+module SquirrelDB
 
   module Storage
 

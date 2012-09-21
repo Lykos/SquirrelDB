@@ -1,7 +1,7 @@
 require 'storage/raw_util'
 require 'schema/type'
 
-module RubyDB
+module SquirrelDB
   
   module Schema
 

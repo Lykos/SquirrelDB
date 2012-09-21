@@ -4,7 +4,7 @@ require 'rel_alg/converter/verifier'
 require 'rel_alg/converter/always_optimizer'
 require 'rel_alg/converter/table_linker'
 
-module RubyDB
+module SquirrelDB
 
   module RelAlg
 

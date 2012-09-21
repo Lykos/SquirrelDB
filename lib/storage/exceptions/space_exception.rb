@@ -1,6 +1,6 @@
 require 'storage/exceptions/storage_exception'
 
-module RubyDB
+module SquirrelDB
 
   module Storage
 

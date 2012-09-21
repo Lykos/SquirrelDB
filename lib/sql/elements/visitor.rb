@@ -12,7 +12,7 @@ require 'sql/elements/where_clause'
 require 'sql/elements/select_statement'
 require 'sql/elements/wild_card'
 
-module RubyDB
+module SquirrelDB
 
   module Sql
     

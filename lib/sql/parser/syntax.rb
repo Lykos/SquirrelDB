@@ -1,6 +1,6 @@
 require 'sql/elements/operator'
 
-module RubyDB
+module SquirrelDB
 
   module Sql
   

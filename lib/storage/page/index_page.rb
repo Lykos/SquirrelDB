@@ -1,7 +1,7 @@
 require 'format_exception'
 require 'space_exception'
 
-module RubyDB
+module SquirrelDB
   
   module Storage
 

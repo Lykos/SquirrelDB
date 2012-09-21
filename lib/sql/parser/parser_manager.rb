@@ -3,7 +3,7 @@ require 'sql/parser/lexical_parser'
 require 'sql/parser/syntactic_parser'
 require 'sql/parser/parser'
 
-module RubyDB
+module SquirrelDB
 
   module Sql
 

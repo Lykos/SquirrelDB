@@ -1,6 +1,6 @@
 require 'sql/elements/syntatctic_unit'
 
-module RubyDB
+module SquirrelDB
 
   module RelAlg
 

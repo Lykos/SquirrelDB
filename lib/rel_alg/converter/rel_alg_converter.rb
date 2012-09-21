@@ -2,7 +2,7 @@ require 'rel_alg/elements/projection'
 require 'rel_alg/elements/selection'
 require 'sql/elements/visitor'
 
-module RubyDB
+module SquirrelDB
 
   module RelAlg
 

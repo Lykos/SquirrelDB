@@ -4,7 +4,7 @@ require 'storage/exceptions/address_exception'
 require 'storage/exceptions/space_exception'
 require 'storage/varitem_page'
 
-module RubyDB
+module SquirrelDB
 
   module Storage
 

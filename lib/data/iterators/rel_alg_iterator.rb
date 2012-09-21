@@ -1,6 +1,6 @@
 require 'forwardable'
 
-module RubyDB
+module SquirrelDB
 
   module Data
 

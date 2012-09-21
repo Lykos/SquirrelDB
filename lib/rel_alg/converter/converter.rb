@@ -1,4 +1,4 @@
-module RubyDB
+module SquirrelDB
 
   module RelAlg
 

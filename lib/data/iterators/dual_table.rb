@@ -1,7 +1,7 @@
 require 'data/iterators/rel_alg_iterator'
 require 'storage/tuple'
 
-module RubyDB
+module SquirrelDB
 
   module Data
 

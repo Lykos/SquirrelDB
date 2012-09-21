@@ -5,7 +5,7 @@ require 'page_accessor'
 require 'page_wrapper'
 require 'tuple_accessor'
 require 'tid'
-include RubyDB
+include SquirrelDB
 include Storage
 F = '/home/bernhard/Programmiertes/ruby/database/try/bla'
 PA = PageAccessor.new(F)

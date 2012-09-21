@@ -1,6 +1,6 @@
 require 'storage/page_accessor'
 
-module RubyDB
+module SquirrelDB
 
   module Storage
 

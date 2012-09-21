@@ -1,7 +1,7 @@
 require 'schema/type'
 require 'schema/conversion_util'
 
-module RubyDB
+module SquirrelDB
 
   module Schema
 

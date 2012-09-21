@@ -1,6 +1,6 @@
 require 'rel_alg/elements/rel_alg_operation'
 
-module RubyDB
+module SquirrelDB
 
   module RelAlg
 

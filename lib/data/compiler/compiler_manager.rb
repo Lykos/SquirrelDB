@@ -2,7 +2,7 @@ require 'data/compiler/iterator_compiler'
 require 'data/compiler/type_checker'
 require 'data/compiler/compiler'
 
-module RubyDB
+module SquirrelDB
   
   class CompilerManager
     

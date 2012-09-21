@@ -1,7 +1,7 @@
 require 'forwardable'
 require 'data/iterators/rel_alg_iterator' 
 
-module RubyDB
+module SquirrelDB
 
   module Data
 

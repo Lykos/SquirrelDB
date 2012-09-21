@@ -3,7 +3,7 @@ require 'storage/constants'
 require 'storage/exceptions/format_exception'
 require 'tempfile'
 
-include RubyDB::Storage
+include SquirrelDB::Storage
 include Constants
 
 describe PageAccessor do

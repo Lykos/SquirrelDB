@@ -1,7 +1,7 @@
 require 'storage/item_page'
 require 'storage/exceptions/address_exception'
 
-module RubyDB
+module SquirrelDB
 
   module Storage
 

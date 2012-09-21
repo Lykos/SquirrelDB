@@ -1,6 +1,6 @@
 require 'page'
 
-module RubyDB
+module SquirrelDB
 
   module Storage
 
