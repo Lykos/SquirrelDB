@@ -14,7 +14,7 @@ require 'sql/elements/wild_card'
 
 module SquirrelDB
 
-  module Sql
+  module AST
     
     class Visitor
      

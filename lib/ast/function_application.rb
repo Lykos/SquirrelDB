@@ -2,7 +2,7 @@ require 'sql/elements/syntactic_unit'
 
 module SquirrelDB
 
-  module Sql
+  module AST
 
     class FunctionApplication < SyntacticUnit
 

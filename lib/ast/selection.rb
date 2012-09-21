@@ -2,7 +2,7 @@ require 'rel_alg/elements/rel_alg_operation'
 
 module SquirrelDB
 
-  module RelAlg
+  module AST
 
     class Selection < SyntacticUnit
 

@@ -2,7 +2,7 @@ require 'syntactic_unit'
 
 module SquirrelDB
 
-  module Sql
+  module AST
 
     class ScopedVariable < SyntacticUnit
 

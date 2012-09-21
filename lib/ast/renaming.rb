@@ -2,7 +2,7 @@ require 'sql/elements/variable'
 
 module SquirrelDB
 
-  module Sql
+  module AST
 
     class Renaming < SyntacticUnit
 

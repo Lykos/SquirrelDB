@@ -2,9 +2,9 @@ require 'sql/elements/syntactic_unit'
 
 module SquirrelDB
 
-  module RelAlg
+  module AST
 
-    class RelAlgOperation < SyntacticUnit
+    class ASTOperation < SyntacticUnit
 
     end
     

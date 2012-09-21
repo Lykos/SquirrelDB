@@ -2,7 +2,7 @@ require 'sql/elements/syntatctic_unit'
 
 module SquirrelDB
 
-  module RelAlg
+  module AST
 
     class LinkedColumn < SyntacticUnit
 

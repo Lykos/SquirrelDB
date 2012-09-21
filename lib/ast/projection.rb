@@ -2,9 +2,9 @@ require 'sql/elements/syntactic_unit'
 
 module SquirrelDB
 
-  module RelAlg
+  module AST
 
-    class Projection < Sql::SyntacticUnit
+    class Projection < AST::SyntacticUnit
 
       def initialize( renamings, inner )
         @renamings = renamings

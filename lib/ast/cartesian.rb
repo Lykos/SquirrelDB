@@ -3,7 +3,7 @@ require 'schema/type'
 
 module SquirrelDB
 
-  module RelAlg
+  module AST
 
     class Cartesian < Join
 

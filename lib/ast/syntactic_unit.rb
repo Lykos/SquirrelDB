@@ -12,7 +12,7 @@ end
 
 module SquirrelDB
 
-  module Sql
+  module AST
 
     class SyntacticUnit
 
