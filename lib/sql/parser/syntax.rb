@@ -3,10 +3,13 @@ require 'ast/operator'
 module SquirrelDB
 
   module Sql
-  
+      
     # Sets up a few constants that describe the syntax.
     #
     module Syntax
+      
+      include AST
+
       # _K stands for keyword and is necessary because else it would be a Ruby keyword.
 
       BINARY_OPERATOR = Regexp.union(

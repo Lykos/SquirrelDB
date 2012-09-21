@@ -1,15 +1,12 @@
 require 'ast/projection'
 require 'ast/selection'
-require 'ast/visitor'
+require 'ast/transform_visitor'
 
 module SquirrelDB
 
-  module RelAlg
+  module AST
 
-    class RelAlgConverter < SQL::Visitor
-      
-      include SQL
-      include RelAlg
+    class RelAlgConverter < AST::TransformVisitor
 
       def process( statement )
         statement.visit( self )

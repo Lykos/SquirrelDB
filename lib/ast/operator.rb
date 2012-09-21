@@ -7,7 +7,7 @@ module SquirrelDB
     class Operator < SyntacticUnit
 
       def initialize( symbol, cardinality,
-          precedence=10, right_associative=false, *alternative_symbols )
+          precedence=10, right_associative=false, alternative_symbols=[] )
         @symbol = symbol
         @cardinality = cardinality # binary or unary
         @precedence = precedence
@@ -62,10 +62,10 @@ module SquirrelDB
       SMALLER_EQUAL = Operator.new( '<=', :binary, 80 )
       OR = Operator.new( '||', :binary, 30, false, ['OR'] )
       XOR = Operator.new( '^', :binary, 40, false, ['XOR'] )
-      AND = Operator.new( '&&', :binary, 50, false ['AND'] )
+      AND = Operator.new( '&&', :binary, 50, false, ['AND'] )
       IMPLIES = Operator.new( '->', :binary, 20, true, ['IMPLIES'] )
       IS_IMPLIED = Operator.new( '<-', :binary, 20 )
-      EQUIVALENT = Operator.new( '<->', :binary, 10, false ['EQUIVALENT'] )
+      EQUIVALENT = Operator.new( '<->', :binary, 10, false, ['EQUIVALENT'] )
       UNARY_PLUS = Operator.new( '+', :unary, 110 )
       UNARY_MINUS = Operator.new( '-', :unary, 110 )
       NOT = Operator.new( '!', :unary, 60, ['NOT'] )

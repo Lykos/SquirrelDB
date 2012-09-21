@@ -1,4 +1,4 @@
-$:.unshift( 'lib' )
+$:.unshift( '../lib' )
 
 require 'sql/parser/syntactic_parser'
 require 'sql/compiler/rel_alg_converter'

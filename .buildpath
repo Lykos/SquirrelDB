@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <buildpath>
 	<buildpathentry kind="src" path="debug"/>
+	<buildpathentry kind="src" path="lib/rel_alg"/>
+	<buildpathentry kind="src" path="lib/ast"/>
 	<buildpathentry kind="src" path="lib/data"/>
-	<buildpathentry kind="src" path="lib/rel_alg/converter"/>
 	<buildpathentry kind="src" path="lib/schema"/>
 	<buildpathentry kind="src" path="lib/server"/>
 	<buildpathentry kind="src" path="lib/sql/parser"/>

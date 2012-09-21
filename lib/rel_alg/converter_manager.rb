@@ -1,8 +1,8 @@
-require 'rel_alg/converter/converter'
-require 'rel_alg/converter/rel_alg_converter'
-require 'rel_alg/converter/verifier'
-require 'rel_alg/converter/always_optimizer'
-require 'rel_alg/converter/table_linker'
+require 'rel_alg/converter'
+require 'rel_alg/rel_alg_converter'
+require 'rel_alg/verifier'
+require 'rel_alg/always_optimizer'
+require 'rel_alg/table_linker'
 
 module SquirrelDB
 

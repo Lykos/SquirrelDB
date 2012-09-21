@@ -6,7 +6,6 @@ require 'ast/scoped_variable'
 require 'ast/variable'
 require 'ast/selection'
 require 'ast/projection'
-require 'data/compiler/unlinked_table'
 
 module SquirrelDB
 
@@ -14,8 +13,7 @@ module SquirrelDB
 
     class IteratorCompiler
       
-      include RelAlg
-      include SQL
+      include AST
 
       def process( statement )
         statement.visit( self )
@@ -61,16 +59,6 @@ module SquirrelDB
 
       def visit_renaming( expression, name )
         Renaming.new( expression, name )
-      end
-
-      private
-
-      def table( t )
-        if t.kind_of?( Sql::ScopedVariable ) or t.kind_of( Sql::Variable )
-          UnlinkedTable.new( @table_manager.get_page_no( t ) )
-        else
-          t
-        end
       end
 
     end

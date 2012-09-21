@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.dltk.ruby.core.nature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>ast</name>
+			<type>2</type>
+			<location>/home/bernhard/Programs/ruby/SquirrelDB/lib/ast</location>
+		</link>
+	</linkedResources>
 </projectDescription>
