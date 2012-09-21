@@ -1,4 +1,4 @@
-require 'sql/elements/type'
+require 'ast/type'
 
 module SquirrelDB
 

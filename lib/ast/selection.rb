@@ -1,4 +1,4 @@
-require 'rel_alg/elements/rel_alg_operation'
+require 'ast/rel_alg_operation'
 
 module SquirrelDB
 

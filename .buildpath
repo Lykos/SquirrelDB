@@ -3,10 +3,8 @@
 	<buildpathentry kind="src" path="debug"/>
 	<buildpathentry kind="src" path="lib/data"/>
 	<buildpathentry kind="src" path="lib/rel_alg/converter"/>
-	<buildpathentry kind="src" path="lib/rel_alg/elements"/>
 	<buildpathentry kind="src" path="lib/schema"/>
 	<buildpathentry kind="src" path="lib/server"/>
-	<buildpathentry kind="src" path="lib/sql/elements"/>
 	<buildpathentry kind="src" path="lib/sql/parser"/>
 	<buildpathentry kind="src" path="lib/storage"/>
 	<buildpathentry kind="src" path="spec"/>

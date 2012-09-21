@@ -1,4 +1,4 @@
-require 'sql/elements/operator'
+require 'ast/operator'
 require 'data/evaluation/expression_cost_calculator'
 
 module SquirrelDB

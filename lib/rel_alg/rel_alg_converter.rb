@@ -1,6 +1,6 @@
-require 'rel_alg/elements/projection'
-require 'rel_alg/elements/selection'
-require 'sql/elements/visitor'
+require 'ast/projection'
+require 'ast/selection'
+require 'ast/visitor'
 
 module SquirrelDB
 

@@ -1,4 +1,4 @@
-require 'sql/elements/variable'
+require 'ast/variable'
 
 module SquirrelDB
 

@@ -1,4 +1,4 @@
-require 'rel_alg/elements/join'
+require 'ast/join'
 require 'schema/type'
 
 module SquirrelDB

@@ -1,5 +1,5 @@
-require 'sql/elements/scoped_variable'
-require 'sql/elements/variable'
+require 'ast/scoped_variable'
+require 'ast/variable'
 require 'schema/table_schema'
 require 'schema/type'
 require 'data/table_manager'

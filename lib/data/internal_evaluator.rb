@@ -1,10 +1,10 @@
-require 'sql/elements/operator'
-require 'sql/elements/constant'
-require 'sql/elements/variable'
-require 'sql/elements/scoped_variable'
-require 'sql/elements/binary_operation'
-require 'rel_alg/elements/selection'
-require 'rel_alg/elements/projection'
+require 'ast/operator'
+require 'ast/constant'
+require 'ast/variable'
+require 'ast/scoped_variable'
+require 'ast/binary_operation'
+require 'ast/selection'
+require 'ast/projection'
 
 module SquirrelDB
 

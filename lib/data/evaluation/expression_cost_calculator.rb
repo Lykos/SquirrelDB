@@ -1,4 +1,4 @@
-require 'sql/elements/operator'
+require 'ast/operator'
 
 module SquirrelDB
 

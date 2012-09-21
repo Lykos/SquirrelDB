@@ -1,9 +1,9 @@
-require 'rel_alg/elements/projection'
-require 'rel_alg/elements/selection'
-require 'sql/elements/operator'
-require 'sql/elements/constant'
-require 'sql/elements/variable'
-require 'sql/elements/visitor'
+require 'ast/projection'
+require 'ast/selection'
+require 'ast/operator'
+require 'ast/constant'
+require 'ast/variable'
+require 'ast/visitor'
 
 module SquirrelDB
 

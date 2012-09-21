@@ -1,4 +1,4 @@
-require 'sql/elements/syntactic_unit'
+require 'ast/syntactic_unit'
 
 module SquirrelDB
 
