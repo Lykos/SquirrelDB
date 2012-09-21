@@ -1,10 +1,11 @@
 require 'sql/elements/operator'
+require 'data/evaluation/expression_cost_calculator'
 
 module RubyDB
 
   module Data
   
-    class Expression
+    class ExpressionEvaluator
 
       def initialize( expression )
         @expression = expression
@@ -18,13 +19,17 @@ module RubyDB
         @state = state
         @expression.visit( self )
       end
+      
+      def cost
+        @cost ||= ExpressionCostCalculator.new(@expression).cost
+      end
 
-      def visit_constant( value )
+      def visit_constant( value, type )
         value
       end
 
       def visit_variable( name )
-        @state.get_variable( name )
+        @state[name]
       end
 
       def visit_binary_operation( operator, left, right )

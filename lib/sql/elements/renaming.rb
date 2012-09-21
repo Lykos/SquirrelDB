@@ -25,8 +25,8 @@ module RubyDB
         super && @expression == other.expression && @name == other.name
       end
 
-      def visit( visitor )
-        let_visit( visitor, @expression.visit( visitor ), @name.visit( visitor ) )
+      def accept( visitor )
+        let_visit( visitor, @expression.accept( visitor ), @name )
       end
 
     end

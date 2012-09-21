@@ -1,6 +1,0 @@
-require 'tuple_accessor'
-include Storage
-F = 'bla'
-PA = PageAccessor.new(F)
-PW = PageWrapper.new(PA)
-TA = TupleAccessor.new(PW)

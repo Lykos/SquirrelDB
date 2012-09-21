@@ -24,8 +24,8 @@ module RubyDB
         "SelectClause( " + @columns.collect { |c| c.inspect }.join( ", " ) + " )"
       end
 
-      def visit( visitor )
-        let_visit( visitor, @columns.collect { |c| c.visit( visitor ) } )
+      def accept( visitor )
+        let_visit( visitor, @columns.collect { |c| c.accept( visitor ) } )
       end
 
     end

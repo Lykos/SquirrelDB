@@ -67,15 +67,15 @@ describe TupleAccessor do
 
   it "should not contain tuples we removed" do
     @tuple_accessor.remove( @initial_tids[1..2] )
-    lambda { @tuple_accessor.get( @initial_tids[1..2] ) }.should raise_error AddressException
-    lambda { @tuple_accessor.get_tuple( @initial_tids[1] ) }.should raise_error AddressException
-    lambda { @tuple_accessor.get_tuple( @initial_tids[2] ) }.should raise_error AddressException
+    lambda { @tuple_accessor.get( @initial_tids[1..2] ) }.should raise_error(AddressException)
+    lambda { @tuple_accessor.get_tuple( @initial_tids[1] ) }.should raise_error(AddressException)
+    lambda { @tuple_accessor.get_tuple( @initial_tids[2] ) }.should raise_error(AddressException)
   end
 
   it "should not contain a tuple we removed" do
     @tuple_accessor.remove_tuple( @initial_tids[1] )
-    lambda { @tuple_accessor.get( @initial_tids[1..1] ) }.should raise_error AddressException
-    lambda { @tuple_accessor.get_tuple( @initial_tids[1] ) }.should raise_error AddressException
+    lambda { @tuple_accessor.get( @initial_tids[1..1] ) }.should raise_error(AddressException)
+    lambda { @tuple_accessor.get_tuple( @initial_tids[1] ) }.should raise_error(AddressException)
   end
 
   it "should still contain tuples we didn't remove (multiple removes)" do

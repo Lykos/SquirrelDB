@@ -4,12 +4,13 @@ require 'sql/elements/unary_operation'
 require 'sql/elements/operator'
 require 'sql/elements/constant'
 require 'sql/elements/function_application'
-require 'schema/type'
 require 'sql/elements/renaming'
 require 'sql/elements/select_clause'
 require 'sql/elements/from_clause'
 require 'sql/elements/where_clause'
 require 'sql/elements/select_statement'
+require 'sql/elements/wild_card'
+require 'schema/type'
 require 'sql/parser/lexical_parser'
 
 module RubyDB
@@ -60,7 +61,7 @@ module RubyDB
         table, after_index = parse_table( after_index )
         tables = [table]
         until @tokens[after_index] =~ WHERE || !@tokens[after_index]
-          raise "Komma expected instead of #{@tokens[after_index]}" unless @tokens[after_index] =~ KOMMA
+          raise "Comma expected instead of #{@tokens[after_index]}" unless @tokens[after_index] =~ KOMMA
           after_index += 1
           table, after_index = parse_table( after_index )
           tables.push( table )
@@ -71,7 +72,7 @@ module RubyDB
       def parse_table( start_index )
         if @tokens[start_index] =~ PARENTHESE_OPEN
           table, after_index = parse_select( start_index + 1 )
-          raise "missing right parenthese" unless @tokens[after_index] =~ PARENTHESE_CLOSED
+          raise "missing right parenthesis" unless @tokens[after_index] =~ PARENTHESE_CLOSED
           after_index += 1
         elsif @tokens[start_index] =~ IDENTIFIER
           table, after_index = parse_name( start_index )
@@ -82,7 +83,7 @@ module RubyDB
         if @tokens[after_index] =~ IDENTIFIER && !(@tokens[after_index] =~ WHERE)
           return [Renaming.new( table, @tokens[after_index] ), after_index + 1]
         else
-          return [Renaming.new( table, table.to_s ), after_index]
+          return [table, after_index]
         end
       end
 
@@ -122,7 +123,7 @@ module RubyDB
 
       def parse_column( start_index )
         expression, after_index = if @tokens[start_index] =~ ALL_SYMBOL
-          ['*', start_index + 1]
+          [WildCard.new, start_index + 1]
         else
           parse_expression( start_index ) do |token|
             !token || token =~ AS || token =~ KOMMA || token =~ FROM
@@ -131,7 +132,7 @@ module RubyDB
         if @tokens[after_index] =~ AS
           return [Renaming.new( expression, @tokens[after_index + 1] ), after_index + 2]
         else
-          return [Renaming.new( expression, expression.to_s ), after_index]
+          return [expression, after_index]
         end
       end
 
@@ -151,10 +152,12 @@ module RubyDB
           elsif !is_infix && token =~ CONSTANT
             @expression_stack.push( parse_constant( token ) )
             is_infix = true
-          elsif !is_infix && token =~ IDENTIFIER
+          elsif !is_infix && token =~ (IDENTIFIER || token =~ ALL_SYMBOL)
             if @tokens[after_index + 1] =~ PARENTHESE_OPEN
               @operator_stack.push( Variable.new( token ) )
               @expression_stack.push( :func )
+            elsif token =~ ALL_SYMBOL
+              @expression_stack.push( '*' )
             else
               @expression_stack.push( Variable.new( token ) )
               is_infix = true
@@ -204,7 +207,7 @@ module RubyDB
         raise if @operator_stack.empty?
         until @operator_stack.last =~ PARENTHESE_OPEN
           pop_operator
-          raise "Missing parenthese" if @operator_stack.empty?
+          raise "Missing parenthesis" if @operator_stack.empty?
         end
       end
 

@@ -14,8 +14,8 @@ module RubyDB
 
       attr_reader :expression, :left, :right
 
-      def visit( visitor )
-        let_visit( visitor, @left.visit( visitor ), @right.visit( visitor ), @expression.visit( visitor ) )
+      def accept( visitor )
+        let_visit( visitor, @left.accept( visitor ), @right.accept( visitor ), @expression.accept( visitor ) )
       end
       
     end

@@ -1,43 +1,37 @@
-require 'sql/elements/projection'
-require 'sql/elements/selection'
-require 'sql/elements/operator'
-require 'sql/elements/constant'
-require 'sql/elements/variable'
-require 'sql/parser/syntactic_parser'
-require 'sql/elements/cartesian'
+require 'rel_alg/elements/projection'
+require 'rel_alg/elements/selection'
+require 'sql/elements/visitor'
 
 module RubyDB
 
   module RelAlg
 
-    class RelAlgConverter
+    class RelAlgConverter < SQL::Visitor
+      
+      include SQL
+      include RelAlg
 
       def process( statement )
         statement.visit( self )
       end
 
-      def visit_select_statement( select_statement )
+      def visit_select_statement( columns, tables, expression )
         Projection.new(
-          select_statement.select_clause.visit( self ),
+          columns,
           Selection.new(
-            select_statement.where_clause.visit( self ),
-            select_statement.from_clause.visit( self )
+            expression,
+            tables
           )
         )
       end
-
-      def visit_select_clause( select_clause )
-        select_clause.columns.collect { |table| table.visit( self ) }
+      
+      def visit_select_clause( expression )
+        expression
       end
-
-      def visit_where_clause( where_clause )
-        where_clause.expression.visit( self )
-      end
-
-      def visit_from_clause( from_clause )
-        tables = from_clause.tables.collect { |column| column.visit( self ) }
+      
+      def visit_from_clause( tables )
         if tables.empty?
-          return Renaming.new( Variable.new( "dual" ), "dual" )
+          DualTable.new
         else
           until tables.length == 1
             tables.push( Cartesian.new( *tables.shift(2) ) )
@@ -45,12 +39,13 @@ module RubyDB
           tables[0]
         end
       end
-
-      def visit_renaming( renaming )
-        Renaming.new( renaming.expression.visit( self ), renaming.name )
+      
+      def visit_where_clause( expression )
+        expression
       end
 
       def visit_binary_operation( binary_operation )
+        # TODO The parser should do that
         left = binary_operation.left.visit( self )
         right = binary_operation.right.visit( self )
         if binary_operation.operator == Operator::DOT and right.kind_of?( FunctionApplication )
@@ -63,37 +58,6 @@ module RubyDB
         else
           BinaryOperation.new( binary_operation.operator, left, right )
         end
-      end
-
-      def visit_unary_operation( unary_operation )
-        UnaryOperation.new( unary_operation.operator, unary_operation.visit( self ) )
-      end
-
-      def visit_function_application( function_application )
-        FunctionApplication.new(
-          function_application.function,
-          function_application.parameters.collect { |param| param.visit( self ) }
-        )
-      end
-
-      def visit_constant( constant )
-        Constant.new( constant.value, constant.type )
-      end
-
-      def visit_variable( variable )
-        Variable.new( variable.name )
-      end
-
-      def visit_where_clause( where_clause )
-        where_clause.expression.visit( self )
-      end
-
-      def visit_from_clause( from_clause )
-        from_clause.tables.collect { |t| t.visit( self ) }
-      end
-
-      def visit_renaming( renaming )
-        Renaming.new( renaming.expression.visit( self ), renaming.name.visit( self ) )
       end
 
     end

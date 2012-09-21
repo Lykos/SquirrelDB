@@ -16,11 +16,15 @@ module RubyDB
 
     class SyntacticUnit
 
+      def let_pre_visit( visitors )
+        visitor.send( ( "pre_visit_" + self.class.to_s.underscore ).intern, self )
+      end
+
       def let_visit( visitor, *args )
         visitor.send( ( "visit_" + self.class.to_s.underscore ).intern, *args )
       end
 
-      def visit( visitor )
+      def accept( visitor )
         let_visit( visitor, self )
       end
 

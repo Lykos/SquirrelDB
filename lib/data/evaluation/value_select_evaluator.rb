@@ -6,8 +6,22 @@ module RubyDB
     #
     class ValueSelectEvaluator
 
-      def initialize
-        
+      def initialize( inner )
+        @inner = inner
+      end
+      
+      def cost
+        @inner.cost
+      end
+      
+      def size
+        @inner.size
+      end
+      
+      def evaluate
+        @inner.rewind
+        t = @inner.next
+        raise if t.nil? || @inner.next
       end
       
     end

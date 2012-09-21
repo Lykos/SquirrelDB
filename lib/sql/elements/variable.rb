@@ -21,7 +21,7 @@ module RubyDB
       end
 
       def ==(other)
-        super &&  @name == other.name
+        super && @name == other.name
       end
 
       def visit( visitor )

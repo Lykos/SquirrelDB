@@ -25,8 +25,8 @@ module RubyDB
         super && @scope == other.scope && @variable == other.variable
       end
 
-      def visit( visitor )
-        let_visit( visitor, @scope.collect { |s| s.visit( visitor ) }, @variable.visit( visitor ) )
+      def accept( visitor )
+        let_visit( visitor, @scope.collect { |s| s.accept( visitor ) }, @variable.accept( visitor ) )
       end
 
       def evaluate( state )

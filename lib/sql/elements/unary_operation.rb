@@ -25,8 +25,8 @@ module RubyDB
         super && @operator == other.operator && @inner == other.inner
       end
 
-      def visit( visitor )
-        let_visit( visitor, @operator, @inner.visit( visitor ) )
+      def accept( visitor )
+        let_visit( visitor, @operator, @inner.accept( visitor ) )
       end
 
       def evaluate( state )

@@ -2,6 +2,7 @@ require 'rel_alg/converter/converter'
 require 'rel_alg/converter/rel_alg_converter'
 require 'rel_alg/converter/verifier'
 require 'rel_alg/converter/always_optimizer'
+require 'rel_alg/converter/table_linker'
 
 module RubyDB
 
@@ -10,11 +11,15 @@ module RubyDB
     class ConverterManager
 
       def converter
-        Converter.new( verifier, rel_alg_converter, always_optimizer )
+        Converter.new( verifier, table_linker, rel_alg_converter, always_optimizer )
       end
 
       def verifier
         Verifier.new
+      end
+      
+      def table_linker
+        TableLinker.new
       end
 
       def rel_alg_converter

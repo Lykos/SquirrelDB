@@ -25,8 +25,8 @@ module RubyDB
         super && @function == other.function && @parameters == other.parameters
       end
 
-      def visit( visitor )
-        let_visit( visitor, @function.visit( visitor ), @parameters.collect { |p| p.visit( visitor ) } )
+      def accept( visitor )
+        let_visit( visitor, @function.accept( visitor ), @parameters.collect { |p| p.accept( visitor ) } )
       end
 
       def evaluate( state )

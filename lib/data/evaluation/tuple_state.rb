@@ -1,25 +1,22 @@
-require 'data/evaluation/state'
-
 module RubyDB
   
   module Data
 
-    class TupleState < state
+    class TupleState
 
-      def initialize( tuple )
-        super
+      def initialize( state, tuple )
+        @state = state
+        @tuple = tuple
       end
+      
+      attr_reader :tuple
 
       def []( name )
-        tuple[name] || super
+        @state[name]
       end
 
       def []=( name, value )
-        if tuple[name]
-          tuple[name] = value
-        else
-          super
-        end
+        @state[name] = value
       end
       
     end

@@ -14,11 +14,11 @@ module RubyDB
       end
 
       def pre_parser
-        @pre_parser ||= PreParser.new
+        PreParser.new
       end
 
       def lexical_parser
-        @lexical_parser ||= LexicalParser.new
+        LexicalParser.new
       end
 
       def syntactic_parser

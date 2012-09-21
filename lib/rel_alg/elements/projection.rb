@@ -12,6 +12,10 @@ module RubyDB
       end
 
       attr_reader :renamings, :inner
+      
+      def accept(visitor)
+        let_visit( visitor, @renamings.accept( visitor ), @inner.accept( visitor ) )
+      end
 
       def ==(other)
         super && @renamings == other.renamings && @inner == other.inner

@@ -11,8 +11,8 @@ module RubyDB
         super( Constant.new( true, Type::BOOLEAN ), left, right )
       end
 
-      def visit( visitor )
-        let_visit( visitor, @left.visit( visitor ), @right.visit( visitor ) )
+      def accept( visitor )
+        let_visit( visitor, @left.accept( visitor ), @right.accept( visitor ) )
       end
 
     end

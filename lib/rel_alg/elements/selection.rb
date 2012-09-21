@@ -24,9 +24,11 @@ module RubyDB
       def ==(other)
         super && @expression == other.expression && @inner == other.inner
       end
-
-      def visit( visitor )
-        let_visit( visitor, @inner.visit( visitor ), @expression.visit( visitor ) )
+      
+      def accept( visitor )
+        inner = @inner.collect { |l| l.accept( visitor ) }
+        expression = @expression.accept( visitor )
+        let_visit( visitor, expression, inner )
       end
 
     end

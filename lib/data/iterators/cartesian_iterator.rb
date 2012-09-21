@@ -1,10 +1,10 @@
-require 'data/iterators/iterator'
+require 'data/iterators/rel_alg_iterator'
 
 module RubyDB
 
   module Data
 
-    class CartesianIterator < Iterator
+    class CartesianIterator < RelAlgIterator
 
       def initialize( left, right )
         super()
@@ -45,12 +45,10 @@ module RubyDB
       end
 
       def size
-        super
         @left.size * @right.size
       end
 
       def cost
-        super
         @left.cost * @right.cost
       end
       

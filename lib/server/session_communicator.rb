@@ -1,16 +1,20 @@
-module Server
-
-  class SessionCommunicator
-
-    def initialize( server, socket )
-    end
-
-    def run
-      loop do
-        gets
+module RubyDB
+  
+  module Server
+  
+    class SessionCommunicator
+  
+      def initialize( server, socket )
       end
+  
+      def run
+        loop do
+          gets
+        end
+      end
+  
     end
-
+  
   end
 
 end

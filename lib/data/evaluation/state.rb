@@ -8,11 +8,11 @@ module Sql
     end
 
     def []( name )
-      @variable[name]
+      @variables[name]
     end
 
     def []=( name, value )
-      @variable[name] = value
+      @variables[name] = value
     end
 
   end

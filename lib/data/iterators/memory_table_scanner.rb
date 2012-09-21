@@ -1,4 +1,4 @@
-require 'data/iterators/iterator'
+require 'data/iterators/rel_alg_iterator'
 
 module RubyDB
 
@@ -24,17 +24,26 @@ module RubyDB
 
       def next_item
         super
+        raise if @index >= @tuples.length
         @tuples[@index]
+      end
+      
+      def size
+        @tuples.size
+      end
+      
+      def cost
+        @tuples.size
       end
 
       def close
-        super
         @tuples = nil
+        super
       end
 
       def rewind
-        super
         @index = 0
+        super
       end
       
     end

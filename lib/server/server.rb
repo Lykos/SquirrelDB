@@ -1,11 +1,15 @@
-module Server
+module RubyDB
+  
+  module Server
 
-  class Server
+    class Server
 
-    def initialize
-    end
+      def initialize
+      end
 
-    def run
+      def run
+      
+      end
       
     end
 

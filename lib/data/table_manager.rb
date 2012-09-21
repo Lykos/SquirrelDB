@@ -1,4 +1,5 @@
 require 'sql/elements/scoped_variable'
+require 'sql/elements/variable'
 
 module RubyDB
   
@@ -6,47 +7,71 @@ module RubyDB
 
     class TableManager
 
-      # TODO Place for this constants
+      # TODO Find a better place for these constants
       INTERNAL_SCOPE = "#internal#"
-      SCHEMA_TABLE = "schema"
-      SCHEMA_TABLE_PAGE_ID = 0
       TOPLEVEL_SCOPE_ID = 1
+      INTERNAL_TABLE_ID = {
+        "schemata" => 1,
+        "variables" => 2,
+        "tables" => 3
+      }
+      
+      INTERNAL_PAGE_NO = {
+        "schemata" => 1,
+        "variables" => 2,
+        "tables" => 3
+      }
 
-      def initialize( evaluator, internal_evaluator )
-        @evaluator = evaluator
-        @internal_evaluator = internal_evaluator
-      end
+      attr_accessor :internal_evaluator
 
       def get_page_no( table )
-        if table.scope.name == INTERNAL_SCOPE
-          return get_internal_page_no( table )
+        if table.kind_of?(SQL::ScopedVariable) && table.scope.kind_of?(SQL::Variable) && table.scope.name == INTERNAL_SCOPE
+          return INTERNAL_PAGE_NO[table.variable.name]
         end
-        scope_id = get_scope_id( table.scope )
-        table_id = get_table_id( scope_id, table )
-        internal_get_page_no( table_id )
+        table_id = get_object_id( table )
+        # TODO Create constants for names in appropriate locations
+        no = @internal_evaluator.select(
+               ["page_no"],
+               "tables",
+               ["table_id"],
+               [table_id],
+               [SHORT]
+             )
+        # TODO Appropriate exception
+        raise RuntimeError if no.length != 1
+        no[0][0]
       end
 
       private
       
       # get page_no for an internal page
       #
-      def get_internal_page_no( table )
-        case table.variable.name
-        when SCHEMA_TABLE
-          return SCHEMA_TABLE_PAGE_ID
+      def get_internal_page_no( table_name )
+        if INTERNAL_PAGE_NO.has_key?( table_name )
+          INTERNAL_PAGE_NO[table_name]
         else
-          raise "Unknown internal table #{table.variable.name}"
+          # TODO Choose appropriate exception
+          raise RuntimeError, "Unknown internal table #{table.variable.name}"
         end        
       end
 
-      def get_scope_id( scope )
+      def get_variable_id( variable )
         if scope.kind_of?( SQL::ScopedVariable )
-          parent_scope = get_scope_id( scope.scope )
+          scope_id = get_scope_id( scope.scope )
         else
-          parent_scope = TOPLEVEL_SCOPE
+          scope_id = TOPLEVEL_SCOPE_ID
         end
-        # TODO Remember what I wanted to do here... 
-        @internal_evaluator.select( scope_id, scopes, 
+        # TODO Create constants for names in appropriate locations
+        id = @internal_evaluator.select(
+          ["variable_id"],
+          "variables",
+          ["scope_id", "variable_name"],
+          [parent_scope_id, variable.name],
+          [SHORT, STRING]
+        )
+        # TODO Appropriate exception
+        raise RuntimeError if id.length != 1
+        id[0][0]
       end
       
     end

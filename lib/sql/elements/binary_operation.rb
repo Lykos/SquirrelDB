@@ -26,8 +26,8 @@ module RubyDB
         "(" + @left.inspect + " " + @operator.to_s + " " + @right.inspect + ")"
       end
 
-      def visit( visitor )
-        let_visit( visitor, @operator, @left.visit( visitor ), @right.visit( visitor ) )
+      def accept( visitor )
+        let_visit( visitor, @operator, @left.accept( visitor ), @right.accept( visitor ) )
       end
 
       def evaluate( state )

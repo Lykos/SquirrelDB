@@ -1,18 +1,15 @@
 require 'syntactic_parser'
 
-module Sql
+module RubyDB
+  
+  module RelAlg
 
-  class Verifier
+    class Verifier
 
-    def process( statement )
-      return statement
-      raise unless statement.kind_of?( Statement )
-      statement.visit( self )
-    end
-
-    def visit_select_statement( select_statement )
-      raise unless select_statement.select_clause.kind_of?( SelectClause )
-      raise unless select_statement.from_clause.kind_of?( FromClause )
+      def process( statement )
+        # TODO
+      end
+    
     end
 
   end
