@@ -1,10 +1,10 @@
-require 'ast/syntactic_unit'
+require 'ast/element'
 
 module SquirrelDB
 
   module AST
 
-    class FromClause < SyntacticUnit
+    class FromClause < Element
 
       def initialize( tables )
         @tables = tables

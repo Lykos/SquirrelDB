@@ -1,11 +1,12 @@
 require 'ast/operator'
+require 'ast/visitor'
 require 'data/evaluation/expression_cost_calculator'
 
 module SquirrelDB
 
   module Data
   
-    class ExpressionEvaluator
+    class ExpressionEvaluator < AST::Visitor
 
       def initialize( expression )
         @expression = expression

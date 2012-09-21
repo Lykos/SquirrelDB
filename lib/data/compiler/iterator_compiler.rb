@@ -37,6 +37,9 @@ module SquirrelDB
           parameters
         )
       end
+      
+      def visit_linked_table( table )
+      end
 
       def visit_constant( value, type )
         Constant.new( value, type )

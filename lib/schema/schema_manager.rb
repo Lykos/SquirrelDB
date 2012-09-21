@@ -2,6 +2,7 @@ require 'ast/scoped_variable'
 require 'ast/variable'
 require 'schema/table_schema'
 require 'schema/type'
+require 'schema/column'
 require 'data/table_manager'
 
 module SquirrelDB
@@ -11,12 +12,12 @@ module SquirrelDB
     class SchemaManager
 
       INTERNAL_SCHEMATA = [
-        "schemata" => TableSchema.new([Column.new("table_id", SHORT), Column.new("column_name", SHORT), Column.new("index", SHORT), Column.new("type_id", SHORT)]),
-        "variables" => TableSchema.new([Column.new("scope_id", SHORT), Column.new("variable_name", STRING), Column.new("variable_id", SHORT)]),
-        "tables" => TableSchema.new([Column.new("table_id", SHORT), Column.new("page_no", SHORT)]),
+        "schemata" => TableSchema.new([Column.new("table_id", Type::SHORT), Column.new("column_name", Type::SHORT), Column.new("index", Type::SHORT), Column.new("type_id", Type::SHORT)]),
+        "variables" => TableSchema.new([Column.new("scope_id", Type::SHORT), Column.new("variable_name", Type::STRING), Column.new("variable_id", Type::SHORT)]),
+        "tables" => TableSchema.new([Column.new("table_id", Type::SHORT), Column.new("page_no", Type::SHORT)]),
       ]
       
-      attr_accessor internal_evaluator, table_manager
+      attr_accessor :internal_evaluator, :table_manager
 
       def get( table )
         # The schemas of internal tables have to be hard-coded, we need them to get schemas from the database.

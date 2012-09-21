@@ -1,10 +1,10 @@
-require 'ast/syntactic_unit'
+require 'ast/element'
 
 module SquirrelDB
 
   module AST
 
-    class WildCard < SyntacticUnit
+    class WildCard < Element
 
       def to_s
         '*'

@@ -1,10 +1,10 @@
-require 'ast/syntactic_unit'
+require 'ast/element'
 
 module SquirrelDB
 
   module AST
 
-    class Projection < AST::SyntacticUnit
+    class Projection < AST::Element
 
       def initialize( renamings, inner )
         @renamings = renamings

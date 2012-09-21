@@ -1,12 +1,12 @@
-require 'ast/syntatctic_unit'
+require 'ast/element'
 
 module SquirrelDB
 
   module AST
 
-    class LinkedTable < SyntacticUnit
+    class LinkedTable < Element
 
-      def initialize( schema, page_no )
+      def initialize( schema, name, page_no )
         @schema = schema
         @page_no = page_no
       end

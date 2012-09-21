@@ -1,10 +1,10 @@
-require 'ast/syntactic_unit'
+require 'ast/element'
 
 module SquirrelDB
 
   module AST
 
-    class ASTOperation < SyntacticUnit
+    class ASTOperation < Element
 
     end
     

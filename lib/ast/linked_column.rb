@@ -4,7 +4,7 @@ module SquirrelDB
 
   module AST
 
-    class LinkedColumn < SyntacticUnit
+    class LinkedColumn < Element
 
       def initialize( type, name, index )
         @type = type

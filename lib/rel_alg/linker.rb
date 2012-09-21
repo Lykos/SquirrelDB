@@ -9,12 +9,11 @@ module SquirrelDB
 
   module RelAlg
 
-    class Linker < SQL::Visitor
+    class Linker < AST::Visitor
       
-      include SQL
-      include RelAlg
+      include AST
       
-      LinkInfo = Struct.new(offset, schema)
+      LinkInfo = Struct.new(:offset, :schema)
       
       def initialize( table_manager, schema_manager )
         @table_manager = table_manager

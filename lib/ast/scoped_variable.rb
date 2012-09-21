@@ -1,10 +1,10 @@
-require 'syntactic_unit'
+require 'element'
 
 module SquirrelDB
 
   module AST
 
-    class ScopedVariable < SyntacticUnit
+    class ScopedVariable < Element
 
       def initialize( scope, variable )
         @scope = scope

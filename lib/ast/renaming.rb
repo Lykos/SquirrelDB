@@ -4,7 +4,7 @@ module SquirrelDB
 
   module AST
 
-    class Renaming < SyntacticUnit
+    class Renaming < Element
 
       def initialize( expression, name )
         @expression = expression

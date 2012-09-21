@@ -1,10 +1,10 @@
-require 'ast/syntactic_unit'
+require 'ast/element'
 
 module SquirrelDB
 
   module AST
 
-    class SelectStatement < SyntacticUnit
+    class SelectStatement < Element
 
       def initialize( select_clause, from_clause, where_clause )
         @select_clause = select_clause

@@ -47,7 +47,7 @@ module SquirrelDB
         raise ConstantException.new(
           "A tuple cannot fill the whole page with this constants."
         )
-      elsif TYPE_IDS.any? { |type, id| id > 1 << TYPE_SIZE * BYTE_SIZE }
+      elsif TYPE_IDS.any? { |id, type| id > 1 << TYPE_SIZE * BYTE_SIZE }
         raise ConstantException.new(
           "Not all types can be represented with this type size."
         )

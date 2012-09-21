@@ -1,10 +1,10 @@
-require 'ast/syntactic_unit'
+require 'ast/element'
 
 module SquirrelDB
 
   module AST
 
-    class FunctionApplication < SyntacticUnit
+    class FunctionApplication < Element
 
       def initialize( function, parameters )
         @function = function

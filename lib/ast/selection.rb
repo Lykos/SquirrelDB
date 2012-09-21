@@ -4,7 +4,7 @@ module SquirrelDB
 
   module AST
 
-    class Selection < SyntacticUnit
+    class Selection < Element
 
       def initialize( expression, inner )
         @expression = expression

@@ -14,11 +14,7 @@ module SquirrelDB
 
   module AST
 
-    class SyntacticUnit
-
-      def let_pre_visit( visitors )
-        visitor.send( ( "pre_visit_" + self.class.to_s.underscore ).intern, self )
-      end
+    class Element
 
       def let_visit( visitor, *args )
         visitor.send( ( "visit_" + self.class.to_s.underscore ).intern, *args )

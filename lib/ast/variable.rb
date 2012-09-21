@@ -1,10 +1,10 @@
-require 'ast/syntactic_unit'
+require 'ast/element'
 
 module SquirrelDB
 
   module AST
 
-    class Variable < SyntacticUnit
+    class Variable < Element
 
       def initialize( name )
         @name = name

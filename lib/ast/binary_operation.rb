@@ -1,10 +1,10 @@
-require 'ast/syntactic_unit'
+require 'ast/element'
 
 module SquirrelDB
 
   module AST
 
-    class BinaryOperation < SyntacticUnit
+    class BinaryOperation < Element
     
       def initialize( operator, left, right )
         @operator = operator

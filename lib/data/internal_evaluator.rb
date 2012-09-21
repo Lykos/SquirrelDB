@@ -14,8 +14,7 @@ module SquirrelDB
     #
     class InternalEvaluator
 
-      include SQL
-      include RelAlg
+      include AST
       
       def initialize( compiler )
         @compiler = compiler

@@ -1,10 +1,10 @@
-require 'ast/syntactic_unit'
+require 'ast/element'
 
 module SquirrelDB
 
   module AST
 
-    class Operator < SyntacticUnit
+    class Operator < Element
 
       def initialize( symbol, cardinality,
           precedence=10, right_associative=false, alternative_symbols=[] )
