@@ -6,8 +6,8 @@ module SquirrelDB
 
     class TupleAccessor
 
-      def initialize( page_accessor )
-        @page_accessor = page_accessor
+      def initialize( page_wrapper )
+        @page_wrapper = page_wrapper
       end
 
       include Constants
@@ -74,7 +74,7 @@ module SquirrelDB
       end
 
       def new_page
-        @page_accessor.add( TYPE_IDS.key( :VarTuplePage ) ).page_no
+        @page_wrapper.add( TYPE_IDS.key( :VarTuplePage ) ).page_no
       end
 
       def remove_tuple( tid )
@@ -104,7 +104,7 @@ module SquirrelDB
         length = value.bytesize
         page = free_page( length, page_no )
         page.add( value )
-        @page_accessor.set( page )
+        @page_wrapper.set( page )
         return TID.new( page.page_no, tuple_no )
       end
 
@@ -114,7 +114,7 @@ module SquirrelDB
       end
 
       def close
-        @page_accessor.close
+        @page_wrapper.close
       end
 
       private
@@ -122,7 +122,7 @@ module SquirrelDB
       def get_page( page_no, tuple_nos )
         results = []
         tids = []
-        page = @page_accessor.get( page_no )
+        page = @page_wrapper.get( page_no )
         if tuple_nos == :all
           tuple_nos = (0...page.no_tuples).to_a
         end
@@ -137,7 +137,7 @@ module SquirrelDB
       end
 
       def set_page( page_no, tuple_nos, values )
-        page = @page_accessor.get( page_no )
+        page = @page_wrapper.get( page_no )
         tuple_nos.each_with_index do |t, i|
           v = values[i]
           # TODO check for moved
@@ -147,24 +147,24 @@ module SquirrelDB
             page.set_tid( t, add_tuple( values ) )
           end
         end
-        @page_accessor.set( page )
+        @page_wrapper.set( page )
       end
 
       def remove_page( page_no, tuple_nos )
-        page = @page_accessor.get( page_no )
+        page = @page_wrapper.get( page_no )
         tuple_nos.each { |t| page.remove_tuple( t ) }
-        @page_accessor.set( page )
+        @page_wrapper.set( page )
       end
 
       def free_page( length, page_no )
         # TODO naiv! May not terminate.
         loop do
-          page = @page_accessor.get( page_no )
+          page = @page_wrapper.get( page_no )
           return page if page.has_space?( length )
           unless page_no.has_next_page?
-            new_page = @page_accessor.add( page.type )
+            new_page = @page_wrapper.add( page.type )
             page.next_page = new_page.page_no
-            @page_accessor.set( page )
+            @page_wrapper.set( page )
             return new_page
           end
           page_no = page.next_page

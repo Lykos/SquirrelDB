@@ -1,9 +1,8 @@
-require 'sql/parser/syntax'
-require 'sql/parser/pre_parser'
+require 'sql/syntax'
 
 module SquirrelDB
 
-  module Sql
+  module SQL
 
     class LexicalParser
 

@@ -7,5 +7,7 @@ require 'server/database'
 include SquirrelDB
 include Server
 
-database = Database.new
+Database.open do |db|
+  puts db.compile("select a.b from a") 
+end
 

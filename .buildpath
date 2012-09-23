@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <buildpath>
 	<buildpathentry kind="src" path="debug"/>
+	<buildpathentry kind="src" path="lib/sql"/>
 	<buildpathentry kind="src" path="lib/rel_alg"/>
 	<buildpathentry kind="src" path="lib/ast"/>
 	<buildpathentry kind="src" path="lib/data"/>
 	<buildpathentry kind="src" path="lib/schema"/>
 	<buildpathentry kind="src" path="lib/server"/>
-	<buildpathentry kind="src" path="lib/sql/parser"/>
 	<buildpathentry kind="src" path="lib/storage"/>
 	<buildpathentry kind="src" path="spec"/>
 	<buildpathentry kind="con" path="org.eclipse.dltk.launching.INTERPRETER_CONTAINER"/>

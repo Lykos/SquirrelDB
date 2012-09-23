@@ -1,6 +1,6 @@
 module SquirrelDB
 
-  module Sql
+  module SQL
 
     class PreParser
 

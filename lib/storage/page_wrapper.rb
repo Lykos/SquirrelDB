@@ -17,7 +17,8 @@ module SquirrelDB
 
       def get( page_no )
         content = @page_accessor.get( page_no )
-        type_id = extract_int( content[0...TYPE_SIZE] ) # TODO
+        type_id = extract_int( content[0...TYPE_SIZE] )
+        raise StorageException, "Invalid page type id #{type_id}." unless TYPE_IDS.has_key?(type_id)
         type = Storage.const_get( TYPE_IDS[type_id] )
         type.new( page_no, @page_accessor.get( page_no ) )
       end

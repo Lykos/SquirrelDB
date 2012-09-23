@@ -1,5 +1,3 @@
-require 'syntactic_parser'
-
 module SquirrelDB
   
   module RelAlg

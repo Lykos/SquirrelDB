@@ -2,7 +2,7 @@ require 'forwardable'
 
 module SquirrelDB
 
-  module Data
+  module Storage
   
     class TupleWrapper
 

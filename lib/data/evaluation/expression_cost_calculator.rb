@@ -1,5 +1,5 @@
-require 'ast/operator'
-require 'ast/visitor'
+require 'ast/common/operator'
+require 'ast/visitors/visitor'
 
 module SquirrelDB
 
@@ -11,7 +11,7 @@ module SquirrelDB
         @expression = expression
       end
 
-      include Operator
+      include AST
 
       # Evaluate this expression in the given state
       #
@@ -29,24 +29,24 @@ module SquirrelDB
 
       def visit_binary_operation( operator, left, right )
         case operator
-        when PLUS then left + right + 1
-        when MINUS then left + right + 1
-        when TIMES then left + right + 2
-        when DIVIDED_BY then left + right + 3
-        when MODULO then left + right + 3
-        when POWER then left + right + 5
-        when EQUAL then left + right + 1
-        when UNEQUAL then left + right + 1
-        when GREATER then left + right + 1
-        when GREATER_EQUAL then left + right + 1
-        when SMALLER then left + right + 1
-        when SMALLER_EQUAL then left + right + 1
-        when OR then left + right + 1
-        when XOR then left + right + 1
-        when AND then left + right + 1
-        when IMPLIES then left + right + 1
-        when IS_IMPLIED then left + right + 1
-        when EQUIVALENT then left + right + 1
+        when Operator::PLUS then left + right + 1
+        when Operator::MINUS then left + right + 1
+        when Operator::TIMES then left + right + 2
+        when Operator::DIVIDED_BY then left + right + 3
+        when Operator::MODULO then left + right + 3
+        when Operator::POWER then left + right + 5
+        when Operator::EQUAL then left + right + 1
+        when Operator::UNEQUAL then left + right + 1
+        when Operator::GREATER then left + right + 1
+        when Operator::GREATER_EQUAL then left + right + 1
+        when Operator::SMALLER then left + right + 1
+        when Operator::SMALLER_EQUAL then left + right + 1
+        when Operator::OR then left + right + 1
+        when Operator::XOR then left + right + 1
+        when Operator::AND then left + right + 1
+        when Operator::IMPLIES then left + right + 1
+        when Operator::IS_IMPLIED then left + right + 1
+        when Operator::EQUIVALENT then left + right + 1
         else
           raise "Unknown operator #{operator}"
         end
@@ -54,9 +54,9 @@ module SquirrelDB
 
       def visit_unary_operation( operator, inner )
         case operator
-        when UNARY_PLUS then inner + 1
-        when UNARY_MINUS then inner + 1
-        when NOT then inner + 1
+        when Operator::UNARY_PLUS then inner + 1
+        when Operator::UNARY_MINUS then inner + 1
+        when Operator::NOT then inner + 1
         else
           raise
         end

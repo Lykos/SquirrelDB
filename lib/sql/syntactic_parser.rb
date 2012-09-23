@@ -1,21 +1,13 @@
-require 'sql/parser/syntax'
-require 'ast/binary_operation'
-require 'ast/unary_operation'
-require 'ast/operator'
-require 'ast/constant'
-require 'ast/function_application'
-require 'ast/renaming'
-require 'ast/select_clause'
-require 'ast/from_clause'
-require 'ast/where_clause'
-require 'ast/select_statement'
-require 'ast/wild_card'
+require 'sql/syntax'
+require 'ast/common/all'
+require 'ast/sql/all'
 require 'schema/type'
-require 'sql/parser/lexical_parser'
+reqiore 'schema/column'
+require 'sql/lexical_parser'
 
 module SquirrelDB
 
-  module Sql
+  module SQL
 
     class SyntacticParser
 
@@ -47,6 +39,48 @@ module SquirrelDB
       end
 
       private
+      
+      def parse_create( start_index )
+        if @tokens[start_index + 1] =~ TABLE
+          parse_create_table(start_index)
+        else
+          raise
+        end
+      end
+      
+      def parse_create_table(start_index)
+        raise unless @tokens[start_index] =~ TABLE && @tokens[start_index + 1] =~ TABLE
+        index = start_index + 2
+        name, index = parse_name(index)
+        raise unless @tokens[index == ")"]
+        loop.with_index.with_object([]) do |i, columns|
+          raise unless @tokens[index] =~ IDENTIFIER
+          name = @tokens[index]
+          type, index = parse_type(index + 1)
+          break if @tokens[index] == ")"
+          raise unless @tokens[index] == ","
+          index += 1
+          columns << Column.new(name, i, type)
+        end
+        [created_table, index + 1]
+      end
+      
+      def parse_type(start_index)
+        raise unless @tokens[start_index] =~ TYPE
+        if @tokens[start_index] =~ INTEGER_T
+          [Type::INTEGER, start_index + 1]
+        elsif @tokens[start_index] =~ BOOLEAN_T
+          [Type::BOOLEAN, start_index + 1]
+        elsif @tokens[start_index] =~ STRING_T
+          [Type::STRING, start_index + 1]
+        elsif @tokens[start_index] =~ DOUBLE_T
+          [Type::DOUBLE, start_index + 1]
+        elsif @tokens[start_index] =~ SHORT_T
+          [Type::SHORT, start_index + 1]
+        else
+          raise
+        end
+      end
 
       def parse_select( start_index )
         select_clause, after_index = parse_select_clause( start_index )
@@ -94,7 +128,7 @@ module SquirrelDB
         while @tokens[after_index] =~ Operator::DOT.to_regexp
           after_index += 1
           raise unless @tokens[after_index] =~ IDENTIFIER
-          name = BinaryOperation.new( Operator::DOT, name, Variable.new( @tokens[after_index] ) )
+          name = ScopedVariable.new( name, Variable.new( @tokens[after_index] ) )
           after_index += 1
         end
         [name, after_index]
@@ -231,7 +265,7 @@ module SquirrelDB
         expression = @expression_stack.pop
         parameters = []
         until expression == :func
-          raise unless expression.kind_of?( SyntacticUnit )
+          raise unless expression.kind_of?( Element )
           parameters.push( expression )
           raise if @expression_stack.empty?
           expression = @expression_stack.pop
@@ -244,8 +278,8 @@ module SquirrelDB
         operator = @operator_stack.pop
         raise unless operator.kind_of?( Operator ) && operator.is_binary?
         raise if @expression_stack.length < 2
-        raise "Got #{@expression_stack.last.inspect} as second part of a binary operation." unless @expression_stack.last.kind_of?( SyntacticUnit )
-        raise "Got #{@expression_stack[-2].inspect} as second part of a binary operation." unless @expression_stack[-2].kind_of?( SyntacticUnit )
+        raise "Got #{@expression_stack.last.inspect} as second part of a binary operation." unless @expression_stack.last.kind_of?( Element )
+        raise "Got #{@expression_stack[-2].inspect} as second part of a binary operation." unless @expression_stack[-2].kind_of?( Element )
         @expression_stack.push( BinaryOperation.new(
             operator, *@expression_stack.pop( 2 )
           ) )
@@ -255,7 +289,7 @@ module SquirrelDB
         raise if @operator_stack.empty?
         operator = @operator_stack.pop
         raise unless operator.kind_of?( Operator ) && operator.is_unary?
-        raise if @expression_stack.empty? || !@expression_stack.last.kind_of?( SyntacticUnit )
+        raise if @expression_stack.empty? || !@expression_stack.last.kind_of?( Element )
         @expression_stack.push( UnaryOperation.new(
             operator, @expression_stack.pop
           ) )

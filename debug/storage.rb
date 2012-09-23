@@ -7,7 +7,7 @@ require 'storage/tuple_accessor'
 require 'tid'
 include SquirrelDB
 include Storage
-F = '/home/bernhard/Programs/ruby/database/try/bla'
+F = '/home/bernhard/Programs/ruby/SquirrelDB/try/bla'
 PA = PageAccessor.new(F)
 PW = TuplePageAccessor.new(PA, TuplePage)
 TA = TupleAccessor.new(PW)

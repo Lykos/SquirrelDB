@@ -1,15 +1,14 @@
-require 'ast/projection'
-require 'ast/selection'
-require 'ast/transform_visitor'
+require 'ast/rel_alg_operators/all'
+require 'ast/visitors/transform_visitor'
 
 module SquirrelDB
 
-  module AST
+  module RelAlg
 
     class RelAlgConverter < AST::TransformVisitor
 
       def process( statement )
-        statement.visit( self )
+        statement.accept( self )
       end
 
       def visit_select_statement( columns, tables, expression )

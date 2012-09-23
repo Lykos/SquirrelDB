@@ -1,10 +1,12 @@
-require 'ast/operator'
-require 'ast/constant'
-require 'ast/variable'
-require 'ast/scoped_variable'
-require 'ast/binary_operation'
-require 'ast/selection'
-require 'ast/projection'
+require 'ast/common/operator'
+require 'ast/common/constant'
+require 'ast/common/variable'
+require 'ast/common/scoped_variable'
+require 'ast/common/binary_operation'
+require 'ast/rel_alg_operators/projection'
+require 'ast/rel_alg_operators/selection'
+require 'data/table_manager'
+require 'schema/schema_manager'
 
 module SquirrelDB
 
@@ -42,13 +44,14 @@ module SquirrelDB
                 b
               )
             end,
-            ScopedVariable.new(
-              Variable.new( INTERNAL_SCOPE ),
-              Variable.new( from_table )
+            PreLinkedTable.new(
+              Schema::SchemaManager::INTERNAL_SCHEMATA["schemata"],
+              "schemata",
+              TableManager::INTERNAL_TABLE_ID["schemata"]
             )
           )
         )
-        @compiler.process( query ).evaluate
+        @compiler.process( query ).evaluate( {} )
       end
       
     end
