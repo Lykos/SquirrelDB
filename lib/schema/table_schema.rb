@@ -1,3 +1,5 @@
+require 'ast/common/tuple'
+
 module SquirrelDB
   
   module Schema
@@ -28,6 +30,10 @@ module SquirrelDB
         # TODO Choose appropriate exception
         raise RuntimeError if tuple.fields.length != @columns.length
         (0...@columns.length).inject( "" ) { |raw, i| raw + @columns[i].to_raw( tuple[i] ) }
+      end
+      
+      def get_column(column_name)
+        @columns.find { |col| col.name == column_name }
       end
 
       def get_index( column_name )

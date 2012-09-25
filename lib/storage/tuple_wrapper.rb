@@ -30,12 +30,12 @@ module SquirrelDB
         @tuple_accessor.set_tuple( tid, table_schema.tuple_to_raw( tuple ) )
       end
 
-      def add( table_schema, tuples )
-        @tuple_accessor.add( tuples.collect { |t| table_schema.tuple_to_raw( t ) } )
+      def add( page_no, table_schema, tuples )
+        @tuple_accessor.add( tuples.collect { |t| table_schema.tuple_to_raw( t ) }, page_no )
       end
 
-      def add_tuple( table_schema, tuple )
-        @tuple_accessor.add_tuple( table_schema.tuple_to_raw( tuple ) )
+      def add_tuple( page_no, table_schema, tuple )
+        @tuple_accessor.add_tuple( table_schema.tuple_to_raw( tuple ), page_no )
       end
 
       def get_all( page_no, table_schema )

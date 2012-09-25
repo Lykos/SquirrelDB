@@ -35,6 +35,16 @@ module SquirrelDB
       def rewind
         raise unless @open
       end
+      
+      def get_all(state)
+        itopen(state)
+        ts = []
+        while t = next_item
+          ts << t
+        end
+        close
+        ts
+      end
 
       def evaluate( state )
         self.itopen(state)

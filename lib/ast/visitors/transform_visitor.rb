@@ -30,8 +30,8 @@ module SquirrelDB
         expression
       end
       
-      def visit_pre_linked_table( schema, name, table_id )
-        PreLinkedTable.new(schema, name, table_id)
+      def visit_pre_linked_table(schema, name, table_id, read_only)
+        PreLinkedTable.new(schema, name, table_id, read_only)
       end
 
       def visit_from_clause( columns, tables, expression )
@@ -88,6 +88,18 @@ module SquirrelDB
       
       def visit_projector( renamings, inner )
         Projector.new( renamings, inner )
+      end
+      
+      def visit_create_table( name, columns )
+        CreateTable.new( name, columns )
+      end
+      
+      def visit_insert( name, columns, values )
+        Insert.new( name, columns, values )
+      end
+      
+      def visit_tuple( values )
+        Tuple.new( values )
       end
       
     end

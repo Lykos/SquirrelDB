@@ -11,10 +11,13 @@ module SquirrelDB
 
       def initialize( name, page_no, tuple_wrapper, schema )
         super()
+        @name = name
         @page_no = page_no
         @tuple_wrapper = tuple_wrapper
         @schema = schema
       end
+      
+      attr_reader :name
 
       def itopen(state)
         super

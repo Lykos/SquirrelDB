@@ -41,6 +41,8 @@ module SquirrelDB
       FROM = /[Ff][Rr][Oo][Mm]/
       WHERE = /[Ww][Hh][Ee][Rr][Ee]/
       INSERT = /[Ii][Nn][Ss][Ee][Rr][Tt]/
+      INTO = /[Ii][Nn][Tt][Oo]/
+      VALUES = /[Vv][Aa][Ll][Uu][Ee][Ss]/
       UPDATE = /[Uu][Pp][Dd][Aa][Tt][Ee]/
       DELETE = /[Dd][Ee][Ll][Ee][Tt][Ee]/
       CREATE = /[Cc][Rr][Ee][Aa][Tt][Ee]/
@@ -53,7 +55,7 @@ module SquirrelDB
       INTEGER_T = /[Ii][Nn][Tt][Ee][Gg][Ee][Rr]/
       BOOLEAN_T = /[Bb][Oo][Oo][Ll][Ee][Aa][Nn]/
       STRING_T = /[Ss][Tt][Rr][Ii][Nn][Gg]/
-      DOUBLE_T = /[Dd][Oo][Uu][Bb][Ll][Ee]]/
+      DOUBLE_T = /[Dd][Oo][Uu][Bb][Ll][Ee]/
       SHORT_T = /[Ss][Hh][Oo][Rr][Tt]/
       
       TYPE = Regexp.union( INTEGER_T, BOOLEAN_T, STRING_T, DOUBLE_T, SHORT_T )

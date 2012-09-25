@@ -18,9 +18,18 @@ module SquirrelDB
         statement.accept( self )
       end
       
-      def visit_pre_linked_table(schema, name, table_id)
+      def visit_pre_linked_table(schema, name, table_id, read_only)
+        if read_only
+          page_no = @table_manager.get_page_no(table_id)
+          MemoryTableScanner.new(name, page_no, @tuple_wrapper, schema)
+        else
+          super
+        end
+      end
+      
+      def visit_insert(table, columns, values)
         page_no = @table_manager.get_page_no(table_id)
-        MemoryTableScanner.new(name, page_no, @tuple_wrapper, schema)
+        Inserter.new(table.name, page_no, @tuple_wrapper, table.schema, values)
       end
       
     end

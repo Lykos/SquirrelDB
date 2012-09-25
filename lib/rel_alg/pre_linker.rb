@@ -1,7 +1,7 @@
 require 'ast/sql/from_clause'
 require 'ast/common/scoped_variable'
 require 'ast/common/variable'
-require 'ast/common/linked_column'
+require 'ast/common/column'
 require 'ast/common/pre_linked_table'
 require 'ast/common/renaming'
 require 'ast/visitors/transform_visitor'
@@ -24,7 +24,6 @@ module SquirrelDB
       def process( statement )
         @variable_stack = []
         ast = statement.accept( self )
-        p ast
         raise unless @variable_stack.empty?
         ast
       end
@@ -39,12 +38,12 @@ module SquirrelDB
               offset += schema.length
               # TODO Nested scopes, exception if name overwrite in same variable frame
               variable_frame[t.name] = LinkInfo.new(offset, schema)
-              PreLinkedTable.new( schema, t.name, @table_manager.get_variable_id(t) )
+              PreLinkedTable.new( schema, t.name, @table_manager.get_variable_id(t), true )
             elsif t.kind_of?(Renaming) && t.expression.kind_of?(Variable) || t.expression.kind_of?(ScopedVariable)
               schema = @schema_manager.get( t.expression )
               offset += schema.length
               variable_frame[t.name] = LinkInfo.new(offset, schema)
-              PreLinkedTable.new( schema, t.name, @table_manager.get_variable_id(t.expression) )
+              PreLinkedTable.new( schema, t.name, @table_manager.get_variable_id(t.expression), true )
             else
               t
             end
@@ -65,7 +64,7 @@ module SquirrelDB
       
       def visit_scoped_variable(scope, name)
         if scope.kind_of?(LinkInfo)
-          LinkedColumn.new(scope.schema.get_type(name), name, scope.schema.get_index(name))
+          Column.new(name, scope.schema.get_type(name), nil, scope.schema.get_index(name))
         else
           ScopedVariable.new(scope, name)
         end
@@ -75,6 +74,17 @@ module SquirrelDB
         statement = super
         @variable_stack.pop
         statement
+      end
+      
+      def visit_insert(table, columns, values)
+        if table.kind_of?(Variable) || table.kind_of?(ScopedVariable)
+          schema = @schema_manager.get(table)
+        else
+          raise
+        end
+        pre_linked_table = PreLinkedTable.new( schema, table.name, @table_manager.get_variable_id(table), false )
+        cols = columns.collect { |column| schema.get_column(column) }
+        Insert.new(pre_linked_table, cols, values)
       end
       
     end

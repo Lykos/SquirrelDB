@@ -6,13 +6,14 @@ module SquirrelDB
 
     class Column < Element
 
-      def initialize( type, name, index )
-        @type = type
+      def initialize(name, type, default, index)
         @name = name
+        @type = type
+        @default = default
         @index = index
       end
 
-      attr_reader :type, :name, :index
+      attr_reader :name, :type, :default, :index
       
       def evaluate(state)
         state.tuple[@index]

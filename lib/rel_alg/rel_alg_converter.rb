@@ -27,12 +27,9 @@ module SquirrelDB
       
       def visit_from_clause( tables )
         if tables.empty?
-          DualTable.new
+          DummyTable.new
         else
-          until tables.length == 1
-            tables.push( Cartesian.new( *tables.shift(2) ) )
-          end
-          tables[0]
+          tables.reduce { |a, b| Cartesian.new(a, b) }
         end
       end
       
@@ -40,19 +37,14 @@ module SquirrelDB
         expression
       end
 
-      def visit_binary_operation( binary_operation )
-        # TODO The parser should do that
-        left = binary_operation.left.visit( self )
-        right = binary_operation.right.visit( self )
-        if binary_operation.operator == Operator::DOT and right.kind_of?( FunctionApplication )
+      def visit_scoped_variable( scope, variable )
+        if variable.kind_of?( FunctionApplication )
           FunctionApplication.new(
             ScopedVariable.new( left, right.function ),
             right.parameters
           )
-        elsif binary_operation.operator == Operator::DOT
-          ScopedVariable.new( left, right )
         else
-          BinaryOperation.new( binary_operation.operator, left, right )
+          super
         end
       end
 

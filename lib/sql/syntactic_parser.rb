@@ -2,9 +2,9 @@ require 'sql/syntax'
 require 'ast/common/all'
 require 'ast/sql/all'
 require 'schema/type'
-reqiore 'schema/column'
 require 'sql/lexical_parser'
 
+# TODO Redo this with Racc
 module SquirrelDB
 
   module SQL
@@ -40,6 +40,51 @@ module SquirrelDB
 
       private
       
+      def parse_insert( start_index )
+        raise unless @tokens[start_index] =~ INSERT
+        raise unless @tokens[start_index + 1] =~ INTO
+        index = start_index + 2
+        name, index = parse_name( index )
+        raise unless @tokens[index] =~ PARENTHESE_OPEN
+        columns = loop.with_index.with_object([]) do |columns| 
+          name, index = parse_name(index)
+          columns << name
+          if @tokens[index] =~ PARENTHESE_CLOSED
+            index += 1
+            break
+          else
+            raise unless @tokens[index] =~ KOMMA
+          end
+          index += 1
+        end        
+        if @tokens[index] =~ VALUES
+          values, index = parse_values
+        elsif @tokens[index] =~ SELECT
+          values, index = parse_select
+        else
+          raise "Expected SELECT or VALUES after INSERT."
+        end
+        [Insert.new(name, columns, values), index]
+      end
+      
+      def parse_values( start_index )
+        raise unless @tokens[start_index] =~ VALUES
+        raise unless @tokens[start_index + 1] =~ PARENTHESE_OPEN
+        index = start_index + 1
+        values = loop.with_index.with_object([]) do |values| 
+          expression, index = parse_expression(index) { |t| t =~ KOMMA || t =~ PARENTHESE_CLOSED }
+          values << expression
+          if @tokens[index] =~ PARENTHESE_CLOSED
+            index += 1
+            break
+          else
+            raise unless @tokens[index] =~ KOMMA
+          end
+          index += 1
+        end
+        [Tuple.new(values), index]
+      end
+      
       def parse_create( start_index )
         if @tokens[start_index + 1] =~ TABLE
           parse_create_table(start_index)
@@ -53,16 +98,29 @@ module SquirrelDB
         index = start_index + 2
         name, index = parse_name(index)
         raise unless @tokens[index == ")"]
-        loop.with_index.with_object([]) do |i, columns|
-          raise unless @tokens[index] =~ IDENTIFIER
-          name = @tokens[index]
-          type, index = parse_type(index + 1)
-          break if @tokens[index] == ")"
-          raise unless @tokens[index] == ","
-          index += 1
-          columns << Column.new(name, i, type)
-        end
+        created_table = CreateTable.new(
+          name,
+          loop.with_index.with_object([]) do |i, columns|
+            raise unless @tokens[index] =~ IDENTIFIER
+            name = @tokens[index]
+            type, index = parse_type(index + 1)
+            if @tokens[index] =~ DEFAULT
+              default, index = parse_default(index)
+            else
+              default = nil
+            end
+            break if @tokens[index] == ")"
+            raise unless @tokens[index] == ","
+            index += 1
+            columns << Column.new(name, type, i, default)
+          end
+        )
         [created_table, index + 1]
+      end
+      
+      def parse_default(start_index)
+        raise unless @tokens[start_index] =~ DEFAULT
+        [parse_constant(@tokens[start_index + 1]), start_index + 2]
       end
       
       def parse_type(start_index)

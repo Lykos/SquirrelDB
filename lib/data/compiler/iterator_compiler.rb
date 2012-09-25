@@ -28,6 +28,11 @@ module SquirrelDB
       def visit_projection( columns, inner )
         Projector.new( columns.collect { |c| ExpressionEvaluator.new(c) }, inner )
       end
+      
+      def visit_tuple( elements )
+        DummyTable.new(Tuple.new(elements))
+      end
+
     end
 
   end
