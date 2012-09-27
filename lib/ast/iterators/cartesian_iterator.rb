@@ -52,10 +52,6 @@ module SquirrelDB
         @left.cost * @right.cost
       end
       
-      def accept(visitor)
-        let_visit( visitor, @left.accept(visitor), @right.accept(visitor) )
-      end
-      
     end
 
   end

@@ -49,10 +49,6 @@ module SquirrelDB
         @index = 0
       end
       
-      def accept(visitor)
-        let_visit( visitor, name, page_no, tuple_wrapper, schema )
-      end
-      
     end
 
   end

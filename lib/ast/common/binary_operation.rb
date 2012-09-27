@@ -25,11 +25,7 @@ module SquirrelDB
       def inspect
         "(" + @left.inspect + " " + @operator.to_s + " " + @right.inspect + ")"
       end
-
-      def accept( visitor )
-        let_visit( visitor, @operator, @left.accept( visitor ), @right.accept( visitor ) )
-      end
-
+      
       def evaluate( state )
         case @operator
         when PLUS then @left.evaluate( state ) + @right.evaluate( state )

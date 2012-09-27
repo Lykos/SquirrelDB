@@ -25,10 +25,6 @@ module SquirrelDB
         super && @function == other.function && @parameters == other.parameters
       end
 
-      def accept( visitor )
-        let_visit( visitor, @function.accept( visitor ), @parameters.collect { |p| p.accept( visitor ) } )
-      end
-
       def evaluate( state )
         state.get_function( @function ).call( *@parameters )
       end

@@ -7,8 +7,8 @@ module SquirrelDB
 
     class Projector < RelAlgIterator
 
-      def initialize( renamings, inner )
-        @renamings = renamings
+      def initialize(column_evaluators, inners)
+        @column_evaluators = column_evaluators
         @inner = inner
       end
 
@@ -18,8 +18,9 @@ module SquirrelDB
         super
         t = @inner.next_item
         return nil unless t
-        @renamings.collect do |r|
-          r.evaluate( TupleState.new( @state, t ) )
+        state = TupleState.new( @state, t )
+        @column_evaluators.collect do |column_evaluator|
+          column_evaluator.evaluate( state )
         end
       end
       
@@ -29,11 +30,7 @@ module SquirrelDB
       end
       
       def cost
-        @cost ||= @inner.cost * @renamings.cost
-      end
-      
-      def accept(visitor)
-        let_visit( visitor, @renamings.collect { |r| r.accept(visitor) }, @inner.accept(visitor) )
+        @cost ||= @inner.cost * @column_evaluators.collect { |column_evaluator| column_evaluator.cost }.reduce(0, :+)
       end
 
     end

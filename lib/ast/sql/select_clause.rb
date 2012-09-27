@@ -24,10 +24,6 @@ module SquirrelDB
         "SelectClause( " + @columns.collect { |c| c.inspect }.join( ", " ) + " )"
       end
 
-      def accept( visitor )
-        let_visit( visitor, @columns.collect { |c| c.accept( visitor ) } )
-      end
-
     end
 
   end

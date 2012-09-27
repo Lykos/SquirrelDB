@@ -14,10 +14,6 @@ module SquirrelDB
 
       attr_reader :expression, :left, :right
 
-      def accept( visitor )
-        let_visit( visitor, @left.accept( visitor ), @right.accept( visitor ), @expression.accept( visitor ) )
-      end
-      
     end
 
   end

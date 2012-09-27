@@ -25,14 +25,8 @@ module SquirrelDB
         super && @scope == other.scope && @variable == other.variable
       end
 
-      def accept( visitor )
-        let_visit( visitor, @scope.accept( visitor ), @variable.accept( visitor ) )
-      end
-
       def evaluate( state )
-        st = state
-        @scope.collect { |s| st = st.get_scope( s ) }
-        st.get_variable( @variable )
+        # TODO
       end
 
     end

@@ -29,10 +29,6 @@ module SquirrelDB
       def cost
         @cost ||= @inner.cost * @expression.cost
       end
-      
-      def accept(visitor)
-        let_visit( visitor, @expression.accept(visitor), @inner.accept(visitor) )
-      end
   
     end
   

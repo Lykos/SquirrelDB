@@ -10,28 +10,28 @@ module SquirrelDB
     
     class TransformVisitor < Visitor
      
-      def visit_select_statement( select_clause, from_clause, where_clause )
+      def visit_select_statement(select_statement)
         SelectStatement.new(
-          select_clause,
-          from_clause,
-          where_clause
+          visit(select_statement.select_clause),
+          visit(select_statement.from_clause),
+          visit(select_statement.where_clause)
         )
       end
 
-      def visit_select_clause( columns )
-        SelectClause.new( columns )
+      def visit_select_clause(select_clause)
+        SelectClause.new(select_clause.columns.collect { |c| visit(c) })
       end
 
-      def visit_from_clause( tables )
-        FromClause.new( tables )
+      def visit_from_clause(from_clause)
+        FromClause.new(from_clause.tables.collect { |t| visit(t) })
       end
       
-      def visit_where_clause( expression )
-        expression
+      def visit_where_clause(where_clause)
+        WhereClause.new(visit(where_clause.expression))
       end
       
-      def visit_pre_linked_table(schema, name, table_id, read_only)
-        PreLinkedTable.new(schema, name, table_id, read_only)
+      def visit_pre_linked_table(table)
+        PreLinkedTable.new(table.schema, table.name, table.table_id, table.read_only)
       end
 
       def visit_from_clause( columns, tables, expression )
@@ -43,63 +43,82 @@ module SquirrelDB
         end
       end
       
-      def visit_wild_card( wild_card )
+      def visit_wild_card(wild_card)
         wild_card
       end
 
-      def visit_renaming( renaming, variable )
-        Renaming.new( rexpression, variable )
+      def visit_renaming(renaming)
+        Renaming.new(visit(renaming.expression), renaming.name)
       end
 
-      def visit_binary_operation( operator, left, right )
-        BinaryOperation.new( operator, left, right )
-      end
-
-      def visit_unary_operation( unary_operation )
-        UnaryOperation.new( unary_operation.operator, unary_operation.visit( self ) )
-      end
-
-      def visit_function_application( function_application )
-        FunctionApplication.new(
-          function_application.function,
-          function_application.parameters.collect { |param| param.visit( self ) }
+      def visit_binary_operation(binary_operation)
+        BinaryOperation.new(
+          binary_operation.operator,
+          visit(binary_operation.left),
+          visit(binary_operation.right)
         )
       end
 
-      def visit_constant( value, type )
-        Constant.new( value, type )
+      def visit_unary_operation( unary_operation )
+        UnaryOperation.new(
+          unary_operation.operator,
+          visit(unary_operation.inner)
+        )
       end
 
-      def visit_scoped_variable( scope, variable )
-        ScopedVariable.new( scope, variable )
+      def visit_function_application(function_application)
+        FunctionApplication.new(
+          visit(function_application.function),
+          function_application.parameters.collect { |parameter| visit( parameter ) }
+        )
       end
 
-      def visit_variable( name )
-        Variable.new( name )
+      def visit_constant(constant)
+        constant
       end
 
-      def visit_renaming( expression, name )
-        Renaming.new( expression, name )
+      def visit_scoped_variable(scoped_variable)
+        ScopedVariable.new(
+          visit(scoped_variable.scope),
+          visit(scoped_variable.variable)
+        )
+      end
+
+      def visit_variable(variable)
+        variable
       end
       
-      def visit_selector( expression, inner )
-        Selector.new( expression, inner )
+      def visit_selector(selector)
+        Selector.new(
+          visit(selector.expression),
+          visit(selector.inner)
+        )
       end
       
-      def visit_projector( renamings, inner )
-        Projector.new( renamings, inner )
+      def visit_projector(projector)
+        Projector.new(
+          visit(projector.renamings),
+          visit(projector.inner)
+        )
       end
       
-      def visit_create_table( name, columns )
-        CreateTable.new( name, columns )
+      def visit_create_table(create_table)
+        CreateTable.new(
+          visit(create_table.variable),
+          columns.collect { |column| visit(column) }
+        )
       end
       
       def visit_insert( name, columns, values )
-        Insert.new( name, columns, values )
+        Insert.new(
+          visit(variable),
+          columns.collect { |column| visit(column) },
+          visit(inner)
+        )
       end
       
-      def visit_tuple( values )
-        Tuple.new( values )
+      def visit_tuple(tuple)
+        tuple
       end
       
     end

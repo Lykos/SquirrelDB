@@ -13,10 +13,6 @@ module SquirrelDB
 
       attr_reader :renamings, :inner
       
-      def accept(visitor)
-        let_visit( visitor, @renamings.map { |r| r.accept( visitor ) }, @inner.accept( visitor ) )
-      end
-
       def ==(other)
         super && @renamings == other.renamings && @inner == other.inner
       end

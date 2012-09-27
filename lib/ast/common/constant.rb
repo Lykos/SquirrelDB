@@ -25,10 +25,6 @@ module SquirrelDB
         super && @type == other.type && @value == other.value
       end
 
-      def accept( visitor )
-        let_visit( visitor, @value, @type )
-      end
-
       def evaluate( state )
         @value
       end

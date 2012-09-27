@@ -27,13 +27,6 @@ module SquirrelDB
         super && @select_clause == other.select_clause && @from_clause == other.from_clause && @where_clause == other.where_clause
       end
 
-      def accept( visitor )
-        from_clause = @from_clause.accept( visitor )
-        select_clause = @select_clause.accept( visitor )
-        where_clause = @where_clause.accept( visitor )
-        let_visit( visitor, select_clause, from_clause, where_clause )
-      end
-
     end
 
   end

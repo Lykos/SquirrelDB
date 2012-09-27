@@ -24,12 +24,6 @@ module SquirrelDB
       def ==(other)
         super && @expression == other.expression && @inner == other.inner
       end
-      
-      def accept( visitor )
-        inner = @inner.accept( visitor )
-        expression = @expression.accept( visitor )
-        let_visit( visitor, expression, inner )
-      end
 
     end
 

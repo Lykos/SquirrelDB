@@ -25,10 +25,6 @@ module SquirrelDB
         super && @operator == other.operator && @inner == other.inner
       end
 
-      def accept( visitor )
-        let_visit( visitor, @operator, @inner.accept( visitor ) )
-      end
-
       def evaluate( state )
         case operator
         when UNARY_PLUS then @inner.evaluate( state )

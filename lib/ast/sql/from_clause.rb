@@ -24,10 +24,6 @@ module SquirrelDB
         super && @tables == other.tables
       end
 
-      def accept( visitor )
-        let_visit( visitor, @tables.collect { |t| t.accept( visitor ) } )
-      end
-
     end
 
   end

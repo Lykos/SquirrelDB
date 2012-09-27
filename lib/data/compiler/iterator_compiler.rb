@@ -25,7 +25,7 @@ module SquirrelDB
         expression
       end
       
-      def visit_projection( columns, inner )
+      def visit_projection(projection)
         Projector.new( columns.collect { |c| ExpressionEvaluator.new(c) }, inner )
       end
       

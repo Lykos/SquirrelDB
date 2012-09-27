@@ -23,10 +23,6 @@ module SquirrelDB
       def ==(other)
         super && @name == other.name
       end
-
-      def visit( visitor )
-        let_visit( visitor, @name )
-      end
       
       def to_s
         @name

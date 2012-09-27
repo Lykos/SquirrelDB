@@ -15,10 +15,6 @@ module SquirrelDB
 
       attr_reader :schema, :name, :table_id, :read_only
       
-      def accept(visitor)
-        let_visit(visitor, schema, name, table_id, read_only)
-      end
-      
     end
 
   end
