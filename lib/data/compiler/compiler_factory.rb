@@ -1,5 +1,4 @@
 require 'data/compiler/iterator_compiler'
-require 'data/compiler/type_checker'
 require 'data/compiler/compiler'
 require 'data/compiler/linker'
 
@@ -9,20 +8,16 @@ module SquirrelDB
     
     class CompilerFactory
       
-      def compiler(tuple_wrapper, table_manager)
-        Compiler.new(type_checker, iterator_compiler, linker(tuple_wrapper, table_manager))
-      end
-      
-      def type_checker
-        TypeChecker.new
+      def compiler(tuple_wrapper, table_manager, schema_manager)
+        @compiler ||= Compiler.new(iterator_compiler, linker(tuple_wrapper, table_manager, schema_manager))
       end
       
       def iterator_compiler
-        IteratorCompiler.new
+        @iterator_compiler ||= IteratorCompiler.new
       end
       
-      def linker(tuple_wrapper, table_manager)
-        Linker.new(tuple_wrapper, table_manager)
+      def linker(tuple_wrapper, table_manager, schema_manager)
+        @linker ||= Linker.new(tuple_wrapper, table_manager, schema_manager)
       end
       
     end

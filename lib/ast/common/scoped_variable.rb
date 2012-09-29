@@ -13,6 +13,10 @@ module SquirrelDB
 
       attr_reader :scope, :variable
 
+      def variable?
+        true
+      end
+      
       def to_s
         @scope.to_s + "." + @variable.to_s
       end
@@ -24,9 +28,9 @@ module SquirrelDB
       def ==(other)
         super && @scope == other.scope && @variable == other.variable
       end
-
-      def evaluate( state )
-        # TODO
+      
+      def hash
+        @hash ||= [super, @scope, @variable].hash
       end
 
     end

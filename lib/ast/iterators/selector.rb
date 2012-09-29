@@ -1,4 +1,5 @@
 require 'ast/iterators/rel_alg_iterator'
+require 'data/evaluation/state'
 
 module SquirrelDB
 
@@ -6,28 +7,53 @@ module SquirrelDB
   
     class Selector < RelAlgIterator
   
-      def initialize( expression, inner )
+      def initialize( expression_evaluator, inner )
         super()
-        @expression = expression
+        @expression_evaluator = expression_evaluator
         @inner = inner
       end
+      
+      attr_reader :expression_evaluator, :inner
+      
+      def_delegators :@inner, :schema
   
-      def_delegators :@inner, :itopen, :close, :rewind, :size
-  
-      def next_item
+      def itopen(state)
         super
-        while (t = @inner.next_item)
-          return t if @expression.evaluate( TupleState.new( @state, t ) )
-        end
-        nil
+        inner.itopen(state)
+      end
+      
+      def close
+        super
+        inner.close
       end
       
       def rewind
-        @inner.rewind
+        super
+        inner.rewind
       end
       
-      def cost
-        @cost ||= @inner.cost * @expression.cost
+      def ==(other)
+        super && @expression_evaluator == other.expression_evaluator && @inner == other.inner 
+      end
+      
+      def hash
+        @hash ||= [super, @expression_evaluator, @inner].hash
+      end
+    
+      def inspect
+        "Selector_{#{@expression_evaluator.inspect}}(#{@inner.inspect})"
+      end
+      
+      def to_s
+        "Selector_{#{@expression_evaluator.to_s}}(#{@inner.to_s})"
+      end
+      
+      def next_item
+        super
+        while (t = @inner.next_item)
+          return t if @expression_evaluator.evaluate(Data::State.new(t, @state))
+        end
+        nil
       end
   
     end

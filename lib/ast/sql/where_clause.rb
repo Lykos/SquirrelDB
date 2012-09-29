@@ -23,6 +23,10 @@ module SquirrelDB
       def ==(other)
         super && @expression == other.expression
       end
+      
+      def hash
+        @hash ||= [super, @expression].hash
+      end
 
     end
 

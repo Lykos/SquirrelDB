@@ -5,22 +5,10 @@ module SquirrelDB
   
   module Storage
 
+    # Represents a page of the database file
     class Page
 
-      def initialize( page_no, content )
-        if content.bytesize != PAGE_SIZE
-          raise FormatException.new(
-            "TuplePage #{page_no} gets a content with length #{content.bytesize} instead of #{PAGE_SIZE}."
-          )
-        elsif TYPE_IDS[type] != self.class.to_s.split("::")[-1].intern
-          raise FormatException.new(
-            "Page #{page_no} is not a #{self.class}, its type is #{TYPE_IDS[type]} instead of #{TYPE_IDS[self.class.to_s.intern]}."
-          )
-        end
-        @content = content
-        @page_no = page_no
-      end
-
+      # Creates a new empty page
       def self.new_empty
         new_page = self.allocate
         new_page.init_empty
@@ -32,18 +20,49 @@ module SquirrelDB
       include RawUtil
       include Constants
 
+      # Read the page type from the content, if necessary, and return it.
       def type
-        @type ||= extract_int( content[0...TYPE_SIZE] )
-      end
-
-      private
-
-      def init_empty
-        @content = "\x00" * PAGE_SIZE
-        @type = TYPE_IDS[type]
-        @content[0...TYPE_SIZE] = encode_int( type, TYPE_SIZE )
+        @type ||= IDS_TYPES[type_id]
       end
       
+      # Read the page type id from the content, if necessary, and return it.
+      def type_id
+        @type_id ||= extract_int(@content[0...TYPE_SIZE])
+      end
+      
+      # Initializes a new empty page.
+      def init_empty
+        @content = "\x00" * PAGE_SIZE
+        @type = self.class.to_s.split("::")[-1].intern
+        @type_id = TYPES_IDS[@type]
+        raise StorageException.new(
+          "Page type #{self.class} has no type id."
+        ) unless @type_id
+        @content[0...TYPE_SIZE] = encode_int(@type_id, TYPE_SIZE)
+      end
+      
+      # Returns the length of the header of this page type
+      def header_size
+        TYPE_SIZE
+      end
+      
+      protected
+
+      def initialize(page_no, content)
+        if content.bytesize != PAGE_SIZE
+          raise FormatException.new(
+            "Page #{page_no} gets a content with length #{content.bytesize} instead of #{PAGE_SIZE}."
+          )
+        end
+        @page_no = page_no
+        @content = content
+        if type != self.class.to_s.split("::")[-1].intern
+          raise FormatException.new(
+            "Page #{page_no} is not a #{self.class.to_s.split("::")[-1]}, its type_id is #{type_id}, so it type is #{type.to_s}."
+          )
+        end
+      end
+
     end
 
   end

@@ -12,11 +12,12 @@ module SquirrelDB
 
       # _K stands for keyword and is necessary because else it would be a Ruby keyword.
 
+      DOT = /\./
       BINARY_OPERATOR = Regexp.union(
-        Operator::ALL_OPERATORS.select { |op| op.is_binary? }.collect { |op| op.to_regexp }
+        Operator::ALL_OPERATORS.select { |op| op.binary? }.collect { |op| op.to_regexp }
       )
       UNARY_OPERATOR = Regexp.union(
-        Operator::ALL_OPERATORS.select { |op| op.is_unary? }.collect { |op| op.to_regexp }
+        Operator::ALL_OPERATORS.select { |op| op.unary? }.collect { |op| op.to_regexp }
       )
       PARENTHESE_OPEN = /\(/
       PARENTHESE_CLOSED = /\)/
@@ -24,7 +25,7 @@ module SquirrelDB
     
       INTEGER = /\d+/
       DOUBLE = /\d+\.\d+/
-      STRING = /\'.*?\'/
+      STRING = Regexp.union(/\'.*?\'/, /\".*?\"/) # TODO Escaping
 
       TRUE_K = /[Tt][Rr][Uu][Ee]/
       FALSE_K = /[Ff][Aa][Ll][Ss][Ee]/
@@ -64,7 +65,7 @@ module SquirrelDB
       KOMMA = /,/
 
       TOKEN = Regexp.union( BINARY_OPERATOR, UNARY_OPERATOR, PARENTHESE,
-        CONSTANT, IDENTIFIER, KOMMA, ALL_SYMBOL )
+        CONSTANT, IDENTIFIER, KOMMA, ALL_SYMBOL, DOT )
 
       EXPRESSION_CONTINUE = Regexp.union( PARENTHESE_OPEN, IDENTIFIER, CONSTANT )
 

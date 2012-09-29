@@ -15,6 +15,10 @@ module SquirrelDB
       def ==(other)
         super && @columns == other.columns
       end
+      
+      def hash
+        @hash ||= [super, @columns].hash
+      end
 
       def to_s
         "select " + @columns.collect { |c| c.to_s }.join( ", " )

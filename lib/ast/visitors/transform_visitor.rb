@@ -8,13 +8,22 @@ module SquirrelDB
 
   module AST
     
-    class TransformVisitor < Visitor
+    module TransformVisitor
+      
+      include Visitor
      
       def visit_select_statement(select_statement)
         SelectStatement.new(
           visit(select_statement.select_clause),
           visit(select_statement.from_clause),
           visit(select_statement.where_clause)
+        )
+      end
+      
+      def visit_dummy_table(dummy_table)
+        DummyTable.new(
+          dummy_table.schema,
+          dummy_table.tuple
         )
       end
 
@@ -31,7 +40,7 @@ module SquirrelDB
       end
       
       def visit_pre_linked_table(table)
-        PreLinkedTable.new(table.schema, table.name, table.table_id, table.read_only)
+        PreLinkedTable.new(table.schema, table.name, table.table_id)
       end
 
       def visit_from_clause( columns, tables, expression )
@@ -90,14 +99,14 @@ module SquirrelDB
       
       def visit_selector(selector)
         Selector.new(
-          visit(selector.expression),
+          visit(selector.expression_evaluator),
           visit(selector.inner)
         )
       end
       
       def visit_projector(projector)
         Projector.new(
-          visit(projector.renamings),
+          projector.column_evaluators.map { |ev| visit(ev) },
           visit(projector.inner)
         )
       end
@@ -105,20 +114,36 @@ module SquirrelDB
       def visit_create_table(create_table)
         CreateTable.new(
           visit(create_table.variable),
-          columns.collect { |column| visit(column) }
+          create_table.columns.collect { |column| visit(column) }
         )
       end
       
-      def visit_insert( name, columns, values )
+      def visit_insert(insert)
         Insert.new(
-          visit(variable),
-          columns.collect { |column| visit(column) },
-          visit(inner)
+          visit(insert.variable),
+          insert.columns.collect { |column| visit(column) },
+          visit(insert.inner)
         )
       end
       
-      def visit_tuple(tuple)
-        tuple
+      def visit_expression_evaluator(expression_evaluator)
+        ExpressionEvaluator.new(visit(expression_evaluator.expression))
+      end
+      
+      def visit_column(column)
+        Column.new(
+          column.name,
+          column.type,
+          column.index,
+          visit(column.default)
+        )
+      end
+      
+      def visit_selection(selection)
+        Selection.new(
+          visit(selection.expression),
+          visit(selection.inner)
+        )
       end
       
     end

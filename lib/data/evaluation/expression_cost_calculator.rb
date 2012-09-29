@@ -5,13 +5,14 @@ module SquirrelDB
 
   module Data
   
-    class ExpressionCostCalculator < AST::Visitor
+    class ExpressionCostCalculator
 
       def initialize( expression )
         @expression = expression
       end
 
       include AST
+      include Visitor
 
       # Evaluate this expression in the given state
       #

@@ -5,47 +5,50 @@ module SquirrelDB
 
   module RelAlg
 
-    class RelAlgConverter < AST::TransformVisitor
+    class RelAlgConverter
+      
+      include AST
+      include TransformVisitor
 
-      def process( statement )
-        statement.accept( self )
+      def process(statement)
+        visit(statement)
       end
 
-      def visit_select_statement( columns, tables, expression )
-        Projection.new(
-          columns,
-          Selection.new(
-            expression,
-            tables
-          )
+      def visit_select_statement(select_statement)
+        selection = Selection.new(
+          visit(select_statement.where_clause),
+          visit(select_statement.from_clause)
         )
-      end
-      
-      def visit_select_clause( expression )
-        expression
-      end
-      
-      def visit_from_clause( tables )
-        if tables.empty?
-          DummyTable.new
+        select_columns = visit(select_statement.select_clause)
+        # TODO General wild card handling
+        if select_columns.length == 1 && select_columns[0].kind_of?(WildCard)
+          selection
         else
-          tables.reduce { |a, b| Cartesian.new(a, b) }
-        end
-      end
-      
-      def visit_where_clause( expression )
-        expression
-      end
-
-      def visit_scoped_variable( scope, variable )
-        if variable.kind_of?( FunctionApplication )
-          FunctionApplication.new(
-            ScopedVariable.new( left, right.function ),
-            right.parameters
+          Projection.new(
+            select_columns,
+            selection
           )
-        else
-          super
         end
+      end
+      
+      def visit_select_clause(select_clause)
+        select_clause.columns.collect { |column| visit(column) } 
+      end
+      
+      def visit_from_clause(from_clause)
+        if from_clause.tables.empty?
+          DummyTable.new(Schema::TableSchema.new([Column.new("x", Schema::Type::SHORT, 0)]), Tuple.new([0])) # TODO Refactor dummytable
+        else
+          from_clause.tables.reduce { |a, b| Cartesian.new(a, b) }
+        end
+      end
+      
+      def visit_where_clause(where_clause)
+        where_clause.expression
+      end
+      
+      def visit_tuple(tuple)
+        DummyTable.new(tuple.dup)
       end
 
     end

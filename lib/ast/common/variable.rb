@@ -19,6 +19,10 @@ module SquirrelDB
       def inspect
         @name
       end
+      
+      def variable?
+        true
+      end
 
       def ==(other)
         super && @name == other.name
@@ -32,8 +36,8 @@ module SquirrelDB
         "Variable(" + @name + ")"
       end
       
-      def accept( visitor )
-        let_visit( visitor, @name )
+      def hash
+        @hash ||= [super, @name].hash
       end
 
     end

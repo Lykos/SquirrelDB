@@ -17,6 +17,18 @@ module SquirrelDB
       def ==(other)
         super && @operator == other.operator && @left == other.left && @right == other.right
       end
+      
+      def hash
+        @hash ||= [@operator, @left, @right].hash
+      end
+      
+      def type
+        if @left.type == @right.type
+          @left.type
+        else
+          raise
+        end
+      end
 
       def to_s
         "(" + @left.to_s + " " + @operator.to_s + " " + @right.to_s + ")"

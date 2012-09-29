@@ -10,6 +10,8 @@ module SquirrelDB
       def initialize
         @open = false
       end
+      
+      attr_reader :open
 
       extend Forwardable
 
@@ -17,14 +19,14 @@ module SquirrelDB
         @open
       end
 
-      def itopen( state )
+      def itopen(state)
         raise if @open
         @state = state
         @open = true
       end
 
       def next_item
-        raise unless @open
+        raise "`next_item' called for #{inspect}, which is not open." unless @open
       end
 
       def close
@@ -46,10 +48,10 @@ module SquirrelDB
         ts
       end
 
-      def evaluate( state )
+      def evaluate(state)
         self.itopen(state)
         res = next_item
-        raise unless res
+        raise "No result for #{self}." unless res
         raise if next_item
         close
         res

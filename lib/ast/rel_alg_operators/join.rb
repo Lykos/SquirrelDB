@@ -13,6 +13,22 @@ module SquirrelDB
       end
 
       attr_reader :expression, :left, :right
+ 
+      def ==(other)
+        (other.class == Join || other.class == Cartesian) && @expression == other.expressoin && @left == other.left && @right == other.right
+      end
+      
+      def inspect
+        "Join_{#{@expression.to_s}}(#{@left.inspect}, #{@right.inspect})"
+      end
+      
+      def to_s
+        "Join_{#{@expression.to_s}}(#{@left.to_s}, #{@right.to_s})"
+      end
+      
+      def hash
+        @hash ||= [@expression, @left, @right].hash
+      end
 
     end
 

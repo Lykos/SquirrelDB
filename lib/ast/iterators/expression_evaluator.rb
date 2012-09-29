@@ -1,43 +1,72 @@
 require 'ast/common/operator'
 require 'ast/visitors/visitor'
+require 'ast/common/element'
 require 'data/evaluation/expression_cost_calculator'
 require 'forwardable'
 
 module SquirrelDB
 
-  module Data
+  module AST
   
-    class ExpressionEvaluator < AST::Visitor
+    class ExpressionEvaluator < Element
 
-      def initialize( expression )
+      def initialize(expression)
         @expression = expression
       end
 
       extend Forwardable
       include AST
+      include Visitor
       
-      def_delegators :@expression, :accept
+      attr_reader :expression
+            
+      def_delegators :@expression, :type
+      
+      def ==(other)
+        self.class == other.class && @expression == other.expression
+      end
+      
+      def eql?(other)
+        self == other
+      end
+
+      def to_s
+        "ExpressionEvaluator(" + @expression.to_s + ")"
+      end
+      
+      def inspect
+        "ExpressionEvaluator(" + @expression.inspect + ")"
+      end
+      
+      def hash
+        [self.class, @expression].hash
+      end
       
       # Evaluate this expression in the given state
       #
-      def evaluate( state )
+      def evaluate(state)
         @state = state
-        @expression.visit( self )
+        visit(expression, state)
       end
       
-      def cost
-        @cost ||= ExpressionCostCalculator.new(@expression).cost
+      def visit_constant(constant, state)
+        constant.value
       end
 
-      def visit_constant( value, type )
-        value
+      def visit_scoped_variable(scoped_variable, state)
+        # TODO
+        raise "Unknown variable #{scoped_variable}"
       end
 
-      def visit_variable( name )
-        @state[name]
+      def visit_variable(variable, state)
+        # TODO
+        raise "Unknown variable #{variable}"
       end
 
-      def visit_binary_operation( operator, left, right )
+      def visit_binary_operation(binary_operation, state)
+        operator = binary_operation.operator
+        left = visit(binary_operation.left, state)
+        right = visit(binary_operation.right, state)
         case operator
         when Operator::PLUS then left + right
         when Operator::MINUS then left - right
@@ -62,7 +91,9 @@ module SquirrelDB
         end
       end
 
-      def visit_unary_operation( operator, inner )
+      def visit_unary_operation(unary_operation, state)
+        operator = unary_operation.operator
+        visit(unary_operation.inner)
         case operator
         when Operator::UNARY_PLUS then inner
         when Operator::UNARY_MINUS then -inner
@@ -70,6 +101,10 @@ module SquirrelDB
         else
           raise
         end
+      end
+      
+      def visit_column(column, state)
+        @state[column.index]
       end
 
     end

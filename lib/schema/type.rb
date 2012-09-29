@@ -3,6 +3,8 @@ module SquirrelDB
   module Schema
 
     class Type
+      
+      # TODO Make the ids automatically and make it easy to iterate etc, make new private
 
       def initialize( name, type_id )
         @name = name
@@ -28,7 +30,15 @@ module SquirrelDB
       end
 
       def ==(other)
-        @name == other.name
+        self.class == other.class && @name == other.name && @type_id == other.type_id 
+      end
+      
+      def eql?(other)
+        self == other
+      end
+      
+      def hash
+        @hash ||= [self.class.hash, name, type_id].hash
       end
 
       def to_s
@@ -39,11 +49,11 @@ module SquirrelDB
         @name
       end
 
-      def converts_to?( other_type )
+      def converts_to?(other_type)
         self == other_type || conversions.any? { |c| c.to_type == other_type }
       end
 
-      def convert_to( other_type, value )
+      def convert_to(other_type, value)
         return value if self == other_type
         conversion = conversions.find { |c| c.tol_type == other_type }
         raise unless conversion

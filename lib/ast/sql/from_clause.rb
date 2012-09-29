@@ -23,6 +23,10 @@ module SquirrelDB
       def ==(other)
         super && @tables == other.tables
       end
+      
+      def hash
+        @hash ||= [super, @tables].hash
+      end
 
     end
 

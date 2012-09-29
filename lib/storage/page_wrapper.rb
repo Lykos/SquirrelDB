@@ -1,5 +1,6 @@
 require 'storage/constants'
 require 'storage/raw_util'
+require 'storage/page/all'
 
 module SquirrelDB
   
@@ -15,27 +16,23 @@ module SquirrelDB
 
       include RawUtil
 
-      def get( page_no )
+      def get(page_no)
         content = @page_accessor.get( page_no )
-        type_id = extract_int( content[0...TYPE_SIZE] )
-        raise StorageException, "Invalid page type id #{type_id}." unless TYPE_IDS.has_key?(type_id)
-        type = Storage.const_get( TYPE_IDS[type_id] )
-        type.new( page_no, @page_accessor.get( page_no ) )
+        type_id = extract_int(content[0...TYPE_SIZE])
+        raise StorageException, "Invalid page type id #{type_id}." unless IDS_TYPES.has_key?(type_id)
+        page_class = Storage.const_get(IDS_TYPES[type_id])
+        page_class.new(page_no, @page_accessor.get(page_no))
       end
 
-      def set( page )
-        @page_accessor.set( page.page_no, page.content )
+      def set(page)
+        @page_accessor.set(page.page_no, page.content)
       end
 
-      def add_tuple_page( type_id )
-        type = Storage.const_get( TYPE_IDS[type_id] )
-        new_page = type.new_empty
-        page_no = @page_accessor.add( new_page )
-        type.new( page_no, new_page.content )
-      end
-
-      def close
-        @page_accessor.close
+      def add(type)
+        page_class = Storage.const_get(type)
+        new_page = page_class.new_empty
+        page_no = @page_accessor.add(new_page.content)
+        page_class.new(page_no, new_page.content)
       end
       
     end

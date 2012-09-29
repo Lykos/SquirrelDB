@@ -13,6 +13,10 @@ module SquirrelDB
 
       attr_reader :operator, :inner
 
+      def type
+        @inner.type
+      end
+      
       def to_s
         "(" + @operator.to_s + @inner.to_s + ")"
       end
@@ -23,6 +27,10 @@ module SquirrelDB
 
       def ==(other)
         super && @operator == other.operator && @inner == other.inner
+      end
+      
+      def hash
+        @hash ||= [super, @operator, @inner].hash
       end
 
       def evaluate( state )

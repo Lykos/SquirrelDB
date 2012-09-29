@@ -2,18 +2,10 @@ module SquirrelDB
 
   module AST
     
-    class Visitor
+    module Visitor
       
       def visit(object, *args)
-        send(("visit_" + underscore(object.class.to_s)).intern, *args)
-      end
-      
-      def method_missing(name, *args)
-        if name.to_s =~ /^visit_/
-          raise RuntimeError, "Unknown visitor operation #{name}."
-        else
-          super
-        end
+        send(("visit_" + underscore(object.class.to_s)).intern, object, *args)
       end
       
       private

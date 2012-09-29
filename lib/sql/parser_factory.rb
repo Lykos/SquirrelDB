@@ -14,15 +14,15 @@ module SquirrelDB
       end
 
       def pre_parser
-        PreParser.new
+        @pre_parser ||= PreParser.new
       end
 
       def lexical_parser
-        LexicalParser.new
+        @lexical_parser ||= LexicalParser.new
       end
 
       def syntactic_parser
-        SyntacticParser.new
+        @syntactic_parser ||= SyntacticParser.new
       end
       
     end

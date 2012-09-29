@@ -12,7 +12,7 @@ module SquirrelDB
 
       include Constants
 
-      def get( tids )
+      def get(tids)
         tids.sort!
         tuple_nos = []
         results = []
@@ -30,15 +30,15 @@ module SquirrelDB
         results
       end
 
-      def get_all( page_no )
+      def get_all(page_no)
         # TODO May not terminate
         results = []
         moved_tids = []
-        new_results, new_tids, has_next_page, page_no = get_page( page_no, :all )
+        new_results, new_tids, has_next_page, page_no = get_page(page_no, :all)
         moved_tids += new_tids
         results += new_results
         while has_next_page
-          new_results, new_tids, has_next_page, page_no = get_page( page_no, :all )
+          new_results, new_tids, has_next_page, page_no = get_page(page_no, :all)
           moved_tids += new_tids
         end
         results += get( moved_tids ) unless moved_tids.empty?
@@ -74,7 +74,7 @@ module SquirrelDB
       end
 
       def new_page
-        @page_wrapper.add( TYPE_IDS.key( :VarTuplePage ) ).page_no
+        @page_wrapper.add(:VarTuplePage).page_no
       end
 
       def remove_tuple( tid )
@@ -102,24 +102,20 @@ module SquirrelDB
       def add_tuple( value, page_no )
         tuple_no = nil
         length = value.bytesize
-        page = free_page( length, page_no )
-        page.add( value )
+        page = next_free_page(length, page_no)
+        page.add_tuple(value)
         @page_wrapper.set( page )
-        return TID.new( page.page_no, tuple_no )
+        return TID.new(page.page_no, tuple_no)
       end
 
-      def add_tuples( values, page_no )
+      def add(values, page_no)
         # TODO naiv! (although a good solution is NP complete)
         values.collect { |v| add_tuple( v, page_no ) }
       end
 
-      def close
-        @page_wrapper.close
-      end
-
       private
 
-      def get_page( page_no, tuple_nos )
+      def get_page(page_no, tuple_nos)
         results = []
         tids = []
         page = @page_wrapper.get( page_no )
@@ -127,13 +123,16 @@ module SquirrelDB
           tuple_nos = (0...page.no_tuples).to_a
         end
         tuple_nos.each do |tuple_no|
-          if page.moved?( tuple_no )
-            tids.push( page.get_tid( tuple_no ) )
+          if page.moved?(tuple_no)
+            tids << page.get_tid(tuple_no)
           else
-            results.push( page.get_tuple( tuple_no ) )
+            tuple = page.get_tuple(tuple_no)
+            if !tuple.empty?
+              results << tuple
+            end
           end
         end
-        [results, tids, page.has_next_page?, page.next_page]
+        [results, tids, page.has_next_page?, page.has_next_page? ? page.next_page : nil]
       end
 
       def set_page( page_no, tuple_nos, values )
@@ -156,15 +155,15 @@ module SquirrelDB
         @page_wrapper.set( page )
       end
 
-      def free_page( length, page_no )
-        # TODO naiv! May not terminate.
+      def next_free_page( length, page_no )
+        # TODO naiv! May not terminate in case of inconsistent data.
         loop do
           page = @page_wrapper.get( page_no )
           return page if page.has_space?( length )
           unless page_no.has_next_page?
-            new_page = @page_wrapper.add( page.type )
+            new_page = @page_wrapper.add(page.type)
             page.next_page = new_page.page_no
-            @page_wrapper.set( page )
+            @page_wrapper.set(page)
             return new_page
           end
           page_no = page.next_page

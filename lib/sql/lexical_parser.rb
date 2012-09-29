@@ -8,8 +8,8 @@ module SquirrelDB
 
       include Syntax
 
-      def process( string )
-        string.scan( TOKEN )
+      def process(string)
+        string.scan(TOKEN)
       end
 
     end

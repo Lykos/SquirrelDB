@@ -11,24 +11,52 @@ module SquirrelDB
         @left = left
         @right = right
       end
+      
+      attr_reader :left, :right
+      
+      def ==(other)
+        super && @left == other.left && @right == other.right
+      end
+      
+      def schema
+        @schema ||= @left.schema + @right.schema
+      end
+      
+      def inspect
+        "CartesianIterator(#{@left.inspect}, #{@right.inspect})"
+      end
+      
+      def to_s
+        "CartesianIterator(#{@left.to_s}, #{@right.to_s})"
+      end
+      
+      def hash
+        @hash ||= [super, @left, @right].hash
+      end
 
       def itopen( state )
         super
         @left.itopen( state )
         @right.itopen( state )
         @left_item = @left.next_item
+        @right_empty = false
       end
 
       def next_item
         super
-        return nil unless @left_item
-        t = @right.next_item
-        unless t
+        return nil if @left_item.nil? || @right_empty
+        right_item = @right.next_item
+        unless right_item
           @left_item = @left.next_item
+          return nil if @left_item.nil?
           @right.rewind
-          t = @right.next_item
+          right_item = @right.next_item
+          if right_item.nil?
+            # If this is nil, then the right iterator is empty and everything will be nil
+            @right_empty = true
+            return nil
+          end
         end
-        return nil unless @left_item
         @left_item + t
       end
 
@@ -42,14 +70,7 @@ module SquirrelDB
         super
         @left.rewind
         @right.rewind
-      end
-
-      def size
-        @left.size * @right.size
-      end
-
-      def cost
-        @left.cost * @right.cost
+        @left_item = @left.next_item
       end
       
     end

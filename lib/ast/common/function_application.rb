@@ -24,6 +24,10 @@ module SquirrelDB
       def ==(other)
         super && @function == other.function && @parameters == other.parameters
       end
+      
+      def hash
+        @hash ||= [super, @function, @parameters].hash
+      end
 
       def evaluate( state )
         state.get_function( @function ).call( *@parameters )

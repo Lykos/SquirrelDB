@@ -26,6 +26,10 @@ module SquirrelDB
       def ==(other)
         super && @select_clause == other.select_clause && @from_clause == other.from_clause && @where_clause == other.where_clause
       end
+      
+      def hash
+        @hash ||= [super, @other].hash
+      end
 
     end
 

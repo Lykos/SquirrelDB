@@ -14,15 +14,19 @@ module SquirrelDB
       attr_reader :expression, :inner
 
       def to_s
-        "Selection_{ " + @expression.to_s + " }( " + @inner.to_s + " )"
+        "Selection_{#{@expression.to_s}}( #{@inner.to_s} )"
       end
 
       def inspect
-        "Selection_{ " + @expression.to_s + " }( " + @inner.to_s + " )"
+        "Selection_{#{@expression.inspect}}( #{@inner.inspect} )"
       end
 
       def ==(other)
         super && @expression == other.expression && @inner == other.inner
+      end
+      
+      def hash
+        @hash ||= [super, @expression, @inner]
       end
 
     end

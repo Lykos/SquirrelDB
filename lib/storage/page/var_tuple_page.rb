@@ -2,13 +2,13 @@ require 'storage/tid'
 require 'storage/exceptions/format_exception'
 require 'storage/exceptions/address_exception'
 require 'storage/exceptions/space_exception'
-require 'storage/varitem_page'
+require 'storage/page/var_item_page'
 
 module SquirrelDB
 
   module Storage
 
-    class VarTuplePage < VaritemPage
+    class VarTuplePage < VarItemPage
 
       def initialize( page_no, content )
         super
@@ -17,46 +17,46 @@ module SquirrelDB
 
       attr_reader :page_no, :content
 
-      def moved?( tuple_no )
-        @moved[tuple_no] ||= extract_int( @content[header_start( tuple_no + 1 ) - OFFSET_SIZE - 1] ) >> 7 == 1
+      def moved?(tuple_no)
+        @moved[tuple_no] ||= extract_int( @content[header_start( tuple_no + 1 ) - ITEM_OFFSET_SIZE - 1] ) & ITEM_MOVED_MASK != 0
       end
 
-      def get_tid( tuple_no )
-        check_address( tuple_no )
-        raise AddressException.new( "This tuple is not moved and has no tid." ) unless moved?( tuple_no )
+      def get_tid(tuple_no)
+        check_address(tuple_no)
+        unless moved?( tuple_no )
+          raise StorageException, "This tuple is not moved and contains no tid."
+        end  
         @tids[tuple_no] ||= internal_get_tid( tuple_no )
       end
 
-      def set_tid( tuple_no, new_tid )
+      def set_tid(tuple_no, new_tid)
         check_address( tuple_no )
         if new_tid.kind_of?(TID)
           new_tid = new_tid.to_raw
         end
         if new_tid.bytesize != TID_SIZE
-          raise FormatException.new(
-            "The new tid doesn't have the correct length."
-          )
+          raise StorageExceptionn, "The new tid doesn't have the correct length."
         end
         set_moved( tuple_no, true )
         set_tuple( tuple_no, new_tid )
       end
 
-      def get_tuple( tuple_no )
-        check_address( tuple_no )
-        @content[get_offset( tuple_no )...get_offset( tuple_no ) + get_length( tuple_no )]
+      def get_tuple(tuple_no)
+        check_address(tuple_no)
+        @content[get_offset(tuple_no)...get_offset(tuple_no) + get_length(tuple_no)]
       end
 
       # Returns true if a new tuple with the given length fits into this page
       #
-      def has_space?( new_length )
+      def has_space?(new_length)
         new_length <= free_space + ITEM_HEADER_SIZE
       end
 
       # Returns true if the given tuple can be resized to the given size
       #
-      def can_resize?( tuple_no, new_length )
-        check_address( tuple_no )
-        new_length <= free_space + get_length( tuple_no )
+      def can_resize?(tuple_no, new_length)
+        check_address(tuple_no)
+        new_length <= free_space + get_length(tuple_no)
       end
 
       def set_tuple( tuple_no, new_content )
@@ -65,23 +65,24 @@ module SquirrelDB
         internal_set_tuple( tuple_no, new_content )
       end
 
-      def add_tuple( content )
-        # TODO: Removed tuples if possible
+      # Add the +String+ +content+ as a tuple. If not enough space is available, a +StorageException+ is thrown.
+      def add_tuple(content)
+        # TODO Reuse removed tuples if possible
         length = content.bytesize
-        unless has_space?( length )
-          raise SpaceException.new( "Not enough space in page #{page_no} for this new tuple." )
+        unless has_space?(length)
+          raise StorageException, "Not enough space in page #{page_no} for this new tuple."
         end
         tuple_no = no_tuples
         self.no_tuples = no_tuples + 1
-        offset = header_start( no_tuples )
+        offset = header_start(no_tuples)
         tuple_no.times do |t|
-          set_offset( t, get_offset( t ) + ITEM_HEADER_SIZE )
+          set_offset(t, get_offset(t) + ITEM_HEADER_SIZE)
           offset = get_offset( t ) + get_length( t )
         end
         @content[header_start( tuple_no + 1 )...offset] = @content[header_start( tuple_no )...offset - ITEM_HEADER_SIZE]
-        set_length( tuple_no, length )
-        set_moved( tuple_no, false )
-        set_offset( tuple_no, offset )
+        set_length(tuple_no, length)
+        set_moved(tuple_no, false)
+        set_offset(tuple_no, offset)
         @content[offset...offset + length] = content
         @free_space = free_space - length + ITEM_HEADER_SIZE
         return tuple_no
@@ -104,9 +105,9 @@ module SquirrelDB
       end
 
       def set_moved( tuple_no, bool=true )
-        moved_length = get_length( tuple_no ) + ((bool ? 1 : 0) << ITEM_HEADER_SIZE - OFFSET_SIZE)
-        moved_length_raw = encode_int( moved_length, ITEM_HEADER_SIZE - OFFSET_SIZE )
-        @content[header_start( tuple_no )...header_start( tuple_no + 1 ) - OFFSET_SIZE] = moved_length_raw
+        moved_length = get_length( tuple_no ) + ((bool ? 1 : 0) << ITEM_HEADER_SIZE - ITEM_OFFSET_SIZE)
+        moved_length_raw = encode_int( moved_length, ITEM_HEADER_SIZE - ITEM_OFFSET_SIZE )
+        @content[header_start( tuple_no )...header_start( tuple_no + 1 ) - ITEM_OFFSET_SIZE] = moved_length_raw
         @moved[tuple_no] = bool
       end
 
@@ -124,21 +125,21 @@ module SquirrelDB
         end
       end
 
-      def internal_set_tuple( tuple_no, new_content )
-        old_tuple = get_tuple( tuple_no )
-        old_length = get_length( tuple_no )
+      def internal_set_tuple(tuple_no, new_content)
+        old_tuple = get_tuple(tuple_no)
+        old_length = get_length(tuple_no)
         new_length = new_content.length
         if new_length == old_length
           return if new_content == old_tuple
           @content[get_offset( tuple_no )...get_offset( tuple_no ) + old_length] = new_content
         elsif new_length > free_space + old_length
-          raise SpaceException.new( "Not enough space in this page for new tuple #{tuple_no}." )
+          raise StorageException, "Not enough space in this page for new tuple #{tuple_no}."
         else
           @free_space = free_space + old_length - new_length
           move_length = 0
           ((tuple_no + 1)...no_tuples).each do |t|
-            set_offset( t, get_offset( t ) - old_length + new_length )
-            move_length += get_length( t )
+            set_offset(t, get_offset(t) - old_length + new_length)
+            move_length += get_length(t)
           end
           offset = get_offset( tuple_no )
           old_after = offset + old_length

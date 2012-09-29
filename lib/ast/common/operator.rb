@@ -5,19 +5,22 @@ module SquirrelDB
   module AST
 
     class Operator < Element
+      
+      CARDINALITIES = [:binary, :unary]
 
       def initialize( symbol, cardinality,
           precedence=10, right_associative=false, alternative_symbols=[] )
+        unless CARDINALITIES.include?(cardinality)
+          raise "Invalid cardinality #{cardinality}. Only #{CARDINALITIES.join(", ")} are supported."
+        end
         @symbol = symbol
-        @cardinality = cardinality # binary or unary
+        @cardinality = cardinality
         @precedence = precedence
         @right_associative = right_associative
         @alternative_symbols = alternative_symbols
       end
 
       attr_reader :symbol, :cardinality, :precedence
-
-      include Comparable
 
       def right_associative?
         @right_associative
@@ -35,19 +38,22 @@ module SquirrelDB
         @regexp ||= Regexp.union( @symbol, *@alternative_symbols )
       end
 
-      def is_unary?
+      def unary?
         @cardinality == :unary
       end
 
-      def is_binary?
+      def binary?
         @cardinality == :binary
+      end
+      
+      def hash
+        @hash ||= [super, @symbol, @cardinality].hash
       end
 
       def ==(other)
         super && @symbol == other.symbol && @cardinality == other.cardinality
       end
 
-      DOT = Operator.new( '.', :binary, 200 )
       PLUS = Operator.new( '+', :binary, 90 )
       MINUS = Operator.new( '-', :binary, 90 )
       TIMES = Operator.new( '*', :binary, 100 )
@@ -69,7 +75,9 @@ module SquirrelDB
       UNARY_PLUS = Operator.new( '+', :unary, 110 )
       UNARY_MINUS = Operator.new( '-', :unary, 110 )
       NOT = Operator.new( '!', :unary, 60, ['NOT'] )
-      ALL_OPERATORS = self.constants.collect { |c| self.const_get( c ) }
+      ALL_OPERATORS = [PLUS, MINUS, TIMES, DIVIDED_BY, MODULO, POWER, EQUAL, UNEQUAL, GREATER,
+        GREATER_EQUAL, SMALLER, SMALLER_EQUAL, OR, XOR, AND, IMPLIES, IS_IMPLIED, EQUIVALENT,
+        UNARY_PLUS, UNARY_MINUS, NOT]
 
       def self.choose_unary_operator( symbol )
         op = ALL_OPERATORS.find { |o| symbol =~ o.to_regexp and o.is_unary? }

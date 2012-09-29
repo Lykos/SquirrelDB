@@ -1,4 +1,6 @@
 require 'ast/common/tuple'
+require 'ast/common/column'
+require 'conversion_util'
 
 module SquirrelDB
   
@@ -6,46 +8,73 @@ module SquirrelDB
 
     class TableSchema
 
-      def initialize( columns )
+      def initialize(columns)
         @columns = columns
         @indices = {}
         @types = {}
+      end
+      
+      include ConversionUtil
+      
+      attr_reader :columns
+      
+      def ==(other)
+        other.class == TableSchema && @columns == other.columns
+      end
+      
+      def each_column(&block)
+        @columns.each(&block)
+      end
+
+      def to_s
+        "TableSchema( " + @columns.map { |c| "#{c.name.to_s}::#{c.type.to_s}#{c.has_default? ? " = " + c.default.to_s : ""}" }.join(", ") + " )"
+      end
+      
+      def inspect
+        "TableSchema( " + @columns.map { |c| c.inspect }.join(", ") + " )"
+      end
+      
+      def hash
+        @hash ||= [self.class, @columns].hash
       end
 
       def length
         @columns.length
       end
       
-      def raw_to_tuple( raw_string )
+      def raw_to_tuple(raw_string)
         fields = []
-        @columns.each do |c|
-          raw_string, field = c.to_field( raw_string )
-          fields.push( field )
+        @columns.each do |col|
+          field = raw_to_field(raw_string, col.type)
+          fields.push(field)
         end
         raise unless raw_string.empty?
-        Tuple.new( fields )
+        AST::Tuple.new(fields)
       end
 
-      def tuple_to_raw( tuple )
+      def tuple_to_raw(tuple)
         # TODO Choose appropriate exception
-        raise RuntimeError if tuple.fields.length != @columns.length
-        (0...@columns.length).inject( "" ) { |raw, i| raw + @columns[i].to_raw( tuple[i] ) }
+        raise "Tuple #{tuple.to_s} and schema #{to_s} have different lengths." if tuple.values.length != @columns.length
+        @columns.zip(tuple.values).map.with_index do |col_tup|
+          col, tup = col_tup
+          field_to_raw(tup, col.type)
+        end.join("")
       end
       
-      def get_column(column_name)
+      def column(column_name)
         @columns.find { |col| col.name == column_name }
       end
 
-      def get_index( column_name )
-        @indices[column_name] ||= @columns.find_index { |col| col.name == column_name }
+      def index(column_name)
+        @indices[column_name] ||= @columns.find { |col| col.name == column_name }.index
       end
       
-      def get_type( column_name )
+      def type(column_name)
         @types[column_name] ||= @columns.find { |col| col.name == column_name }.type
       end
 
-      def +( other )
-        TableSchema.new( @columns + other.columns )
+      def +(other)
+        TableSchema.new(@columns + other.columns.collect { |col| Column.new(col.name, col.type, col.index + @columns.length, col.default) })
       end
 
     end

@@ -4,6 +4,8 @@ module SquirrelDB
 
     class PreParser
 
+      # Remove comments
+      #
       def process( string )
         string.lines.collect do |line|
           line.gsub( /--.*?$/, '' )

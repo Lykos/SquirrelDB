@@ -1,5 +1,7 @@
 require 'forwardable'
 require 'ast/iterators/rel_alg_iterator' 
+require 'data/evaluation/state'
+require 'schema/table_schema'
 
 module SquirrelDB
 
@@ -7,21 +9,58 @@ module SquirrelDB
 
     class Projector < RelAlgIterator
 
-      def initialize(column_evaluators, inners)
+      def initialize(column_evaluators, inner)
         @column_evaluators = column_evaluators
         @inner = inner
       end
 
-      def_delegators :@inner, :itopen, :close, :size, :rewind
+      attr_reader :column_evaluators, :inner
+      
+      def schema
+        @schema ||= Schema::TableSchema.new(column_evaluators.collect.with_index { |ev, i| Column.new(ev.expression.to_s, ev.type, i) }) 
+      end
+      
+      def itopen(state)
+        super
+        inner.itopen(state)
+      end
+      
+      def close
+        super
+        inner.close
+      end
+      
+      def rewind
+        super
+        inner.rewind
+      end
+      
+      def ==(other)
+        super && @column_evaluators == other.column_evaluators && @inner == other.inner 
+      end
+      
+      def hash
+        @hash ||= [super, @column_evaluators, @inner].hash
+      end
+    
+      def inspect
+        "Projector_{" + @column_evaluators.collect { |ev| ev.inspect }.join(", ") + "}( #{@inner.inspect} )"
+      end
+      
+      def to_s
+        "Projector_{" + @column_evaluators.collect { |ev| ev.to_s }.join(", ") + "}( #{@inner.to_s} )"
+      end
 
       def next_item
         super
         t = @inner.next_item
-        return nil unless t
-        state = TupleState.new( @state, t )
-        @column_evaluators.collect do |column_evaluator|
-          column_evaluator.evaluate( state )
-        end
+        return nil if t.nil?
+        state = Data::State.new(t, @state)
+        Tuple.new(
+          @column_evaluators.collect do |ev|
+            ev.evaluate( state )
+          end
+        )
       end
       
       def rewind
@@ -29,10 +68,6 @@ module SquirrelDB
         @inner.rewind
       end
       
-      def cost
-        @cost ||= @inner.cost * @column_evaluators.collect { |column_evaluator| column_evaluator.cost }.reduce(0, :+)
-      end
-
     end
 
   end

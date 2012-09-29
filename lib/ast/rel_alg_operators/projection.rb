@@ -6,15 +6,27 @@ module SquirrelDB
 
     class Projection < RelAlgOperator
 
-      def initialize( renamings, inner )
-        @renamings = renamings
+      def initialize(columns, inner)
+        @columns = columns
         @inner = inner
       end
 
-      attr_reader :renamings, :inner
-      
+      attr_reader :columns, :inner
+
+      def to_s
+        "Projection_{" + @columns.collect { |r| r.to_s }.join(", ") + "}( #{@inner.to_s} )"
+      end
+
+      def inspect
+        "Projection_{" + @columns.collect { |r| r.inspect }.join(", ") + "}( #{@inner.inspect} )"
+      end
+
       def ==(other)
-        super && @renamings == other.renamings && @inner == other.inner
+        super && @columns == other.renamings && @inner == other.inner
+      end
+      
+      def hash
+        @hash ||= [super, @columns, @inner]
       end
       
     end

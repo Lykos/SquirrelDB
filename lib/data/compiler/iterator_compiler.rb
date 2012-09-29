@@ -1,38 +1,33 @@
 require 'ast/iterators/all'
 require 'ast/visitors/transform_visitor'
-require 'data/evaluation/expression_evaluator'
 
 module SquirrelDB
 
   module Data
 
-    class IteratorCompiler < AST::TransformVisitor
+    class IteratorCompiler
       
       include AST
+      include TransformVisitor
 
-      def process( statement )
-        statement.accept( self )
+      def process(statement)
+        visit(statement)
       end
       
-      def visit_selection( expression, inner )
+      def visit_selection(selection)
         Selector.new(
-          ExpressionEvaluator.new(expression),
-          inner
+          ExpressionEvaluator.new(visit(selection.expression)),
+          visit(selection.inner)
         )
       end
       
-      def visit_renaming( expression, name )
-        expression
-      end
-      
       def visit_projection(projection)
-        Projector.new( columns.collect { |c| ExpressionEvaluator.new(c) }, inner )
+        Projector.new(
+          projection.columns.collect { |c| ExpressionEvaluator.new(visit(c)) },
+          visit(projection.inner)
+        )
       end
       
-      def visit_tuple( elements )
-        DummyTable.new(Tuple.new(elements))
-      end
-
     end
 
   end
