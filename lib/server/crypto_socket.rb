@@ -3,9 +3,9 @@ require 'RubyCrypto'
 require 'forwardable'
 require 'io/like'
 
-module Crypto
+module RubyDB
 
-  class Socket
+  class CryptoSocket
 
     include IO::Like
     extend Forwardable
