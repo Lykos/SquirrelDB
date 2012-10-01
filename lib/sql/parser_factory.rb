@@ -1,4 +1,4 @@
-require 'sql/pre_parser'
+require 'sql/preprocessor'
 require 'sql/lexical_parser'
 require 'sql/syntactic_parser'
 require 'sql/parser'
@@ -10,11 +10,11 @@ module SquirrelDB
     class ParserFactory
 
       def parser
-        Parser.new( pre_parser, lexical_parser, syntactic_parser )
+        Parser.new(preprocessor, lexical_parser, syntactic_parser)
       end
 
-      def pre_parser
-        @pre_parser ||= PreParser.new
+      def preprocessor
+        @preprocessor ||= Preprocessor.new
       end
 
       def lexical_parser
