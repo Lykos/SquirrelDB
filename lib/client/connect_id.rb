@@ -10,16 +10,20 @@ module SquirrelDB
     
       def self.parse(string)
         matches = PATTERN.match(string)
-        ConnectId.new(matches[:user], matches[:host])
+        if matches
+          ConnectId.new(matches[:user], matches[:host])
+        else
+          nil
+        end
       end
       
       attr_reader :user, :host
       
       protected
       
-      def initialize(user, hostname)
+      def initialize(user, host)
         @user = user
-        @hostname = hostname
+        @host = host
       end
   
     end

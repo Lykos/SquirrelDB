@@ -77,7 +77,7 @@ module SquirrelDB
             )
           )
         )
-        @compiler.process(query).get_all(State.new)
+        @compiler.process(query).query(State.new)
       end
       
     end

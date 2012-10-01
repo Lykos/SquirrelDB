@@ -1,4 +1,5 @@
 require 'server/common_defaults'
+require 'pathname'
 
 module SquirrelDB
   

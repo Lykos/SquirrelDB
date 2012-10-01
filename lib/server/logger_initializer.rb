@@ -8,24 +8,26 @@ module SquirrelDB
     # Class that is used to initalize the logger.
     class LoggerInitializer
       
-      STDOUT_PATTERN = '%l %X{client}: %m\n'
-      LOG_FILE_PATTERN = '[%d] %l %X{client}: %m\n'
+      STDOUT_PATTERN = '%l %X{client} %c: %m\n'
+      LOG_FILE_PATTERN = '[%d] %l %X{client} %c: %m\n'
 
       # Initializes a logger from the given config such that it outputs the log into stderr and a file.
       def init
-        log = Logging.root.add_appenders(
+        Logging.logger.root.level = :debug
+        Logging.logger.root.add_appenders(
           Logging.appenders.stdout(
             :backtrace => false,
             :level => @config[:verbose] ? :info : :warn,
-            :layout => Logging.layouts.pattern(STDOUT_PATTERN)
+            :layout => Logging.layouts.pattern(:pattern => STDOUT_PATTERN)
           ),
           Logging.appenders.rolling_file(
             @log_file,
             :backtrace => true,
             :level => :debug,
-            :layout => Logging.layouts.pattern(LOG_FILE_PATTERN)
+            :layout => Logging.layouts.pattern(:pattern => LOG_FILE_PATTERN)
           )
         )
+        Logging.mdc['client'] = 'server'
       end
 
       protected

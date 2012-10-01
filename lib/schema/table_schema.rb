@@ -1,6 +1,6 @@
 require 'ast/common/tuple'
 require 'ast/common/column'
-require 'conversion_util'
+require 'schema/conversion_util'
 
 module SquirrelDB
   

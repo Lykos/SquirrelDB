@@ -15,7 +15,6 @@ module SquirrelDB
     
     class Database
       
-      
       def self.open(file, config)
         db = new(file, config)
         if block_given?
@@ -41,24 +40,23 @@ module SquirrelDB
       end
       
       def compile(statement)
-        @compiler.process(@converter.process(@parser.process(statement)))
+        @database_mutex.synchronize { @compiler.process(@converter.process(@parser.process(statement))) }
       end
       
-      def get_all(compiled_query)
-        compiled_query.get_all(Data::State.new)
+      def query(compiled_query)
+        @database_mutex.synchronize { compiled_query.query(Data::State.new) }
       end
       
       def execute(compiled_command)
-        compiled_command.execute(Data::State.new)
+        @database_mutex.synchronize { compiled_command.execute(Data::State.new) }
       end
     
     private 
   
       def initialize(file, config)
         @closed = true
-        raise "File #{file} does not have the #{FILE_EXTENSION} SquirrelDB extension." unless File.extname(file) == FILE_EXTENSION
         if config[:create_database]
-          raise "File #{file} exists in file system." if File.exists?(file)
+          raise "File #{file} exists in file system." if File.exists?(file) && !config[:force]
           @closed = false
           @file = File.new(file, "w+b")
           @file.flock(File::LOCK_EX)
@@ -94,6 +92,7 @@ module SquirrelDB
           @internal_evaluator = Data::InternalEvaluator.new(@compiler)
           @table_manager.internal_evaluator = @internal_evaluator
           @schema_manager.internal_evaluator = @internal_evaluator
+          @database_mutex = Mutex.new
         rescue Exception
           close
           raise

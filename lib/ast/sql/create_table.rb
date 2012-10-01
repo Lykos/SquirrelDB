@@ -31,6 +31,10 @@ module SquirrelDB
         @hash ||= [super, @variable, @columns].hash
       end
       
+      def query?
+        false
+      end
+      
       def execute(state)
         raise "No schema manager set for #{inspect}." if @schema_manager.nil?
         @schema_manager.add(@variable, Schema::TableSchema.new(@columns))

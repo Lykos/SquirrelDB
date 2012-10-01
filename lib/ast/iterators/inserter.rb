@@ -24,6 +24,10 @@ module SquirrelDB
         @inner == other.inner
       end
       
+      def query?
+        false
+      end
+      
       def to_s
         "Inserter(#{@name.to_s}, #{@inner.to_s})"
       end
@@ -37,7 +41,7 @@ module SquirrelDB
       end
 
       def execute(state)
-        values = @inner.get_all(state)
+        values = @inner.query(state)
         @tuple_wrapper.add(@page_no, @schema, values)
       end
       

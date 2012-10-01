@@ -26,6 +26,23 @@ module SquirrelDB
           end
         end
       end
+      
+      def really_connect(user, host, port)
+        @connection_manager.disconnect if @connection_manager.connected?
+        if host
+          if user
+            begin
+              @connection_manager.connect(user, host, port)
+              puts "Connected to #{user}@#{host}."
+            rescue IOError, SystemCallError => e
+              puts "Connection could not be established: #{e}"
+            end
+          else
+            puts "Host #{host} specified, but no user and #{host} is not an alias that specifies the user."
+            return
+          end            
+        end
+      end
     
       private
     
@@ -80,23 +97,7 @@ module SquirrelDB
         connect_id = ConnectId.parse(connections[0])
         really_connect(connect_id.user, connect_id.host, options[:port] || @config[:port])
       end
-      
-      def really_connect(user, host, port)
-        @connection.disconnect if @connection.connected?
-        if host
-          if user
-            begin
-              @connection_manager.connect(user, host, port)
-            rescue IOError => e
-              puts "Connection could not be established: #{e}"
-            end
-          else
-            puts "Host #{host} specified, but no user and #{host} is not an alias that specifies the user."
-            return
-          end            
-        end
-      end
-    
+         
     end
 
   end

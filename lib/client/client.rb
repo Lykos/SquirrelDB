@@ -1,5 +1,7 @@
 require 'client/command_handler'
+require 'json'
 require 'client/connection_manager'
+require 'RubyCrypto'
 
 module SquirrelDB
   
@@ -7,13 +9,15 @@ module SquirrelDB
     
     class Client
       
+      include Crypto
+      
       def prompt
-        "#{@connection_manager.user}@#{@connection_manager.host}> " if @connection_manager.connected?
+        (@connection_manager.connected? ? @connection_manager.user + "@" + @connection_manager.host : "") + "> "
       end
 
       def validate_key(host, packed_key)
-        key = packed_key.unpack("H*").enforce_encoding(Encoding::UTF_8)
-        public_key = public_keys[host]
+        key = packed_key.unpack("H*")[0].force_encoding(Encoding::UTF_8)
+        public_key = @public_keys[host]
         if public_key == key
           true
         else
@@ -45,23 +49,45 @@ module SquirrelDB
             if line.chomp[-1] == "\\"
               message << line.chomp[0..-2] << " "
             else
-              message << line.chomp
-              if command_handler.is_command?(message)
-                command_handler.handle(message)
-              elsif message.empty?
-                # ignore message
-              elsif connection.connected?
-                begin
-                  response = connection.request(message)
-                  puts response
-                rescue
-                  puts "Error while sending to server: #{response.dump}"
-                end
+              line.chomp!
+              if @command_handler.is_command?(line)
+                @command_handler.handle(line)
               else
-                puts "Not connected. Unable to send to server."
-              end
-              message.clear
-            end
+                message << line
+                commands = message.scan(/.*?;/)
+                message = message.match(/;(?<rest>.*?)$/)[:rest].to_s
+                if @connection_manager.connected?
+                  commands.each do |command|
+                    request = JSON::fast_generate({:request_type => :sql, :sql => command})
+                    begin
+                      response = JSON::load(@connection_manager.request(request))
+                    rescue IOError, SystemCallError => e
+                      puts "Error while sending to server: #{e}"
+                      break
+                    rescue JSON::JSONError => e
+                      puts "Server sent invalid JSON: #{e}."
+                    end
+                    case response[:response_type]
+                    when :tuples
+                      puts response[:tuples].map { |t| t.join "\t\t" }
+                    when :command_status
+                      puts response[:message] unless response[:message].empty?
+                    when :error
+                      puts "Error: #{response[:reason]}"
+                    when :close
+                      puts "#{response[:reason]}"
+                      puts "connection closed."
+                      @connection_manager.disconnect
+                      break
+                    else
+                      puts "Unknown response type #{response[:response_type]}."
+                    end # case
+                  end # commands[0..-2].each
+                else
+                  puts "Not connected. Unable to send to server."
+                end #if
+              end # if
+            end # while
             print prompt
           end
           puts "Session closed"
@@ -76,14 +102,14 @@ module SquirrelDB
       def initialize(config)
         @config = config
         read_public_keys
-        @connection_manager = ConnectionManager.new(config, lambda { |host, key| validate_key(host, key) })
-        @command_handler = CommandHandler.new(connection, config)
+        @connection_manager = ConnectionManager.new(config[:aliases], lambda { |host, key| validate_key(host, key) })
+        @command_handler = CommandHandler.new(@connection_manager, config)
       end      
       
       private
       
       def read_public_keys
-        @public_keys = YAML::load(File.read(@config[:public_keys_file]))
+        @public_keys = @config[:public_keys_file].exist? ? YAML::load(@config[:public_keys_file].read) : {}
       end
       
       def write_public_keys

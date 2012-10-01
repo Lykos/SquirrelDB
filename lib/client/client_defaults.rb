@@ -1,20 +1,22 @@
 require 'server/common_defaults'
+require 'pathname'
 
 module SquirrelDB
   
   module Client
 
-    class ServerDefaults < Server::CommonDefaults
+    class ClientDefaults < Server::CommonDefaults
       
-      DEFAULT_PUBLIC_KEYS_FILE = 'public_keys.yml'
+      DEFAULT_PUBLIC_KEYS_FILE = Pathname.new('public_keys.yml')
       
       def subdirectory
-        super + Pathname('client')
+        super + Pathname.new('client')
       end
       
       def default_options
         super.merge({
-          :public_keys_file => DEFAULT_PUBLIC_KEY_FILE
+          :public_keys_file => config.home.to_path + DEFAULT_PUBLIC_KEYS_FILE,
+          :aliases => {}
         })
       end
       
