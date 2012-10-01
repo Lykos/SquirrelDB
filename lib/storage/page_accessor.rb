@@ -12,7 +12,7 @@ module SquirrelDB
       def initialize( file )
         @file = file
         unless @file.size % PAGE_SIZE == 0
-          raise FormatException.new(
+          raise StorageError.new(
             "The size of the file is not a multiple of #{PAGE_SIZE}"
           )
         end
@@ -27,7 +27,7 @@ module SquirrelDB
 
       def set(page_no, page)
         unless page.bytesize == PAGE_SIZE
-          raise FormatException.new(
+          raise StorageError.new(
             "Only page size #{PAGE_SIZE} is allowed, actual size of new page number #{page_no} is #{page.bytesize}."
           )
         end
@@ -37,12 +37,12 @@ module SquirrelDB
 
       def add(page)
         unless @file.size % PAGE_SIZE == 0
-          raise FormatException.new(
+          raise StorageError.new(
             "The size of the file is #{@file.size} instead of a multiple of #{PAGE_SIZE}"
           )
         end
         unless page.bytesize == PAGE_SIZE
-          raise FormatException.new(
+          raise StorageError.new(
             "Only page size #{PAGE_SIZE} is allowed, actual size of new page number #{page_no} is #{page.bytesize}."
           )
         end

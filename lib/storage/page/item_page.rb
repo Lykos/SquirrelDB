@@ -18,9 +18,9 @@ module SquirrelDB
         internal_next_page != 0
       end
 
-      # Returns the page_no of the next page, raises a +StorageException+ if there is no next page.
+      # Returns the page_no of the next page, raises a +StorageError+ if there is no next page.
       def next_page
-        raise StorageException, "The 0th page can never be the next page." unless has_next_page?
+        raise StorageError, "The 0th page can never be the next page." unless has_next_page?
         internal_next_page
       end
 
@@ -48,11 +48,11 @@ module SquirrelDB
 
       def check_address( item_no )
         if item_no > no_items
-          raise AddressException.new(
+          raise StorageError.new(
             "There are only #{no_items} items in page #{@page_no}. Item #{item_no} can't be accessed."
           )
         elsif item_no < 0
-          raise AddressException.new(
+          raise StorageError.new(
             "Negative item numbers are not allowed."
           )
         end

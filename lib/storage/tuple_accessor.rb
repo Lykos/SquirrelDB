@@ -57,7 +57,7 @@ module SquirrelDB
       end
 
       def set( tids, values )
-        raise ArgumentError.new( "tids and values have different lengths." ) if tids.length != values.length
+        raise StorageError.new( "tids and values have different lengths." ) if tids.length != values.length
         tids_values = tids.zip( values )
         tids_values.sort! { |tv1, tv2| tv1[0] <=> tv2[0] }
         tuple_nos = []

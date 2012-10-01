@@ -13,7 +13,7 @@ module SquirrelDB
 
       def self.from_raw( raw_tid )
         unless raw_tid.bytesize == TID_SIZE
-          raise FormatException.new(
+          raise StorageError.new(
             "The length of the raw tid was #{raw_tid.bytesize} instead of #{TID_SIZE}."
           )
         end

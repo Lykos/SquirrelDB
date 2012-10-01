@@ -24,7 +24,7 @@ module SquirrelDB
       def get_tid(tuple_no)
         check_address(tuple_no)
         unless moved?( tuple_no )
-          raise StorageException, "This tuple is not moved and contains no tid."
+          raise StorageError, "This tuple is not moved and contains no tid."
         end  
         @tids[tuple_no] ||= internal_get_tid( tuple_no )
       end
@@ -35,7 +35,7 @@ module SquirrelDB
           new_tid = new_tid.to_raw
         end
         if new_tid.bytesize != TID_SIZE
-          raise StorageExceptionn, "The new tid doesn't have the correct length."
+          raise StorageError, "The new tid doesn't have the correct length."
         end
         set_moved( tuple_no, true )
         set_tuple( tuple_no, new_tid )
@@ -65,12 +65,12 @@ module SquirrelDB
         internal_set_tuple( tuple_no, new_content )
       end
 
-      # Add the +String+ +content+ as a tuple. If not enough space is available, a +StorageException+ is thrown.
+      # Add the +String+ +content+ as a tuple. If not enough space is available, a +StorageError+ is thrown.
       def add_tuple(content)
         # TODO Reuse removed tuples if possible
         length = content.bytesize
         unless has_space?(length)
-          raise StorageException, "Not enough space in page #{page_no} for this new tuple."
+          raise StorageError, "Not enough space in page #{page_no} for this new tuple."
         end
         tuple_no = no_tuples
         self.no_tuples = no_tuples + 1
@@ -119,9 +119,7 @@ module SquirrelDB
       def check_address( tuple_no )
         super( tuple_no )
         if get_length( tuple_no ) == 0
-          raise AddressException.new(
-            "Tuple #{tuple_no} in page #{@page_no} has already been deleted."
-          )
+          raise StorageError, "Tuple #{tuple_no} in page #{@page_no} has already been deleted."
         end
       end
 
@@ -133,7 +131,7 @@ module SquirrelDB
           return if new_content == old_tuple
           @content[get_offset( tuple_no )...get_offset( tuple_no ) + old_length] = new_content
         elsif new_length > free_space + old_length
-          raise StorageException, "Not enough space in this page for new tuple #{tuple_no}."
+          raise StorageError, "Not enough space in this page for new tuple #{tuple_no}."
         else
           @free_space = free_space + old_length - new_length
           move_length = 0

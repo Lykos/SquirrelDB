@@ -32,11 +32,11 @@ describe PageAccessor do
   end
 
   it "should raise an exception in case of too short content" do
-    lambda { @page_accessor.put( 0, "dd" ) }.should raise_error( FormatException )
+    lambda { @page_accessor.put( 0, "dd" ) }.should raise_error( StorageError )
   end
 
   it "should raise an exception in case of too long content" do
-    lambda { @page_accessor.put( 0, "5" * (PAGE_SIZE + 1) ) }.should raise_error( FormatException )
+    lambda { @page_accessor.put( 0, "5" * (PAGE_SIZE + 1) ) }.should raise_error( StorageError )
   end
 
 end

@@ -20,7 +20,7 @@ module SquirrelDB
           string.setbyte( i, BYTE_MASK & int )
           int >>= BYTE_SIZE
         end
-        raise FormatException.new( "#{integer} does not fit into a string of length #{length}" ) if int > 0
+        raise StorageError.new( "#{integer} does not fit into a string of length #{length}" ) if int > 0
         string.force_encoding(Encoding::ASCII_8BIT)
       end
 

@@ -1,4 +1,4 @@
-require 'storage/exceptions/constant_exception'
+require 'errors/storage_exception'
 require 'data/constants'
 
 module SquirrelDB
@@ -56,19 +56,19 @@ module SquirrelDB
 
       # Check some constraints for the constants
       if (ITEM_HEADER_SIZE + 1) * (1 << (TUPLE_NO_SIZE * BYTE_SIZE)) < PAGE_SIZE
-        raise StorageException, "With page size #{PAGE_SIZE} and tuple no size #{TUPLE_NO_SIZE}, more small tuples fit on a page than can be addressed."
+        raise StorageError, "With page size #{PAGE_SIZE} and tuple no size #{TUPLE_NO_SIZE}, more small tuples fit on a page than can be addressed."
       elsif (1 << (ITEM_OFFSET_SIZE * BYTE_SIZE)) < PAGE_SIZE
-        raise StorageException, "With page size #{PAGE_SIZE} and offset size #{ITEM_OFFSET_SIZE}, only part of the page can be used."
+        raise StorageError, "With page size #{PAGE_SIZE} and offset size #{ITEM_OFFSET_SIZE}, only part of the page can be used."
       elsif ITEM_HEADER_SIZE <= ITEM_OFFSET_SIZE
-        raise StorageException, "The item header size has to be bigger than the item offset size."
+        raise StorageError, "The item header size has to be bigger than the item offset size."
       elsif ITEM_HEADER_SIZE <= ITEM_LENGTH_SIZE
-        raise StorageException, "The item header size has to be bigger than the item length size."
+        raise StorageError, "The item header size has to be bigger than the item length size."
       elsif TID_SIZE <= TUPLE_NO_SIZE
-        raise StorageException, "The tid size has to be bigger than the tuple no size."
+        raise StorageError, "The tid size has to be bigger than the tuple no size."
       elsif (1 << (BYTE_SIZE * (ITEM_HEADER_SIZE - ITEM_OFFSET_SIZE) - 1)) < PAGE_SIZE
-        raise StorageException, "A tuple could never fill the whole page with these constants."
+        raise StorageError, "A tuple could never fill the whole page with these constants."
       elsif TYPES_IDS.any? { |type, id| id >= 1 << TYPE_SIZE * BYTE_SIZE }
-        raise StorageException, "Not all page types can be represented with this type size."
+        raise StorageError, "Not all page types can be represented with this type size."
       end
       
     end
