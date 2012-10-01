@@ -34,18 +34,18 @@ module SquirrelDB
         elsif @tokens[0] =~ TRUNCATE
           parse_truncate( 0 )
         else
-          raise "Unknown statement type #{@tokens[0]}."
+          raise ParseError, "Unknown statement type #{@tokens[0]}."
         end
       end
 
       private
       
       def parse_insert(start_index)
-        raise unless @tokens[start_index] =~ INSERT
-        raise unless @tokens[start_index + 1] =~ INTO
+        raise InternalParserError, "Insert doesn't start with `insert'." unless @tokens[start_index] =~ INSERT
+        raise ParseError, "Expected `into' after `insert'." unless @tokens[start_index + 1] =~ INTO
         index = start_index + 2
         table_name, index = parse_name( index )
-        raise unless @tokens[index] =~ PARENTHESE_OPEN
+        raise ParseError, "Expected `(' after #{@tokens[index - 1]}." unless @tokens[index] =~ PARENTHESE_OPEN
         index += 1
         columns = []
         loop do 
@@ -55,7 +55,7 @@ module SquirrelDB
             index += 1
             break
           else
-            raise unless @tokens[index] =~ KOMMA
+            raise ParseError, "Expected `,' or `)' after #{@tokens[index - 1]}."  unless @tokens[index] =~ KOMMA
           end
           index += 1
         end        
@@ -64,14 +64,14 @@ module SquirrelDB
         elsif @tokens[index] =~ SELECT
           values, index = parse_select(index)
         else
-          raise "Expected `select' or `values' after `insert'."
+          raise ParseError, "Expected `select' or `values' after `insert'."
         end
         Insert.new(table_name, columns, values)
       end
       
       def parse_values(start_index)
-        raise unless @tokens[start_index] =~ VALUES
-        raise unless @tokens[start_index + 1] =~ PARENTHESE_OPEN
+        raise ParseError, "Expected `values' or select statement after #{@tokens[start_index - 1]}." unless @tokens[start_index] =~ VALUES
+        raise ParseError, "Expected `(' after `values'." unless @tokens[start_index + 1] =~ PARENTHESE_OPEN
         index = start_index + 2
         values = []
         loop do
@@ -81,31 +81,32 @@ module SquirrelDB
             index += 1
             break
           else
-            raise unless @tokens[index] =~ KOMMA
+            raise ParseError, "Expected `,' or `)' after #{@tokens[index - 1]}."  unless @tokens[index] =~ KOMMA
           end
           index += 1
         end
         [values, index]
       end
       
-      def parse_create( start_index )
+      def parse_create(start_index)
         if @tokens[start_index + 1] =~ TABLE
           parse_create_table(start_index)
         else
-          raise
+          raise ParseError, "Only table is supported to create."  
         end
       end
       
       def parse_create_table(start_index)
-        raise unless @tokens[start_index] =~ CREATE && @tokens[start_index + 1] =~ TABLE
+        raise InternalParserError, "Create table doesn't start with `create'." unless @tokens[start_index] =~ CREATE
+        raise ParseError, "Only `table' is supported after `create'." unless @tokens[start_index + 1] =~ TABLE
         index = start_index + 2
         table_name, index = parse_name(index)
-        raise unless @tokens[index] =~ PARENTHESE_OPEN
+        raise ParseError, "Expected `(' after `create table'." unless @tokens[index] =~ PARENTHESE_OPEN
         index += 1
         columns = []
         i = 0
         until @tokens[index] =~ PARENTHESE_CLOSED
-          raise unless @tokens[index] =~ IDENTIFIER
+          raise ParseError, "Expected identifier as column name.." unless @tokens[index] =~ IDENTIFIER
           name = Variable.new(@tokens[index])
           type, index = parse_type(index + 1)
           if @tokens[index] =~ CONSTANT
@@ -115,7 +116,7 @@ module SquirrelDB
           end
           columns << Column.new(name, type, i, default)
           break if @tokens[index] =~ PARENTHESE_CLOSED
-          raise unless @tokens[index] =~ KOMMA
+          raise ParseError, "Expected `,' after #{@tokens[index - 1]}" unless @tokens[index] =~ KOMMA
           index += 1
           i += 1
         end
@@ -123,12 +124,12 @@ module SquirrelDB
       end
       
       def parse_default(start_index)
-        raise unless @tokens[start_index] =~ DEFAULT
+        raise InternalParserError, "Expected `default' in default clause." unless @tokens[start_index] =~ DEFAULT
         [parse_constant(@tokens[start_index + 1]), start_index + 2]
       end
       
       def parse_type(start_index)
-        raise unless @tokens[start_index] =~ TYPE
+        raise ParseError, "Unknown type #{start_index[type]}." unless @tokens[start_index] =~ TYPE
         if @tokens[start_index] =~ INTEGER_T
           [Schema::Type::INTEGER, start_index + 1]
         elsif @tokens[start_index] =~ BOOLEAN_T
@@ -140,40 +141,40 @@ module SquirrelDB
         elsif @tokens[start_index] =~ SHORT_T
           [Schema::Type::SHORT, start_index + 1]
         else
-          raise
+          raise InternalParserError, "Unknown type #{start_index[type]}."
         end
       end
 
-      def parse_select( start_index )
-        select_clause, after_index = parse_select_clause( start_index )
-        from_clause, after_index = parse_from( after_index )
-        where_clause, after_index = parse_where( after_index )
+      def parse_select(start_index)
+        select_clause, after_index = parse_select_clause(start_index)
+        from_clause, after_index = parse_from(after_index)
+        where_clause, after_index = parse_where(after_index)
         [SelectStatement.new(select_clause, from_clause, where_clause), after_index]
       end
 
       def parse_from(start_index)
         return [FromClause.new([]), start_index] unless @tokens[start_index] =~ FROM
         after_index = start_index + 1
-        table, after_index = parse_table( after_index )
+        table, after_index = parse_table(after_index)
         tables = [table]
         until @tokens[after_index] =~ WHERE || !@tokens[after_index] || @tokens[after_index] =~ PARENTHESE_CLOSED
-          raise "Comma expected instead of #{@tokens[after_index]}" unless @tokens[after_index] =~ KOMMA
+          raise ParseError, "Comma expected instead of #{@tokens[after_index]}." unless @tokens[after_index] =~ KOMMA
           after_index += 1
-          table, after_index = parse_table( after_index )
-          tables.push( table )
+          table, after_index = parse_table(after_index)
+          tables.push(table)
         end
-        [FromClause.new( tables ), after_index]
+        [FromClause.new(tables), after_index]
       end
 
-      def parse_table( start_index )
+      def parse_table(start_index)
         if @tokens[start_index] =~ PARENTHESE_OPEN
-          table, after_index = parse_select( start_index + 1 )
-          raise "missing right parenthesis" unless @tokens[after_index] =~ PARENTHESE_CLOSED
+          table, after_index = parse_select(start_index + 1)
+          raise ParseError, "missing right parenthesis" unless @tokens[after_index] =~ PARENTHESE_CLOSED
           after_index += 1
         elsif @tokens[start_index] =~ IDENTIFIER
-          table, after_index = parse_name( start_index )
+          table, after_index = parse_name(start_index)
         else
-          raise "Table #{@tokens[start_index]} is neither an identifier nor a select statement."
+          raise ParseError, "Table #{@tokens[start_index]} is neither an identifier nor a select statement."
         end
         after_index += 1 if @tokens[after_index] =~ AS
         if @tokens[after_index] =~ IDENTIFIER && !(@tokens[after_index] =~ WHERE)
@@ -184,12 +185,12 @@ module SquirrelDB
       end
 
       def parse_name(start_index)
-        raise "Expected name" unless @tokens[start_index] =~ IDENTIFIER
+        raise ParseError, "Expected object name after #{@tokens[start_index - 1]}." unless @tokens[start_index] =~ IDENTIFIER
         name = Variable.new( @tokens[start_index] )
         after_index = start_index + 1
         while @tokens[after_index] =~ DOT
           after_index += 1
-          raise unless @tokens[after_index] =~ IDENTIFIER
+          raise ParseError, "Expected identifier instead of #{@tokens[after_index]} in an object name." unless @tokens[after_index] =~ IDENTIFIER
           name = ScopedVariable.new( name, Variable.new( @tokens[after_index] ) )
           after_index += 1
         end
@@ -204,12 +205,12 @@ module SquirrelDB
       end
 
       def parse_select_clause( start_index )
-        raise unless @tokens[start_index] =~ SELECT
+        raise InternalParserError, "Select clause has to start with `select'." unless @tokens[start_index] =~ SELECT
         after_index = start_index + 1
         column, after_index = parse_column( after_index )
         columns = [column]
         until @tokens[after_index] =~ FROM || !@tokens[after_index]
-          raise unless @tokens[after_index] =~ KOMMA
+          raise ParseError, "Expected `,' after #{@tokens[after_index - 1]}" unless @tokens[after_index] =~ KOMMA
           after_index += 1
           column, after_index = parse_column( after_index )
           columns.push( column )
@@ -240,12 +241,12 @@ module SquirrelDB
         is_infix = false
         parentheses_open = 0
         until parentheses_open == 0 && is_infix && condition.call(token)
-          raise "Tokens empty and not finished." unless token
+          raise ParseError, "Tokens empty and not finished." unless token
           if !is_infix && @operator_stack.last == "(" && token =~ SELECT
             select, after_index = parse_select( after_index )
-            raise unless @tokens[after_index] =~ PARENTHESE_CLOSED
+            raise ParseError, "Query inside expression has to be ended with `)'." unless @tokens[after_index] =~ PARENTHESE_CLOSED
             after_index += 1
-            raise unless @operator_stack.pop == "("
+            raise InternalParseError, "Unexpected operator stack top." unless @operator_stack.pop == "("
             @expression_stack.push( select )
           elsif !is_infix && token =~ CONSTANT
             @expression_stack.push( parse_constant( token ) )
@@ -255,7 +256,7 @@ module SquirrelDB
             variable, after_index = parse_name(after_index)
             if @tokens[after_index + 1] =~ PARENTHESE_OPEN
               @operator_stack.push(variable)
-              @expression_stack.push( :func )
+              @expression_stack.push(:func)
             else
               @expression_stack.push(variable)
               is_infix = true
@@ -268,7 +269,7 @@ module SquirrelDB
             after_index += 1
           elsif is_infix && token =~ KOMMA
             until_parenthese
-            raise unless @operator_stack.last == "("
+            raise InternalParserError, "Invalid operator stack top." unless @operator_stack.pop == "("
             is_infix = false
             after_index += 1
           elsif is_infix && token =~ BINARY_OPERATOR
@@ -291,28 +292,28 @@ module SquirrelDB
           elsif is_infix && token =~ PARENTHESE_CLOSED
             until_parenthese
             parentheses_open -= 1
-            raise unless @operator_stack.pop == "("
+            raise ParseError, "Closed too many parentheses." unless @operator_stack.pop == "("
             pop_function if @operator_stack.last =~ IDENTIFIER
             is_infix = true
             after_index += 1
           else
-            raise "Could not find a mapping for token #{token} (is_infix: #{is_infix})"
+            raise ParseError, "Could not find a mapping for token #{token} (is_infix: #{is_infix})"
           end
           token = @tokens[after_index]
         end
         until @operator_stack.empty?
           pop_operator
         end
-        raise unless parentheses_open == 0
-        raise unless @expression_stack.length == 1
+        raise ParseError, "Not all parentheses closed." unless parentheses_open == 0
+        raise InternalParserError, "Expression stack has more than one entry."  unless @expression_stack.length == 1
         return [@expression_stack[0], after_index]
       end
 
       def until_parenthese
-        raise if @operator_stack.empty?
+        raise InternalParserError, "Comma list has no `(' at the beginning." if @operator_stack.empty?
         until @operator_stack.last =~ PARENTHESE_OPEN
           pop_operator
-          raise "Missing parenthesis" if @operator_stack.empty?
+          raise ParseError, "Missing parenthesis" if @operator_stack.empty?
         end
       end
 
@@ -322,68 +323,68 @@ module SquirrelDB
           pop_binary_operator
         elsif operator.kind_of?( Operator ) && operator.is_unary?
           pop_unary_operator
-        elsif operator.kind_of?( Variable )
+        elsif operator.variable?
           pop_function
         else
-          raise
+          raise InternalParserError, "Invalid element on operator stack: #{operator}."
         end
       end
 
       def pop_function
         operator = @operator_stack.pop
-        raise unless operator.kind_of?( Variable )
-        raise if @expression_stack.empty?
+        raise InternalParserError, "Expected variable instead of #{operator} on operator stack." unless operator.variable?
+        raise InternalParserError, "Expression stack unexpectedly empty." if @expression_stack.empty?
         expression = @expression_stack.pop
         parameters = []
         until expression == :func
-          raise unless expression.kind_of?( Element )
-          parameters.push( expression )
-          raise if @expression_stack.empty?
+          raise InternalParserError, "Unexpected element on expression stack: #{exression}." unless expression.kind_of?( Element )
+          parameters.push(expression)
+          raise InternalParserError, "Expression stack unexpectedly empty." if @expression_stack.empty?
           expression = @expression_stack.pop
         end
         @expression_stack.push( FunctionApplication.new( operator, parameters.reverse ) )
       end
 
       def pop_binary_operator
-        raise if @operator_stack.empty?
+        raise InternalParserError, "Expression stack unexpectedly empty." if @expression_stack.empty?
         operator = @operator_stack.pop
-        raise unless operator.kind_of?( Operator ) && operator.is_binary?
-        raise if @expression_stack.length < 2
-        raise "Got #{@expression_stack.last.inspect} as second part of a binary operation." unless @expression_stack.last.kind_of?( Element )
-        raise "Got #{@expression_stack[-2].inspect} as second part of a binary operation." unless @expression_stack[-2].kind_of?( Element )
+        raise InternalParseError, "Expected binary operator on operator stack instead of #{operator}." unless operator.kind_of?( Operator ) && operator.is_binary?
+        raise InternalParseError, "Expression stack doesn't contain two elements." if @expression_stack.length < 2
+        raise InternalParseError, "Got #{@expression_stack.last.inspect} as second part of a binary operation." unless @expression_stack.last.kind_of?( Element )
+        raise InternalParseError, "Got #{@expression_stack[-2].inspect} as second part of a binary operation." unless @expression_stack[-2].kind_of?( Element )
         @expression_stack.push( BinaryOperation.new(
             operator, *@expression_stack.pop( 2 )
           ) )
       end
 
       def pop_unary_operator
-        raise if @operator_stack.empty?
+        raise InternalParserError, "Expression stack unexpectedly empty." if @expression_stack.empty?
         operator = @operator_stack.pop
-        raise unless operator.kind_of?( Operator ) && operator.is_unary?
-        raise if @expression_stack.empty? || !@expression_stack.last.kind_of?( Element )
+        raise InternalParseError, "Expected unary operator on operator stack instead of #{operator}." unless operator.kind_of?(Operator) && operator.is_unary?
+        raise InternalParseError, "Got #{@expression_stack.last.inspect} as operand of a unary operation." if @expression_stack.empty? || !@expression_stack.last.kind_of?( Element )
         @expression_stack.push( UnaryOperation.new(
             operator, @expression_stack.pop
           ) )
       end
 
-      def parse_constant( token )
+      def parse_constant(token)
         if token =~ BOOLEAN
           if token =~ TRUE_K
-            Constant.new( true, Schema::Type::BOOLEAN )
+            Constant.new(true, Schema::Type::BOOLEAN)
           elsif token =~ FALSE_K
-            Constant.new( false, Schema::Type::BOOLEAN )
+            Constant.new(false, Schema::Type::BOOLEAN)
           elsif token =~ UNKNOWN
-            Constant.new( nil, Schema::Type::BOOLEAN )
+            Constant.new(nil, Schema::Type::BOOLEAN)
           else
-            raise
+            raise ParserCasesError, "Unknown boolean #{token}."
           end
         elsif token =~ INTEGER
-          Constant.new( token.to_i, Schema::Type::INTEGER )
+          Constant.new(token.to_i, Schema::Type::INTEGER)
         elsif token =~ DOUBLE
-          Constant.new( token.to_i, Schema::Type::DOUBLE )
+          Constant.new(token.to_i, Schema::Type::DOUBLE)
         elsif token =~ STRING
           # TODO String escaping etc
-          Constant.new( token[1..-2], Schema::Type::STRING)
+          Constant.new(token[1..-2], Schema::Type::STRING)
         end
       end
 
