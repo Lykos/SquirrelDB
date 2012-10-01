@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <buildpath>
 	<buildpathentry kind="src" path="debug"/>
+	<buildpathentry excluding="client/|sql/|rel_alg/|ast/|data/|schema/|server/|storage/" kind="src" path="lib"/>
+	<buildpathentry kind="src" path="bin"/>
 	<buildpathentry kind="src" path="lib/client"/>
 	<buildpathentry kind="src" path="lib/sql"/>
 	<buildpathentry kind="src" path="lib/rel_alg"/>

@@ -38,7 +38,7 @@ module SquirrelDB
         raise unless @open
       end
       
-      def get_all(state)
+      def execute(state)
         itopen(state)
         ts = []
         while t = next_item

@@ -15,10 +15,9 @@ module SquirrelDB
     
     class Database
       
-      FILE_EXTENSION = '.sqrl'
       
-      def self.open(file, create_new=false)
-        db = new(file, create_new)
+      def self.open(file, config)
+        db = new(file, config)
         if block_given?
           begin
             yield db
@@ -55,10 +54,10 @@ module SquirrelDB
     
     private 
   
-      def initialize(file, create_new=false)
+      def initialize(file, config)
         @closed = true
         raise "File #{file} does not have the #{FILE_EXTENSION} SquirrelDB extension." unless File.extname(file) == FILE_EXTENSION
-        if create_new
+        if config[:create_database]
           raise "File #{file} exists in file system." if File.exists?(file)
           @closed = false
           @file = File.new(file, "w+b")

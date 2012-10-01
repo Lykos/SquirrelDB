@@ -18,7 +18,8 @@ module SquirrelDB
       #                  overriding options from earlier files. All options from files override the default options.
       # +options+:: A hash table containing the command line options, they override all other options.
       #             If the key +:config_file+ appears, it is used as an additional config file.
-      def options(default_options, confg_files, options)
+      # *WARNING* This method uses stderr.
+      def options(default_options, confg_files, user_config_file, options)
         opts = default_options.dup
         defaults.config_files.each do |f|
           if f.kind_of?(String)

@@ -5,6 +5,7 @@ module SquirrelDB
   
   module Server
 
+    # A class that provides access to default configs shared between client and server 
     class CommonDefaults
       
       include XDG::BaseDir::Mixin
