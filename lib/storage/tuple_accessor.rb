@@ -48,9 +48,9 @@ module SquirrelDB
       def get_tuple( tid )
         results, moved_tids = get_page( tid.page_no, [tid.tuple_no] )
         unless moved_tids.empty?
-          raise if moved_tids.length > 0 || !results.empty?
+          raise StorageError, "Got tid and result back." if moved_tids.length > 0 || !results.empty?
           results, moved_tids = get_page( tid.page_no, moved_tids )
-          raise unless results.length == 1 and moved_tids.empty?
+          raise StorageError, "Didn't get a result at the page the tuple is moved to." unless results.length == 1 and moved_tids.empty?
         end
         raise if results.length != 1
         results[0]

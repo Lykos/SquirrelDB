@@ -1,6 +1,6 @@
 require 'storage/raw_util'
 require 'storage/constants'
-require 'storage/exceptions/format_exception'
+require 'errors/storage_error'
 
 module SquirrelDB
 
@@ -13,9 +13,7 @@ module SquirrelDB
 
       def self.from_raw( raw_tid )
         unless raw_tid.bytesize == TID_SIZE
-          raise StorageError.new(
-            "The length of the raw tid was #{raw_tid.bytesize} instead of #{TID_SIZE}."
-          )
+          raise StorageError, "The length of the raw tid was #{raw_tid.bytesize} instead of #{TID_SIZE}."
         end
         page_no = extract_int( raw_tid[0...TID_SIZE - TUPLE_NO_SIZE] )
         tuple_no = extract_int( raw_tid[TID_SIZE - TUPLE_NO_SIZE...TID_SIZE] )

@@ -1,5 +1,5 @@
 require 'storage/constants'
-require 'storage/exceptions/format_exception'
+require 'errors/storage_error'
 
 module SquirrelDB
 
@@ -12,9 +12,7 @@ module SquirrelDB
       def initialize( file )
         @file = file
         unless @file.size % PAGE_SIZE == 0
-          raise StorageError.new(
-            "The size of the file is not a multiple of #{PAGE_SIZE}"
-          )
+          raise StorageError, "The size of the file is not a multiple of #{PAGE_SIZE}"
         end
       end
 
@@ -27,9 +25,7 @@ module SquirrelDB
 
       def set(page_no, page)
         unless page.bytesize == PAGE_SIZE
-          raise StorageError.new(
-            "Only page size #{PAGE_SIZE} is allowed, actual size of new page number #{page_no} is #{page.bytesize}."
-          )
+          raise StorageError, "Only page size #{PAGE_SIZE} is allowed, actual size of new page number #{page_no} is #{page.bytesize}."
         end
         @file.seek( page_no * PAGE_SIZE, IO::SEEK_SET )
         @file.write(page)
@@ -37,14 +33,10 @@ module SquirrelDB
 
       def add(page)
         unless @file.size % PAGE_SIZE == 0
-          raise StorageError.new(
-            "The size of the file is #{@file.size} instead of a multiple of #{PAGE_SIZE}"
-          )
+          raise StorageError, "The size of the file is #{@file.size} instead of a multiple of #{PAGE_SIZE}"
         end
         unless page.bytesize == PAGE_SIZE
-          raise StorageError.new(
-            "Only page size #{PAGE_SIZE} is allowed, actual size of new page number #{page_no} is #{page.bytesize}."
-          )
+          raise StorageError, "Only page size #{PAGE_SIZE} is allowed, actual size of new page number #{page_no} is #{page.bytesize}."
         end
         @file.seek( @file.size, IO::SEEK_SET )
         page_no = @file.size / PAGE_SIZE

@@ -1,7 +1,5 @@
 require 'storage/tid'
-require 'storage/exceptions/format_exception'
-require 'storage/exceptions/address_exception'
-require 'storage/exceptions/space_exception'
+require 'errors/storage_error'
 require 'storage/page/var_item_page'
 
 module SquirrelDB

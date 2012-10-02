@@ -1,4 +1,4 @@
-require 'storage/exceptions/storage_exception'
+require 'errors/storage_error'
 
 module SquirrelDB
   
@@ -21,9 +21,7 @@ module SquirrelDB
       def set_item( item_no, new_item )
         check_address( item_no )
         if new_item.bytesize != @item_size
-          raise StorageError.new(
-            "New version of item #{item_no} does not have size #{@item_size}"
-          )
+          raise StorageError, "New version of item #{item_no} does not have size #{@item_size}"
         end
         @content[item_start( item_no )...tid_start( item_no + 1)] = new_item
       end
@@ -41,9 +39,7 @@ module SquirrelDB
       def split_tid( tid_no, item, left_tid, right_tid )
         check_tid_address( tid_no )
         if free_space < @item_size + TID_SIZE
-          raise StorageError.new(
-            "There is not enough space to split the tid #{tid_no} in index page #{@page_no}."
-          )
+          raise StorageError, "There is not enough space to split the tid #{tid_no} in index page #{@page_no}."
         end
         @content[item_start(tid_no + 1)...end_content + @item_size + TID_SIZE] = @content[item_start( tid_no )...end_content]
         self.free_space = self.free_space - @item_size - TID_SIZE

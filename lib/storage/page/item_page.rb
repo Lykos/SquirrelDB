@@ -48,13 +48,9 @@ module SquirrelDB
 
       def check_address( item_no )
         if item_no > no_items
-          raise StorageError.new(
-            "There are only #{no_items} items in page #{@page_no}. Item #{item_no} can't be accessed."
-          )
+          raise StorageError, "There are only #{no_items} items in page #{@page_no}. Item #{item_no} can't be accessed."
         elsif item_no < 0
-          raise StorageError.new(
-            "Negative item numbers are not allowed."
-          )
+          raise StorageError, "Negative item numbers are not allowed."
         end
       end
 

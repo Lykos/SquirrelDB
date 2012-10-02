@@ -35,9 +35,7 @@ module SquirrelDB
         @content = "\x00" * PAGE_SIZE
         @type = self.class.to_s.split("::")[-1].intern
         @type_id = TYPES_IDS[@type]
-        raise StorageError.new(
-          "Page type #{self.class} has no type id."
-        ) unless @type_id
+        raise StorageError, "Page type #{self.class} has no type id." unless @type_id
         @content[0...TYPE_SIZE] = encode_int(@type_id, TYPE_SIZE)
       end
       
@@ -50,16 +48,12 @@ module SquirrelDB
 
       def initialize(page_no, content)
         if content.bytesize != PAGE_SIZE
-          raise StorageError.new(
-            "Page #{page_no} gets a content with length #{content.bytesize} instead of #{PAGE_SIZE}."
-          )
+          raise StorageError, "Page #{page_no} gets a content with length #{content.bytesize} instead of #{PAGE_SIZE}."
         end
         @page_no = page_no
         @content = content
         if type != self.class.to_s.split("::")[-1].intern
-          raise StorageError.new(
-            "Page #{page_no} is not a #{self.class.to_s.split("::")[-1]}, its type_id is #{type_id}, so it type is #{type.to_s}."
-          )
+          raise StorageError, "Page #{page_no} is not a #{self.class.to_s.split("::")[-1]}, its type_id is #{type_id}, so it type is #{type.to_s}."
         end
       end
 

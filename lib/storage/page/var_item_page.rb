@@ -1,5 +1,5 @@
 require 'storage/page/item_page'
-require 'storage/exceptions/address_exception'
+require 'errors/storage_error'
 
 module SquirrelDB
 
