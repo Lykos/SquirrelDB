@@ -1,10 +1,12 @@
 gem 'eventmachine'
 require 'eventmachine'
 require 'errors/internal_error'
+require 'errors/internal_connection_error'
 require 'errors/user_error'
 require 'server/client_session'
 require 'server/client_hello_state'
 require 'server/server_protocol'
+require 'socket'
 
 module SquirrelDB
   
@@ -21,27 +23,41 @@ module SquirrelDB
       #            and +:dh_modulus_size+
       def initialize(server, database, signer, config)
         @server = server
-        @session = ClientSession.new(database)
+        @session = ClientSession.new(database, self)
         @state = ClientHelloState.new(self, ServerProtocol.new(signer, config))
-        @log = Logger.logger[self]
+        @log = Logging.logger[self]
       end
       
       def post_init
-        @log.debug("A client #{get_peername} has connected.")
+        @client_name = Addrinfo.new(get_peername).getnameinfo.join(":")
+        Logging.mdc['client'] = @client_name
+        @log.debug("A client has connected.")
+      end
+    
+      def close_connection(*args)
+        @intentionally = true
+        super
+      end
+      
+      def close_connection_after_writing(*args)
+        @intentionally = true
+        super
       end
       
       def unbind
-        @session.close
-        @log.debug("A client has disconnected.")
+        Logging.mdc['client'] = @client_name
+        @log.debug("Connection to client lost.") unless @intentionally
       end
             
       # Receive raw data through the connection
       def receive_data(data)
+        Logging.mdc['client'] = @client_name
+        @log.debug("Got data #{data.dump}.")
         begin
           @state = @state.receive_data(data)
         rescue UserError => e
           @log.error(e)
-          close_connection_after_write
+          close_connection_after_writing
         rescue InternalError => e
           @log.fatal(e)
           @server.stop
@@ -63,7 +79,7 @@ module SquirrelDB
       
       # Receive a message from the secure connection.
       def receive_message(message)
-        client_session.receive_message(message)
+        @session.receive_message(message)
       end
         
     end

@@ -10,7 +10,8 @@ module SquirrelDB
     
     class ServerConnection < EventMachine::Connection
       
-      def initialize(keyboard_handler, response_handler)
+      def initialize(connection_manager, keyboard_handler, response_handler)
+        @connection_manager = connection_manager
         @keyboard_handler = keyboard_handler
         @protocol = ClientProtocol.new
         @state = ServerHelloState.new(self, @protocol)
@@ -20,12 +21,28 @@ module SquirrelDB
         send_data(@protocol.client_hello)
       end
       
+      def close_connection_after_writing(*args)
+        @intentionally = true
+        super
+      end
+      
+      def close_connection(*args)
+        @intentionally = true
+        super
+      end
+      
+      def unbind
+        @connected = false
+        @connection_manager.connection_lost unless @intentionally
+      end
+      
       def connection_established
-        @keyboard_handler.activate(@keyboard_handler.key_validate_state)
+        @connected = true
+        @keyboard_handler.activate(@keyboard_handler.key_validate_state, @connection_manager.host, @protocol.public_key)
       end
       
       def receive_data(data)
-        @state = state.receive_data(data)
+        @state = @state.receive_data(data)
       end
       
       def receive_message(message)
@@ -33,11 +50,12 @@ module SquirrelDB
       end
 
       def connected?
-        @state.connected?
+        @connected
       end
       
       def send_message(message)
         raise InternalConnectionError, "Connection has not been established yet." unless connected?
+        puts "Sending #{message.dump}."
         @state.send_message(message)
       end
     

@@ -11,7 +11,6 @@ module SquirrelDB
       def initialize(database, connection)
         @database = database
         @connection = connection
-        @config = config
         @log = Logging.logger[self]
       end
       

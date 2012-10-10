@@ -48,8 +48,8 @@ module SquirrelDB
       def initialize(command_handler, connection_manager, key_validator)
         @prompt_state = PromptState.new(self)
         @key_validate_state = KeyValidateState.new(self, connection_manager, key_validator)
-        @command_state = CommandState.new(self, command_handler)
-        @connected_command_state = ConnectedCommandState.new(self, command_handler)
+        @command_state = CommandState.new(self, command_handler, connection_manager)
+        @connected_command_state = ConnectedCommandState.new(self, command_handler, connection_manager)
         @state = @command_state
       end
     

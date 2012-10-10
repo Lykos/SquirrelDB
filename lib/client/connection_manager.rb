@@ -29,12 +29,16 @@ module SquirrelDB
       def connected?
         @connected
       end
+      
+      def disconnect_from_server
+        @connection.close_connection
+        @connected = false
+      end
     
       def disconnect
         raise IOError, "Connection is already closed." if !connected?
         @connection.send_message(JSON::fast_generate({:request_type => :close})) if @connection.connected?
-        @connection.close_connection_after_writing
-        @connection.close_connection
+        @connection.close_connection_after_writing if @connection.connected?
         @connected = false
       end
           
@@ -66,8 +70,14 @@ module SquirrelDB
         @host = host
         @port = port
         puts "Trying to connect to server. This may take a while."
-        @connection = EM.connect(host, port, ServerConnection, @keyboard_handler, @response_handler)
+        @connection = EM.connect(host, port, ServerConnection, self, @keyboard_handler, @response_handler)
         @connected = true
+      end
+      
+      def connection_lost
+        @connected = false
+        puts "Connection to server lost."
+        @keyboard_handler.activate(@keyboard_handler.command_state)
       end
     
       def request(message)

@@ -19,7 +19,6 @@ module SquirrelDB
       # +line+:: The command to be handled.
       def handle(line)
         command, *arguments = line[COMMAND_PREFIX.length..-1].split(/\s+/)
-        puts "Got client command: #{command}"
         found = false
         COMMANDS.each do |c, aliases|
           if aliases.include?(command.downcase)
@@ -52,6 +51,7 @@ module SquirrelDB
           @connection_manager.disconnect
         else
           puts "Not connected!"
+          @keyboard_handler.reactivate
         end
       end
     

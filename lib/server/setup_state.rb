@@ -6,13 +6,6 @@ module SquirrelDB
     # and changes to the next state afterwards.
     class SetupState
       
-      def initialize(connection, protocol)
-        @session = connection
-        @protocol = protocol
-        @bytes_read = 0
-        @data = ""
-      end
-      
       # Returns false, because the connection is not established yet in this state.
       def connected?
         false
@@ -28,8 +21,9 @@ module SquirrelDB
         end
       end
       
+      # Sends the given data through the connection.
       def send_data(data)
-        @session.send_data(data)
+        @connection.send_data(data)
       end
       
       # Returns the class of the next state.
@@ -41,7 +35,16 @@ module SquirrelDB
       def read_data(data)
         raise NotImplementedError
       end
-        
+      
+      protected
+      
+      def initialize(connection, protocol)
+        @connection = connection
+        @protocol = protocol
+        @bytes_read = 0
+        @data = ""
+      end
+      
     end
   
   end

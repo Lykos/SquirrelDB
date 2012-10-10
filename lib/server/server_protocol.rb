@@ -65,15 +65,14 @@ module SquirrelDB
       def read_client_dh_part(data)
         raise InternalConnectionError, "Read client Diffie Hellman part before client hello." unless @client_hello_read
         raise InternalConnectionError, "Client Diffie Hellman part read twice." if @client_dh_part_read
-        if tmp = read_internal(data)
-          client_dh_part = tmp[0]
-          dh.other_part = client_dh_part
-          secret = dh.key
-          generate_keys_states(secret, @client_nonce + @server_nonce)
-          @client_dh_part_read = true
-        else
-          false
-        end
+        raise ConnectionError, "Client Diffie Hellman part is not long enough to store the length." unless data.length >= INTERNAL_LENGTH_BYTES
+        tmp = read_internal(data)
+        return nil unless tmp
+        raise ConnectionError, "Client Diffie Hellman part is too long." unless tmp[1].empty?
+        dh.other_part = data
+        secret = dh.key
+        generate_crypto_objects(secret, @client_nonce + @server_nonce)
+        @client_dh_part_read = true
       end
       
       private

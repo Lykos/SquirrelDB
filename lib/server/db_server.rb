@@ -14,15 +14,11 @@ module SquirrelDB
       end
       
       def start
-        @signature = EM.start_server("127.0.0.1", 6667, ClientConnection, self, @database, @signer, @config)
+        @signature = EM.start_server("localhost", @config[:port], ClientConnection, self, @database, @signer, @config)
       end
       
       def stop
         EventMachine.stop_server(@signature)
-    
-        unless wait_for_connections_and_stop
-          EventMachine.add_periodic_timer(1) { wait_for_connections_and_stop }
-        end
       end
     
     end

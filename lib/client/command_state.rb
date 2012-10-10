@@ -36,9 +36,11 @@ module SquirrelDB
       
       # +keyboard_handler+:: An object that handles the keyboard events
       # +command_handler+:: An object that handles commands
-      def initialize(keyboard_handler, command_handler)
+      # +connection_handler+:: An object that handles the connections
+      def initialize(keyboard_handler, command_handler, connection_manager)
         @keyboard_handler = keyboard_handler
         @command_handler = command_handler
+        @connection_manager = connection_manager
       end      
     
     end

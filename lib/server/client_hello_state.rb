@@ -12,7 +12,7 @@ module SquirrelDB
 
       # +connection+:: The object that actually communicates with the client
       # +protocol+:: The protocol which is to be executed.
-      def initialize(connection, protocl)
+      def initialize(connection, protocol)
         super(connection, protocol)
       end
       

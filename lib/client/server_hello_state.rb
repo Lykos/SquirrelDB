@@ -16,7 +16,7 @@ module SquirrelDB
 
       # Returns the class of the next state.
       def next_state_class
-        ConnectedState
+        Server::ConnectedState
       end
       
       # Reads the data and returns true, if enough data is read

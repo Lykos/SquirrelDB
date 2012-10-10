@@ -31,7 +31,7 @@ module SquirrelDB
         when :close
           puts "#{response[:reason]}"
           puts "Connection closed by server."
-          @connection_manager.disconnect
+          @connection_manager.disconnect_from_server
         else
           puts "Unknown response type #{response[:response_type]}."
         end

@@ -28,7 +28,7 @@ module SquirrelDB
       end
       
       def start
-        @keyboard_handler = EM.open_keyboard(KeyboardHandler, @command_handler, @key_validator, @connection_manager) do |kh|
+        @keyboard_handler = EM.open_keyboard(KeyboardHandler, @command_handler, @connection_manager, @key_validator) do |kh|
           @connection_manager.keyboard_handler = kh
           @command_handler.keyboard_handler = kh
           @response_handler.keyboard_handler = kh
