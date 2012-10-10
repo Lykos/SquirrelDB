@@ -53,6 +53,11 @@ module SquirrelDB
         @connected
       end
       
+      def send_data(data)
+        puts "Really sending #{data.dump}."
+        super
+      end
+      
       def send_message(message)
         raise InternalConnectionError, "Connection has not been established yet." unless connected?
         puts "Sending #{message.dump}."

@@ -11,11 +11,11 @@ module SquirrelDB
         when :unknown
           puts "Unknown key received from server: "
           puts key
-          @keyboard_handler.activate(@keyboard_handler.prompt_state, "Continue? [yN] ", lambda { |l| handle_prompt_result(l) })
+          @keyboard_handler.activate(@keyboard_handler.prompt_state, "Continue? [yN] ", lambda { |l| handle_prompt_result(host, key, l) })
         when :invalid
           puts "Unknown key received from server: "
           puts key
-          @keyboard_handler.activate(@keyboard_handler.prompt_state, "Continue? [yN] ", lambda { |l| handle_prompt_result(l) })
+          @keyboard_handler.activate(@keyboard_handler.prompt_state, "Continue? [yN] ", lambda { |l| handle_prompt_result(host, key, l) })
 
         when :valid
           @keyboard_handler.activate(@keyboard_handler.connected_command_state)
@@ -34,8 +34,9 @@ module SquirrelDB
       
       private
       
-      def handle_prompt_result(line)
+      def handle_prompt_result(host, key, line)
         if ["y", "Y"].include?(line.chomp)
+          @key_validator.accept(host, key)
           @keyboard_handler.activate(@keyboard_handler.connected_command_state)
         else
           @connection_manager.disconnect
