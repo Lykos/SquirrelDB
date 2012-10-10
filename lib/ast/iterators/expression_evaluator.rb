@@ -1,7 +1,6 @@
 require 'ast/common/operator'
 require 'ast/visitors/visitor'
 require 'ast/common/element'
-require 'data/evaluation/expression_cost_calculator'
 require 'forwardable'
 
 module SquirrelDB

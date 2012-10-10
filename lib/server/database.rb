@@ -3,10 +3,10 @@ require 'data/sequence_manager'
 require 'data/data_initializer'
 require 'data/internal_evaluator'
 require 'schema/schema_manager'
-require 'data/compiler/compiler_factory'
+require 'compiler/compiler_factory'
 require 'sql/parser_factory'
 require 'rel_alg/converter_factory'
-require 'data/evaluation/state'
+require 'data/state'
 require 'storage/storage_factory'
 
 module SquirrelDB

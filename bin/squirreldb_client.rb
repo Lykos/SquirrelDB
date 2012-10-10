@@ -45,4 +45,6 @@ actions.create_parent(public_keys_file)
 actions.check_writable(public_keys_file, 'public keys file', true)
 
 # Run the client
-Client::Client.new(config).run
+EM.run do
+  Client::Client.new(config).run
+end

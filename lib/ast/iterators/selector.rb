@@ -1,5 +1,5 @@
 require 'ast/iterators/rel_alg_iterator'
-require 'data/evaluation/state'
+require 'data/state'
 
 module SquirrelDB
 

@@ -1,9 +1,8 @@
-require 'socket'
-require 'client/client_socket'
+require 'client/server_connection'
 
 module SquirrelDB
   
-  module Client
+  module KeyboardHandler
 
     # Manages the connections of a client and creates and manages the underlying sockets.
     class ConnectionManager
@@ -31,63 +30,44 @@ module SquirrelDB
     
       def disconnect
         raise IOError, "Connection is already closed." if !connected?
+        @connection.send_message(JSON::fast_generate({:request_type => :close})) if @connection.connected?
+        @connection.close_connection_after_writing
+        @connection.close_connection
         @connected = false
-        ObjectSpace.undefine_finalizer(self)
-        ConnectionManager.__disconnect(@client_socket, @socket)
       end
           
+      # Connects to the given +host+ at port +port+ with user +user+.
       def connect(user, host, port)
         raise IOError, "Connection is already open." if connected?
         if @aliases.has_key?(host)
           alias_info = @aliases[host]
           host = alias_info[:host]
+          raise RuntimeError, "The user is defined by the alias and by the user." if user && alias_info.has_key(:user)
           user = user || alias_info[:user]
           user = alias_info[:port] || port
         end
-        @socket = TCPSocket.new(host, port)
-        @client_socket = ClientSocket.new(@socket, lambda { |key| @validate_key.call(host, key) })
-        ObjectSpace.define_finalizer(self, proc { ConnectionManager.__disconnect(@client_socket, @socket) })
         @user = user
         @host = host
         @port = port
+        @connection = EM.connect(host, port, ServerConnection, @response_handler, @validate_key)
         @connected = true
       end
     
       def request(message)
-        raise IOError, "Not connected." if !connected?
-        @client_socket.puts(message)
-        @client_socket.gets
+        @connection.send_message(message)
       end
       
       protected
     
       # +config+:: A hash table containing at least the key +:aliases+
-      # +public_key_callback+:: A Proc object that takes a host and a public key as input and returns
+      # +response_handler+:: An object that handles responses from the server.
+      # +validate_key:: A Proc object that takes a host and a public key as input and returns
       #                         true if this key is accepted and false otherwise.
-      def initialize(aliases, validate_key)
+      def initialize(aliases, response_handler, validate_key)
         @aliases = aliases
+        @response_handler = response_handler
         @validate_key = validate_key
         @connected = false
-      end
-   
-      protected
-           
-      # This has to be a class method such that it can be used in a finalizer
-      def self.__disconnect(client_socket, socket)
-        begin
-          begin
-            begin
-              client_socket.puts("close") if client_socket && client_socket.writable?
-            ensure
-              client_socket.close if client_socket && !client_socket.closed?
-            end
-          ensure
-            socket.close if socket && !socket.closed?
-          end
-        rescue IOError, SystemCallError => e
-          warn "Ignored error while disconnecting: #{e}."
-          warn e.backtrace.join("\n")
-        end
       end
       
     end

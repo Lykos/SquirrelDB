@@ -1,26 +1,56 @@
-require 'eventmachine'
+require 'json'
 
 module SquirrelDB
   
   module Server
     
-    class ClientSession < EventMachine::Connection
+    class ClientSession
       
       # +database+:: The database
-      # +config+:: A hash table containing at least the keys +:port+, +:public_key+, +:private_key+
-      #            and +:dh_modulus_size+
-      def initialize(database, config)
+      # +connection+:: The connection to communicate with the client
+      def initialize(database, connection)
         @database = database
+        @connection = connection
         @config = config
         @log = Logging.logger[self]
-        @stop_mutex = Mutex.new
-        @state = UnconnectedState.new(self)
       end
       
-      attr_reader :log
+      # Receive and handle a message
+      def receive_message(message)
+        @log.debug { "Got request #{message.dump} from client." }
+        begin
+          request = JSON::load(message)
+        rescue JSON::JSONError => e
+          @log.error "Invalid JSON received from client."
+          @log.error e
+          response = JSON::fast_generate({:response_type => :error, :error => :invalid_json, :reason => e.to_s})
+        else
+          if request[:request_type] == :close
+            @log.debug "Closing after close request."
+            @connection.close_connection_after_write
+          elsif request[:request_type] == :sql
+            begin
+              statement = @database.compile(request[:sql])
+            rescue UserError => e
+              response = JSON::fast_generate({:response_type => :error, :error => e.class.name.intern, :reason => e.to_s})
+            end
+            if statement.query?
+              tuples = @database.query(statement)
+              values = tuples.map { |t| t.values }
+              response = JSON::fast_generate({:response_type => :tuples, :tuples => values})
+            else
+              database.execute(statement)
+              response = JSON::fast_generate({:response_type => :command_status, :status => :success, :message => "Success!"})
+            end
+          else
+            @log.error "Unknown request type #{request[:request_type]}"
+          end
+        end
+        @connection.send_message(response)
+      end
       
-      def receive_data(data)
-        @state = @state.receive_data(data)
+      def close
+        @connection.send_message(JSON::fast_generate({:response_type => :close}))
       end
         
     end

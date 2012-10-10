@@ -1,6 +1,6 @@
-require 'data/compiler/iterator_compiler'
-require 'data/compiler/compiler'
-require 'data/compiler/linker'
+require 'compiler/iterator_compiler'
+require 'compiler/compiler'
+require 'compiler/linker'
 
 module SquirrelDB
   

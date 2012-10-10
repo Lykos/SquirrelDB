@@ -8,7 +8,7 @@ require 'ast/rel_alg_operators/selection'
 require 'data/constants'
 require 'schema/constants'
 require 'schema/table_schema'
-require 'data/evaluation/state'
+require 'data/state'
 
 module SquirrelDB
 

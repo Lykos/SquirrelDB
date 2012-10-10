@@ -3,10 +3,11 @@
 $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib')))
   
 require 'server/server_option_parser'
+require 'server/db_server'
 require 'server/start_up_actions'
 require 'server/database'
 require 'server/server_defaults'
-require 'server/db_server'
+require 'server/client_connection'
 require 'server/logger_initializer'
 
 DATABASE_FILE_EXTENSION = '.sqrl'
@@ -89,5 +90,9 @@ config[:public_key] = public_key_file.binread
 config[:private_key] = private_key_file.binread
   
 # Start the database and the server
-database = Database.new(database_file, config)
-DBServer.new(config).run(database)
+Database.open(database_file, config) do |db|
+  EM.run do
+    DBServer.new(db, config).start
+  end
+end
+

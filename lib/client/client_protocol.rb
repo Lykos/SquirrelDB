@@ -39,13 +39,13 @@ module SquirrelDB
             return false
           elsif data.length >= VERSION_BYTES + NONCE_BYTES
             server_nonce = data.byteslice(VERSION_BYTES, VERSION_BYTES + NONCE_BYTES)
-            public_key, data2 = read_internal(data.byteslice(VERSION_BYTES + NONCE_BYTES..-1))
+            @public_key, data2 = read_internal(data.byteslice(VERSION_BYTES + NONCE_BYTES..-1))
             return false unless data2
             group, data2 = read_internal(data2)
             return false unless data2
             server_dh_part, data2 = read_internal(data2)
             return false unless data2
-            verifier = ElgamalVerifier.new(public_key)
+            verifier = ElgamalVerifier.new(@public_key)
             return false if verifier.signature_length > data2.length
             raise ConnectionError, "The signature has length #{data2.length} instead of #{verifier.signature_length}." unless data2.length == verifier.signature_length   
             raise ConnectionError, "Invalid signature received from server." if !verifier.verify(data)

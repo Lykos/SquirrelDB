@@ -1,3 +1,5 @@
+#encoding: UTF-8
+
 require 'errors/encoding_error'
 require 'RubyCrypto'
 
@@ -8,7 +10,7 @@ module SquirrelDB
     module Protocol
       
       # Protocol version
-      VERSION = 2
+      VERSION = 3
       
       # Number of bytes used to store the version
       VERSION_BYTES = 2
@@ -30,6 +32,9 @@ module SquirrelDB
       
       # Key length of the AES Key in bytes
       KEY_BYTE_LENGTH = AES_KEY_LENGTH / BYTE_BITS
+      
+      # Size of one block of the AES encryption/decryption
+      AES_BLOCK_SIZE = 16
       
       include Crypto
       attr_reader :crypto_objects_generated
@@ -117,6 +122,8 @@ module SquirrelDB
       # +secret+:: A secret shared between both parties.
       # +nonces+:: Additional randomness shared between both parties.
       def generate_crypto_objects(secret, nonces)
+        raise EncodingError, "Secret is not an ASCII 8 Bit String." unless secret.encoding == Encoding::BINARY
+        raise EncodingError, "Nonces is not an ASCII 8 Bit String." unless nonces.encoding == Encoding::BINARY
         raise InternalConnectionError, "Generated crypto objects twice." if @crypto_objects_generated
         hasher = SHA2Hasher.new(2 * AES_KEY_LENGTH)
         
@@ -135,10 +142,11 @@ module SquirrelDB
         @crypto_objects_generated = true
       end
       
-      # Signs and encrypts a given String and returns an ASCII 8 Bit String with the encrypted data.
+      # Signs and encrypts a given UTF-8 String and returns an ASCII 8 Bit String with the encrypted data.
       # +data+:: The String to be encrypted.
       def sign_encrypt(data)
         raise InternalConnectionError, "Crypto objects have not been generated yet." unless @crypto_objects_generated
+        raise EncodingError, "data has to be an UTF-8 Bit String." unless data.encoding == Encoding::UTF_8
         begin
           signed_message = @aes_signer.sign(data)
         rescue CryptoException => e
@@ -154,24 +162,36 @@ module SquirrelDB
       
       # Decrypts and verifies the given ASCII 8 Bit String. Returns nil if not enough data is present
       # and a two element Array consisting of the decrypted data as an UTF-8 String and the remaining data, if enough data
-      # is present. A +ConnectionError+ is thrown if the verifier is not happy.
+      # is present. A +ConnectionError+ is thrown if the verifier is not happy with the MAC or if the message has an invalid format.
       # +data+:: The signed and encrypted string.
       def decrypt_verify(data)
         raise InternalConnectionError, "Crypto objects have not been generated yet." unless @crypto_objects_generated
         raise EncodingError, "data has to be an ASCII 8 Bit String." unless data.encoding == Encoding::BINARY
         return nil if data.length < MESSAGE_LENGTH_BYTES
         length = unpack_length(data.byteslice(0, MESSAGE_LENGTH_BYTES))
-        encrypted_message = data.byteslice(MESSAGE_LENGTH_BYTES, MESSAGE_LENGTH_BYTES + length)
+        return nil if data.length < MESSAGE_LENGTH_BYTES + length
+        raise ConnectionError, "The message is too short to include the MAC." if length <= AES_BLOCK_SIZE
+        encrypted_message = data.byteslice(MESSAGE_LENGTH_BYTES, length)
+        data = data.byteslice(MESSAGE_LENGTH_BYTES + length..-1)
+        raise ConnectionError, "The message doesn't have a length that is divisible by the AES block size." unless encrypted_message.length % AES_BLOCK_SIZE == 0
         begin
           signed_message = @aes_decrypter.decrypt(encrypted_message)
         rescue CryptoException => e
-          raise InternalConnectoinError, "Error while decrypting: #{e.message}"
+          if e.message == "The padding of the message has an invalid format"
+            raise ConnectionError, "The padding of the encrypted message has an invalid format."
+          else
+            raise InternalConnectionError, "Encrypted message was invalid: #{e.message}"
+          end
         end
         begin
           raise ConnectionError, "Got invalid MAC." unless @aes_verifier.verify(signed_message)
-          @aes_verifier.remove_signature(signed_message).force_encoding(Encoding::UTF_8)
         rescue CryptoException => e
           raise InternalConnectionError, "Error while verifying signature: #{e.message}"
+        end
+        begin
+          [@aes_verifier.remove_signature(signed_message).force_encoding(Encoding::UTF_8), data]
+        rescue CryptoException => e
+          raise InternalConnectionError, "Error while removing signature: #{e.message}"
         end
       end
       

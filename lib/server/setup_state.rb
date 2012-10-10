@@ -1,5 +1,3 @@
-require 'eventmachine'
-
 module SquirrelDB
   
   module Server
@@ -8,19 +6,23 @@ module SquirrelDB
     # and changes to the next state afterwards.
     class SetupState
       
-      def initialize(session)
-        @session = session
+      def initialize(connection, protocol)
+        @session = connection
+        @protocol = protocol
         @bytes_read = 0
         @data = ""
+      end
+      
+      # Returns false, because the connection is not established yet in this state.
+      def connected?
+        false
       end
       
       # Reads data
       def receive_data(data)
         @data << data
-        if @data >= data_needed
-          extract_information(@data.slice!(0, data_needed))
-          new_state = next_state
-          new_state.receive_data(@data)
+        if read_data(data)
+          next_state_class.new(@connection, @protocol)
         else
           self
         end
@@ -30,18 +32,13 @@ module SquirrelDB
         @session.send_data(data)
       end
       
-      # Returns the next state.
-      def next_state
+      # Returns the class of the next state.
+      def next_state_class
         raise NotImplementedError
       end
       
-      # Extracts the needed information from a string that has the desired size. 
-      def extract_information(data)
-        raise NotImplementedError
-      end
-      
-      # Returns how much data this state needs.
-      def data_needed
+      # Reads the data and returns true, if enough data is read
+      def read_data(data)
         raise NotImplementedError
       end
         
