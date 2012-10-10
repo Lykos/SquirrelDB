@@ -3,6 +3,8 @@ require 'ast/common/all'
 require 'ast/sql/all'
 require 'schema/type'
 require 'sql/lexical_parser'
+require 'errors/parse_error'
+require 'errors/internal_parser_error'
 
 # TODO Redo this with Racc
 module SquirrelDB
@@ -13,7 +15,7 @@ module SquirrelDB
 
       include Syntax
 
-      def process( tokens )
+      def process(tokens)
         @tokens = tokens
         if @tokens[0] =~ SELECT
           parse_select( 0 )[0]
@@ -319,7 +321,7 @@ module SquirrelDB
 
       def pop_operator
         operator = @operator_stack.last
-        if operator.kind_of?( Operator ) && operator.is_binary?
+        if operator.kind_of?( Operator ) && operator.binary?
           pop_binary_operator
         elsif operator.kind_of?( Operator ) && operator.is_unary?
           pop_unary_operator
@@ -337,7 +339,7 @@ module SquirrelDB
         expression = @expression_stack.pop
         parameters = []
         until expression == :func
-          raise InternalParserError, "Unexpected element on expression stack: #{exression}." unless expression.kind_of?( Element )
+          raise InternalParserError, "Unexpected element on expression stack: #{expression}." unless expression.kind_of?( Element )
           parameters.push(expression)
           raise InternalParserError, "Expression stack unexpectedly empty." if @expression_stack.empty?
           expression = @expression_stack.pop
@@ -348,7 +350,7 @@ module SquirrelDB
       def pop_binary_operator
         raise InternalParserError, "Expression stack unexpectedly empty." if @expression_stack.empty?
         operator = @operator_stack.pop
-        raise InternalParseError, "Expected binary operator on operator stack instead of #{operator}." unless operator.kind_of?( Operator ) && operator.is_binary?
+        raise InternalParseError, "Expected binary operator on operator stack instead of #{operator}." unless operator.kind_of?( Operator ) && operator.binary?
         raise InternalParseError, "Expression stack doesn't contain two elements." if @expression_stack.length < 2
         raise InternalParseError, "Got #{@expression_stack.last.inspect} as second part of a binary operation." unless @expression_stack.last.kind_of?( Element )
         raise InternalParseError, "Got #{@expression_stack[-2].inspect} as second part of a binary operation." unless @expression_stack[-2].kind_of?( Element )

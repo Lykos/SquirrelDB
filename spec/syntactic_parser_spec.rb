@@ -1,9 +1,9 @@
-require 'sql/parser/syntactic_parser'
-require 'sql/elements/operator'
+require 'sql/syntactic_parser'
+require 'ast/common/operator'
 require 'schema/type'
 
 include SquirrelDB
-include Sql
+include SQL
 
 describe SyntacticParser do
 
@@ -12,7 +12,7 @@ describe SyntacticParser do
   end
 
   it "should parse a scoped function application correctly" do
-    @syntactic_parser.process( "select scope.f( scope.var, 2*4 )" ).should == SelectStatement.new(
+    @syntactic_parser.process( ["select", "scope", ".", "f", "(", "scope", ".", "var", "2", "*","4", ")"] ).should == SelectStatement.new(
       SelectClause.new( [
         Renaming.new(
           BinaryOperation.new(
@@ -21,8 +21,7 @@ describe SyntacticParser do
             FunctionApplication.new(
               Variable.new( "f" ),
               [
-                BinaryOperation.new(
-                  Operator::DOT,
+                ScopedVariable.new(
                   Variable.new( "scope" ),
                   Variable.new( "var" )
                 ),
@@ -42,7 +41,8 @@ describe SyntacticParser do
   end
 
   it "should parse a select with a complex arithmetic expression correctly" do
-    @syntactic_parser.process( "select +2 * 3 + (-4) * 3 + (2 / -3 - 1 + - -(4*zebra)) * f(3)" ).should == SelectStatement.new(
+    @syntactic_parser.process( ["select", "+", "2", "*", "3", "+", "(", "-", "4", ")", "*", "3", "+", "(", "2", "/",
+      "-", "3", "-", "1", "+", "-", "-", "(", "4", "*", "zebra", ")", ")", "*", "f", "(", "3", ")"] ).should == SelectStatement.new(
       SelectClause.new( [
         Renaming.new(
           BinaryOperation.new(
@@ -108,7 +108,7 @@ describe SyntacticParser do
   end
 
   it "should parse * before + correctly" do
-    @syntactic_parser.process( "select 2 + b * a" ).should == SelectStatement.new(
+    @syntactic_parser.process(["select", "2", "+", "b", "*", "a"]).should == SelectStatement.new(
       SelectClause.new( [
         Renaming.new(
           BinaryOperation.new(
@@ -128,7 +128,7 @@ describe SyntacticParser do
   end
 
   it "should parse a select with a ** correctly" do
-    @syntactic_parser.process( "select 2 ** 3" ).should == SelectStatement.new(
+    @syntactic_parser.process(["select", "2", "**", "3"]).should == SelectStatement.new(
       SelectClause.new( [
         Renaming.new(
           BinaryOperation.new(

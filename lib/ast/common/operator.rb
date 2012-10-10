@@ -80,13 +80,13 @@ module SquirrelDB
         UNARY_PLUS, UNARY_MINUS, NOT]
 
       def self.choose_unary_operator( symbol )
-        op = ALL_OPERATORS.find { |o| symbol =~ o.to_regexp and o.is_unary? }
+        op = ALL_OPERATORS.find { |o| symbol =~ o.to_regexp and o.unary? }
         raise "No unary Operation for #{symbol.inspect} found." unless op
         op
       end
 
       def self.choose_binary_operator( symbol )
-        op = ALL_OPERATORS.find { |o| symbol =~ o.to_regexp and o.is_binary? }
+        op = ALL_OPERATORS.find { |o| symbol =~ o.to_regexp and o.binary? }
         raise "No binary Operation for #{symbol.inspect} found." unless op
         op
       end

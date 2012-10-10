@@ -1,4 +1,4 @@
-require 'errors/storage_exception'
+require 'errors/storage_error'
 require 'data/constants'
 
 module SquirrelDB

@@ -21,6 +21,8 @@ module SquirrelDB
         }
       end
       
+      # Returns the path to the config file of the user, i.e. the one he can modify. If this
+      # file does not exist, then a warning is printed.
       def user_config_file
         config.home.to_path + DEFAULT_CONFIG_FILE_NAME
       end

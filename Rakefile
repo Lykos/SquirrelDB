@@ -1,12 +1,13 @@
 require 'rubygems'
 require 'rdoc/task'
-require 'spec/rake/spectask'
+require 'rspec/core/rake_task'
+require 'rspec_encoding_matchers'
 
-Spec::Rake::SpecTask.new do |t|
-  t.ruby_opts = ['-rtest/unit']
-  t.spec_files = FileList['spec/**/*_spec.rb']
+RSpec::Core::RakeTask.new do |t|
+  t.fail_on_error = false
 end
 
 Rake::RDocTask.new do |rd|
   rd.rdoc_files.include("lib/**/*.rb")
+  rd.rdoc_dir = "doc"
 end
