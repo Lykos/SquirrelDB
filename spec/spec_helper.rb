@@ -1,5 +1,6 @@
 #encoding: UTF-8
 
+gem 'rspec-encoding-matchers'
 require 'rspec_encoding_matchers'
 
 RSpec.configure do |config|

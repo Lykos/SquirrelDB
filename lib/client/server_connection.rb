@@ -16,7 +16,7 @@ module SquirrelDB
         @state = ServerHelloState.new(self, @protocol)
       end
       
-      def post_init
+      def connection_completed
         send_data(@protocol.client_hello)
       end
       

@@ -1,4 +1,5 @@
 require 'client/command_handler'
+require 'client/tuple_pretty_printer'
 require 'json'
 require 'client/connection_manager'
 require 'RubyCrypto'
@@ -9,7 +10,7 @@ module SquirrelDB
     
     class ResponseHandler
       
-      attr_writer keyboard_handler, connection_manager
+      attr_writer :keyboard_handler, :connection_manager
 
       def handle_response(response)
         begin

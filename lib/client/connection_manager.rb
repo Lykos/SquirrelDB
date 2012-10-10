@@ -2,7 +2,7 @@ require 'client/server_connection'
 
 module SquirrelDB
   
-  module KeyboardHandler
+  module Client
 
     # Manages the connections of a client
     class ConnectionManager
@@ -44,17 +44,22 @@ module SquirrelDB
           alias_info = @aliases[host]
           host = alias_info[:host]
           if user && alias_info.has_key(:user)
-            puts "The user is ambiguous because it is defined by the alias and by the user."
+            puts "The user is ambiguous because it is defined by the alias and by the argument."
             @keyboard_handler.reactivate
             return
           end 
           user = user || alias_info[:user]
-          unless user
-            puts "The user is not defined."
-            @keyboard_handler.reactivate
-            return
-          end
           port = alias_info[:port] || port
+        end
+        unless user
+          puts "The user is not defined."
+          @keyboard_handler.reactivate
+          return
+        end
+        unless port
+          puts "The port is not defined."
+          @keyboard_handler.reactivate
+          return
         end
         disconnect if connected?
         @user = user

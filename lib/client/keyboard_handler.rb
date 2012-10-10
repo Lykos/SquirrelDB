@@ -12,7 +12,7 @@ module SquirrelDB
     
     class KeyboardHandler < EventMachine::Connection
       
-      include Protocol::LineText2
+      include EM::Protocols::LineText2
       
       attr_reader :prompt_state, :command_state, :key_validate_state, :connected_command_state
       
@@ -45,11 +45,12 @@ module SquirrelDB
       
       protected
       
-      def initialize(connection_manager, config, key_validator)
+      def initialize(command_handler, connection_manager, key_validator)
         @prompt_state = PromptState.new(self)
         @key_validate_state = KeyValidateState.new(self, connection_manager, key_validator)
-        @command_state = CommandState.new(self, connection_manager, config)
-        @connected_command_state = ConnectedCommandState.new(self, connection_manager, config)
+        @command_state = CommandState.new(self, command_handler)
+        @connected_command_state = ConnectedCommandState.new(self, command_handler)
+        @state = @command_state
       end
     
     end
