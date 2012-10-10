@@ -1,7 +1,7 @@
-require 'client/command_handler'
-require 'client/response_handler'
-require 'json'
-require 'client/connection_manager'
+require 'client/command_state'
+require 'client/prompt_state'
+require 'client/key_validate_state'
+require 'client/connected_command_state'
 require 'RubyCrypto'
 gem 'eventmachine'
 require 'eventmachine'
@@ -10,60 +10,47 @@ module SquirrelDB
   
   module Client
     
-    class KeyboardHandler
+    class KeyboardHandler < EventMachine::Connection
       
-      include Crypto
-
-      # Runs the client and reads commands from stdin and handles them or sends them to the server.
-      # TODO Let EM do this as well.
+      include Protocol::LineText2
+      
+      attr_reader :prompt_state, :command_state, :key_validate_state, :connected_command_state
+      
       def receive_line(line)
-            if line.chomp[-1] == "\\"
-              message << line.chomp[0..-2] << " "
-            else
-              line.chomp!
-              if @command_handler.is_command?(line)
-                @command_handler.handle(line)
-              else
-                message << line
-                commands = message.scan(/.*?;/)
-                message = message.match(/(?<rest>[^;]*?)$/)[:rest].to_s
-                if @connection_manager.connected?
-                  commands.each do |command|
-                    request = JSON::fast_generate({:request_type => :sql, :sql => command})
-                    begin
-                      JSON::load(@connection_manager.request(request))
-                    rescue IOError, SystemCallError => e
-                      puts "Error while sending to server: #{e}"
-                      break
-                    end
-                  end # commands.each
-                else
-                  puts "Not connected. Unable to send to server."
-                end #if
-              end # if
-            end # while
-            print prompt
-          end
-          puts "Session closed"
-        ensure
-          @connection_manager.disconnect if @connection_manager.connected?
-        end
+        pause
+        @state.receive_line(line)
       end
       
-      def disconnect
-        @connection_manager.disconnect
+      def reactivate(*args)
+        @state.activate(*args)
+        resume
+      end
+      
+      def activate(state, *args)
+        @state = state
+        @state.activate(*args)
+        resume
+      end
+      
+      # +responses+:: The number of responses the keyboard handler should wait for.
+      def wait_responses(responses)
+        @responses = responses
+      end
+      
+      # Get one response and reactivate, if we have enough
+      def respond
+        @responses -= 1
+        reactivate if @responses == 0
       end
       
       protected
       
-      # +config+:: A hash table that contains the configuration. If the key +:host+ is present, this is used for an initial connection.
-      def initialize(config)
-        @config = config
-        read_public_keys
-        @connection_manager = ConnectionManager.new(config[:aliases], ResponseHandler.new(self), lambda { |host, key| validate_key(host, key) })
-        @command_handler = CommandHandler.new(@connection_manager, config)
-      end      
-      
+      def initialize(connection_manager, config, key_validator)
+        @prompt_state = PromptState.new(self)
+        @key_validate_state = KeyValidateState.new(self, connection_manager, key_validator)
+        @command_state = CommandState.new(self, connection_manager, config)
+        @connected_command_state = ConnectedCommandState.new(self, connection_manager, config)
+      end
     
     end
     

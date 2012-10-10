@@ -5,7 +5,7 @@ module SquirrelDB
   
   module Client
       
-    # Represents the state in which the client waits for the server hello.
+    # Represents the state of the server connection in which the client waits for the server hello.
     class ServerHelloState < Server::SetupState
       
       protected
@@ -23,6 +23,7 @@ module SquirrelDB
       def read_data(data)
         if @protocol.read_server_hello(data)
           send_data(@protocol.client_dh_part)
+          @connection.connection_established
           true
         end
       end

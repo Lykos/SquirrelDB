@@ -10,14 +10,18 @@ module SquirrelDB
     
     class ServerConnection < EventMachine::Connection
       
-      def initialize(response_handler, validate_key)
-        @validate_key = validate_key
+      def initialize(keyboard_handler, response_handler)
+        @keyboard_handler = keyboard_handler
         @protocol = ClientProtocol.new
         @state = ServerHelloState.new(self, @protocol)
       end
       
       def post_init
         send_data(@protocol.client_hello)
+      end
+      
+      def connection_established
+        @keyboard_handler.activate(@keyboard_handler.key_validate_state)
       end
       
       def receive_data(data)

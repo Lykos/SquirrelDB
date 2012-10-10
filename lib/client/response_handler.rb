@@ -8,6 +8,8 @@ module SquirrelDB
   module Client
     
     class ResponseHandler
+      
+      attr_writer keyboard_handler, connection_manager
 
       def handle_response(response)
         begin
@@ -17,26 +19,29 @@ module SquirrelDB
         end
         case response[:response_type]
         when :tuples
-          puts response[:tuples].map { |t| t.join "\t\t" }
+          puts @tuple_pretty_printer.pretty_print(response[:tuples])
+          @keyboard_handler.respond
         when :command_status
-          puts response[:message] unless response[:message].empty?
+          puts response[:message]
+          @keyboard_handler.respond
         when :error
           puts "Error: #{response[:reason]}"
+          @keyboard_handler.respond
         when :close
           puts "#{response[:reason]}"
-          puts "connection closed."
-          @client.disconnect
+          puts "Connection closed by server."
+          @connection_manager.disconnect
         else
           puts "Unknown response type #{response[:response_type]}."
-        end # case
+        end
       end
       
       protected
       
-      def initialize(client)
-        @client = client
+      def initialize
+        @tuple_pretty_printer = TuplePrettyPrinter.new
       end
-    
+          
     end
     
   end

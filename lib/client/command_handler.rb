@@ -6,42 +6,29 @@ module SquirrelDB
         
     # Handles internal commands called from the client.
     class CommandHandler
+      
+      attr_writer :keyboard_handler
     
-      def initialize(connection_manager, config)
-        @connection_manager = connection_manager
-        @config = config
-      end
-    
-      def is_command?(line)
+      # Checks if the line is a command, i.e., if it starts with the prefix "/".
+      # +line+:: The potential command.  
+      def command?(line)
         line.start_with?(COMMAND_PREFIX)
       end
     
+      # Handles the given line as a command.
+      # +line+:: The command to be handled.
       def handle(line)
         command, *arguments = line[COMMAND_PREFIX.length..-1].split(/\s+/)
         puts "Got client command: #{command}"
+        found = false
         COMMANDS.each do |c, aliases|
           if aliases.include?(command.downcase)
             method(c).call(*arguments)
+            found = true
             break
           end
         end
-      end
-      
-      def really_connect(user, host, port)
-        @connection_manager.disconnect if @connection_manager.connected?
-        if host
-          if user
-            begin
-              @connection_manager.connect(user, host, port)
-              puts "Connected to #{user}@#{host}."
-            rescue IOError, SystemCallError => e
-              puts "Connection could not be established: #{e}"
-            end
-          else
-            puts "Host #{host} specified, but no user and #{host} is not an alias that specifies the user."
-            return
-          end            
-        end
+        puts "Command not found: #{c}." unless found
       end
     
       private
@@ -71,8 +58,8 @@ module SquirrelDB
       def connect(*args)
         options = {}
         begin
-          OptionParser.new do |opts|
-            opts.banner = "Usage: #{$0} [options] [user@](host|alias|ipv4_address|ipv6_address)"
+          connect_option_parser = OptionParser.new do |opts|
+            opts.banner = "Usage: /connect [options] [user@](host|alias|ipv4_address|ipv6_address)"
             opts.on("-p", "--port N", Integer, "Use port N") do |p|
               @config[:port] = p
             end
@@ -81,7 +68,8 @@ module SquirrelDB
               puts opts
               return
             end
-          end.parse!(args)
+          end
+          connect_option_parser.parse!(args)
         rescue OptionParser::ParseError => e
           puts e
           puts connect_option_parser
@@ -89,15 +77,25 @@ module SquirrelDB
         connections = args.select { |arg| ConnectId::PATTERN.match(arg) }
         if connections.length == 0
           puts "No connection specified."
+          @keyboard_handler.reactivate
           return
         elsif connections.length > 1
           puts "More than one connection specified."
+          @keyboard_handler.reactivate
           return
         end
         connect_id = ConnectId.parse(connections[0])
-        really_connect(connect_id.user, connect_id.host, options[:port] || @config[:port])
+        @connection_manager.connect(connect_id.user, connect_id.host, options[:port] || @config[:port])
       end
-         
+      
+      protected
+
+      # +connection_manager+:: An object that handles the connections
+      def initialize(connection_manager, config)
+          @connection_manager = connection_manager
+          @config = config
+      end
+      
     end
 
   end

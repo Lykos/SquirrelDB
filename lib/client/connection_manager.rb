@@ -4,10 +4,12 @@ module SquirrelDB
   
   module KeyboardHandler
 
-    # Manages the connections of a client and creates and manages the underlying sockets.
+    # Manages the connections of a client
     class ConnectionManager
       
       attr_reader :user, :host, :port
+      
+      attr_writer :keyboard_handler
 
       def user
         raise "Not connected." unless @connected
@@ -38,18 +40,28 @@ module SquirrelDB
           
       # Connects to the given +host+ at port +port+ with user +user+.
       def connect(user, host, port)
-        raise IOError, "Connection is already open." if connected?
         if @aliases.has_key?(host)
           alias_info = @aliases[host]
           host = alias_info[:host]
-          raise RuntimeError, "The user is defined by the alias and by the user." if user && alias_info.has_key(:user)
+          if user && alias_info.has_key(:user)
+            puts "The user is ambiguous because it is defined by the alias and by the user."
+            @keyboard_handler.reactivate
+            return
+          end 
           user = user || alias_info[:user]
-          user = alias_info[:port] || port
+          unless user
+            puts "The user is not defined."
+            @keyboard_handler.reactivate
+            return
+          end
+          port = alias_info[:port] || port
         end
+        disconnect if connected?
         @user = user
         @host = host
         @port = port
-        @connection = EM.connect(host, port, ServerConnection, @response_handler, @validate_key)
+        puts "Trying to connect to server. This may take a while."
+        @connection = EM.connect(host, port, ServerConnection, @keyboard_handler, @response_handler)
         @connected = true
       end
     
@@ -59,14 +71,11 @@ module SquirrelDB
       
       protected
     
-      # +config+:: A hash table containing at least the key +:aliases+
       # +response_handler+:: An object that handles responses from the server.
-      # +validate_key:: A Proc object that takes a host and a public key as input and returns
-      #                         true if this key is accepted and false otherwise.
-      def initialize(aliases, response_handler, validate_key)
-        @aliases = aliases
+      # +config+:: A hash table containing at least the key +:aliases+
+      def initialize(response_handler, config)
+        @aliases = config[:aliases]
         @response_handler = response_handler
-        @validate_key = validate_key
         @connected = false
       end
       
