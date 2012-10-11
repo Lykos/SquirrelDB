@@ -22,30 +22,31 @@ module SquirrelDB
         rescue JSON::JSONError => e
           @log.error "Invalid JSON received from client."
           @log.error e
-          response = JSON::fast_generate({:response_type => :error, :error => :invalid_json, :reason => e.to_s})
+          response = JSON::fast_generate({"response_type" => "error", "error" => JSONError.name, "reason" => e.to_s})
         else
-          if request[:request_type] == :close
+          case request["request_type"]
+          when "close"
             @log.debug "Closing after close request."
-            @connection.close_connection_after_write
-          elsif request[:request_type] == :sql
+            @connection.close_connection_after_writing
+          when "sql"
             begin
-              statement = @database.compile(request[:sql])
+              statement = @database.compile(request["sql"])
             rescue UserError => e
-              response = JSON::fast_generate({:response_type => :error, :error => e.class.name.intern, :reason => e.to_s})
+              response = JSON::fast_generate({"response_type" => "error", "error" => e.class.name, "reason" => e.to_s})
             end
             if statement.query?
               tuples = @database.query(statement)
               values = tuples.map { |t| t.values }
-              response = JSON::fast_generate({:response_type => :tuples, :tuples => values})
+              response = JSON::fast_generate({"response_type" => "tuples", "tuples" => values})
             else
               database.execute(statement)
-              response = JSON::fast_generate({:response_type => :command_status, :status => :success, :message => "Success!"})
+              response = JSON::fast_generate({"response_type" => "command_status", "status" => "success", "message" => "Success!"})
             end
           else
-            @log.error "Unknown request type #{request[:request_type]}"
+            @log.error "Unknown request type #{request["request_type"]} received from client."
           end
         end
-        @connection.send_message(response)
+        @connection.send_message(response) if response
       end
       
       def close

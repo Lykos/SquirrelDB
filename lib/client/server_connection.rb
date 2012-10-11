@@ -21,11 +21,6 @@ module SquirrelDB
         send_data(@protocol.client_hello)
       end
       
-      def close_connection_after_writing(*args)
-        @intentionally = true
-        super
-      end
-      
       def close_connection(*args)
         @intentionally = true
         super
@@ -53,14 +48,8 @@ module SquirrelDB
         @connected
       end
       
-      def send_data(data)
-        puts "Really sending #{data.dump}."
-        super
-      end
-      
       def send_message(message)
         raise InternalConnectionError, "Connection has not been established yet." unless connected?
-        puts "Sending #{message.dump}."
         @state.send_message(message)
       end
     

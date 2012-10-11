@@ -134,7 +134,7 @@ module SquirrelDB
         states = hasher.hash(nonces)
         secrecy_state = states[0...KEY_BYTE_LENGTH]
         authenticity_state = states[KEY_BYTE_LENGTH...2 * KEY_BYTE_LENGTH]
-        
+                
         @aes_encrypter = AESEncrypter.new(secrecy_key, secrecy_state)
         @aes_decrypter = AESDecrypter.new(secrecy_key, secrecy_state)
         @aes_signer = AESSigner.new(authenticity_key, authenticity_state)

@@ -27,7 +27,7 @@ module SquirrelDB
             break
           end
         end
-        puts "Command not found: #{c}." unless found
+        puts "Command not found: #{command}." unless found
       end
     
       private
@@ -42,13 +42,24 @@ module SquirrelDB
     
       def quit(*args)
         @connection_manager.disconnect if @connection_manager.connected?
-        puts "Closing session."
-        exit(0)
+        EM.add_periodic_timer(0.1) do
+          unless @connection_manager.connected?
+            puts "Closing session."
+            EM.stop_event_loop
+          end
+        end
       end
     
       def disconnect(*args)
         if @connection_manager.connected?
           @connection_manager.disconnect
+          timer = EM.add_periodic_timer(0.1) do
+            unless @connection_manager.connected?
+              timer.cancel
+              puts "Disconnected from server."
+              @keyboard_handler.activate(@keyboard_handler.command_state)
+            end
+          end
         else
           puts "Not connected!"
           @keyboard_handler.reactivate
@@ -66,6 +77,7 @@ module SquirrelDB
       
             opts.on("-h", "--help") do |h|
               puts opts
+              @keyboard_handler.reactivate
               return
             end
           end

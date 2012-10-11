@@ -39,11 +39,6 @@ module SquirrelDB
         super
       end
       
-      def close_connection_after_writing(*args)
-        @intentionally = true
-        super
-      end
-      
       def unbind
         Logging.mdc['client'] = @client_name
         @log.debug("Connection to client lost.") unless @intentionally
@@ -52,7 +47,6 @@ module SquirrelDB
       # Receive raw data through the connection
       def receive_data(data)
         Logging.mdc['client'] = @client_name
-        @log.debug("Got data #{data.dump}.")
         begin
           @state = @state.receive_data(data)
         rescue UserError => e

@@ -38,7 +38,7 @@ module SquirrelDB
           if data.length < VERSION_BYTES + NONCE_BYTES
             return false
           elsif data.length >= VERSION_BYTES + NONCE_BYTES
-            server_nonce = data.byteslice(VERSION_BYTES, VERSION_BYTES + NONCE_BYTES)
+            server_nonce = data.byteslice(VERSION_BYTES, NONCE_BYTES)
             @public_key, data2 = read_internal(data.byteslice(VERSION_BYTES + NONCE_BYTES..-1))
             return false unless data2
             group, data2 = read_internal(data2)
