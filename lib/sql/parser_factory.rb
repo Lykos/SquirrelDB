@@ -1,6 +1,4 @@
 require 'sql/preprocessor'
-require 'sql/lexical_parser'
-require 'sql/syntactic_parser'
 require 'sql/parser'
 
 module SquirrelDB
