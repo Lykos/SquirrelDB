@@ -19,6 +19,7 @@ module SquirrelDB
       
       def stop
         EventMachine.stop_server(@signature)
+        EventMachine.stop_event_loop
       end
     
     end

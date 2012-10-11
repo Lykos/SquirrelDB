@@ -10,8 +10,8 @@ module SquirrelDB
       def receive_line(line)
         if line.chomp[-1] == "\\"
           @message << line.chomp[0..-2] << " "
+          @keyboard_handler.reactivate(@message)
         else
-          line.chomp!
           if @command_handler.command?(line)
             @command_handler.handle(line)
           else
@@ -22,14 +22,18 @@ module SquirrelDB
       
       def receive_request(line)
         puts "Not connected. Unable to send to server."
-        @keyboard_handler.activate(@keyboard_handler.command_state)
+        @keyboard_handler.reactivate
       end
       
       # Activates this state
-      def activate
-        @message = ""
-        print "> "
+      def activate(message="")
+        @message = message
+        print prompt
         @keyboard_handler.resume
+      end
+      
+      def prompt
+        "> "
       end
       
       protected

@@ -13,6 +13,7 @@ module SquirrelDB
       def initialize(connection_manager, keyboard_handler, response_handler)
         @connection_manager = connection_manager
         @keyboard_handler = keyboard_handler
+        @response_handler = response_handler
         @protocol = ClientProtocol.new
         @state = ServerHelloState.new(self, @protocol)
       end
@@ -41,7 +42,7 @@ module SquirrelDB
       end
       
       def receive_message(message)
-        @response_handler.handle_response(response)
+        @response_handler.handle_response(message)
       end
 
       def connected?

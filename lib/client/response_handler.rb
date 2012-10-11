@@ -14,27 +14,27 @@ module SquirrelDB
 
       def handle_response(response)
         begin
-          JSON::load(response)
+          response = JSON::load(response)
         rescue JSONError => e
           puts "Got invalid JSON from server: #{e}"
+          @keyboard_handler.respond
+          return
         end
-        case response[:response_type]
-        when :tuples
-          puts @tuple_pretty_printer.pretty_print(response[:tuples])
-          @keyboard_handler.respond
-        when :command_status
-          puts response[:message]
-          @keyboard_handler.respond
-        when :error
-          puts "Error: #{response[:reason]}"
-          @keyboard_handler.respond
-        when :close
-          puts "#{response[:reason]}"
+        case response["response_type"]
+        when "tuples"
+          puts @tuple_pretty_printer.pretty_print(response["tuples"])
+        when "command_status"
+          puts response["message"]
+        when "error"
+          puts "Error: #{response["reason"]}"
+        when "close"
+          puts "#{response["reason"]}"
           puts "Connection closed by server."
           @connection_manager.disconnect_from_server
         else
-          puts "Unknown response type #{response[:response_type]}."
+          puts "Unknown response type #{response["response_type"]}."
         end
+        @keyboard_handler.respond
       end
       
       protected

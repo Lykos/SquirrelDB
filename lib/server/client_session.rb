@@ -39,7 +39,7 @@ module SquirrelDB
               values = tuples.map { |t| t.values }
               response = JSON::fast_generate({"response_type" => "tuples", "tuples" => values})
             else
-              database.execute(statement)
+              @database.execute(statement)
               response = JSON::fast_generate({"response_type" => "command_status", "status" => "success", "message" => "Success!"})
             end
           else

@@ -11,24 +11,22 @@ module SquirrelDB
 
       def receive_request(line)
         @message << line
-        commands = @message.scan(/.*?;/)
-        @message = @message.match(/(?<rest>[^;]*)$/)[:rest].to_s
+        length = line.length
+        commands = @message.split(";")
+        @message = length == commands.map { |c| c.length + 1 }.reduce(0, :+) ? "" : commands.pop
+        if commands.empty?
+          @keyboard_handler.reactivate(@message)
+        else
           commands.each do |command|
-            request = JSON::fast_generate({:request_type => :sql, :sql => command})
-            begin
-              JSON::load(@connection_manager.request(request))
-            rescue IOError, SystemCallError => e
-              puts "Error while sending to server: #{e}"
-              break
-            end
-          end # commands.each
+            request = JSON::fast_generate({"request_type" => "sql", "sql" => command})
+            @connection_manager.request(request)
+          end
+          @keyboard_handler.wait_responses(commands.length, @message)
+        end
       end
       
-      # Activates this state
-      def activate(message="")
-        @message = message
-        print @connection_manager.user + "@" + @connection_manager.host + " > " 
-        @keyboard_handler.resume
+      def prompt
+        @connection_manager.user + "@" + @connection_manager.host + " > " 
       end
       
     end

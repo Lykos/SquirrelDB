@@ -33,14 +33,15 @@ module SquirrelDB
       end
       
       # +responses+:: The number of responses the keyboard handler should wait for.
-      def wait_responses(responses)
+      def wait_responses(responses, *args)
+        @args = args
         @responses = responses
       end
       
       # Get one response and reactivate, if we have enough
       def respond
         @responses -= 1
-        reactivate if @responses == 0
+        reactivate(*@args) if @responses == 0
       end
       
       protected
