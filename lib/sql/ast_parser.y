@@ -54,9 +54,9 @@ class SquirrelDB::SQL::ASTParser
           | wildcard
           
     wildcard: "*"
-              { Wildcard.new }
+              { WildCard.new }
             | name "." "*"
-              { ScopedVariable.new(val[0], val[2]) }
+              { ScopedVariable.new(val[0], WildCard.new) }
               
     from_clause: { FromClause.new([]) }
                | "from" tables { FromClause.new(val[1]) }
@@ -256,7 +256,11 @@ include SquirrelDB::AST
 attr_writer :lexer
 
 def parse
-  yyparse @lexer, :scan
+  begin
+    yyparse @lexer, :scan
+  rescue Racc::ParseError => e
+    raise SquirrelDB::ParseError, e.message
+  end
 end
 
 def binop(val)

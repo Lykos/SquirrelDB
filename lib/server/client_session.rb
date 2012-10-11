@@ -16,13 +16,13 @@ module SquirrelDB
       
       # Receive and handle a message
       def receive_message(message)
-        @log.debug { "Got request #{message.dump} from client." }
+        @log.debug { "Got request #{message} from client." }
         begin
           request = JSON::load(message)
         rescue JSON::JSONError => e
           @log.error "Invalid JSON received from client."
           @log.error e
-          response = JSON::fast_generate({"response_type" => "error", "error" => JSONError.name, "reason" => e.to_s})
+          response = {"response_type" => "error", "error" => JSONError.name, "reason" => e.to_s}
         else
           case request["request_type"]
           when "close"
@@ -31,22 +31,27 @@ module SquirrelDB
           when "sql"
             begin
               statement = @database.compile(request["sql"])
+              if statement.query?
+                tuples = @database.query(statement)
+                values = tuples.map { |t| t.values }
+                response = {"response_type" => "tuples", "tuples" => values}
+              else
+                @database.execute(statement)
+                response = {"response_type" => "command_status", "status" => "success", "message" => "Success!"}
+              end
             rescue UserError => e
-              response = JSON::fast_generate({"response_type" => "error", "error" => e.class.name, "reason" => e.to_s})
-            end
-            if statement.query?
-              tuples = @database.query(statement)
-              values = tuples.map { |t| t.values }
-              response = JSON::fast_generate({"response_type" => "tuples", "tuples" => values})
-            else
-              @database.execute(statement)
-              response = JSON::fast_generate({"response_type" => "command_status", "status" => "success", "message" => "Success!"})
+              response = {"response_type" => "error", "error" => e.class.name, "reason" => e.to_s}
             end
           else
             @log.error "Unknown request type #{request["request_type"]} received from client."
           end
         end
-        @connection.send_message(response) if response
+        if response
+          response["id"] = request["id"]
+          response["context_info"] = request["context_info"] if request["context_info"]
+          @log.debug { "Sending response response to client." }
+          @connection.send_message(JSON::fast_generate(response))
+        end
       end
       
       def close

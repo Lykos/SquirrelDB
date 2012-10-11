@@ -43,7 +43,7 @@ module SquirrelDB
         raise InternalError, "Scan can only be executed if the lexer is started." unless @started
         return [false, false] if @scanner.empty?
         token = extract_token
-        token[0] == :SKIP ? next_token : token 
+        token[0] == :SKIP ? next_token : token
       end
       
       attr_reader :rules
@@ -77,6 +77,7 @@ module SquirrelDB
           'scope',
           'null'
         )
+        brackets("(", ")")
         token(/\d+\.\d+/, :DOUBLE)
         token(/\d+/, :INTEGER)
         token(/true|false/i, :BOOLEAN)
@@ -139,7 +140,7 @@ module SquirrelDB
         @rules.each do |rule|
           m = @scanner.scan(rule.pattern)
           return [rule.type, m] if m
-        end 
+        end
         raise SquirrelDB::ParseError, "Unexpected characters  <#{@scanner.peek(10)}>."
       end
       

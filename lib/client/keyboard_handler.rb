@@ -16,32 +16,42 @@ module SquirrelDB
       
       attr_reader :prompt_state, :command_state, :key_validate_state, :connected_command_state
       
+      # Forwards the line to its state and deactivates itself
       def receive_line(line)
         pause
         @state.receive_line(line)
       end
       
+      # Activate the previous state with the given arguments.
+      # +args+:: The arguments handled to the state during activation.
       def reactivate(*args)
         @state.activate(*args)
         resume
       end
       
+      # Activate a given state with the given arguments.
+      # +state+:: A state.
+      # +args+:: The arguments handled to the state during activation.
       def activate(state, *args)
         @state = state
         @state.activate(*args)
         resume
       end
       
-      # +responses+:: The number of responses the keyboard handler should wait for.
+      # +responses+:: The number of responses the keyboard handler should wait for before it automatically reactivates the last state.
       def wait_responses(responses, *args)
-        @args = args
-        @responses = responses
+        if responses > 0
+          @args = args
+          @responses = responses
+        else
+          reactivate(*args)
+        end
       end
       
       # Get one response and reactivate, if we have enough
       def respond
         @responses -= 1
-        reactivate(*@args) if @responses == 0
+        reactivate(*@args) if @responses <= 0
       end
       
       protected

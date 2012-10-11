@@ -59,7 +59,7 @@ module SquirrelDB
       def add(table_name, schema)
         table_id = @table_manager.add_table(table_name)
         schema.each_column do |c|
-          @internal_evaluator.insert("schemata", ["table_id", "column_name", "type_id", c.type.name.downcase + "_default", "index"], [table_id, c.name.name, c.type.type_id, c.default.value, c.index])
+          @internal_evaluator.insert("schemata", ["table_id", "column_name", "type_id", c.type.name.downcase + "_default", "index"], [table_id, c.name, c.type.type_id, c.default.value, c.index])
         end
       end
 

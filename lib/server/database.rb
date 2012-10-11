@@ -40,23 +40,31 @@ module SquirrelDB
       end
       
       def compile(statement)
-        @database_mutex.synchronize { @compiler.process(@converter.process(@parser.process(statement))) }
+        statement = @database_mutex.synchronize { @compiler.process(@converter.process(@parser.process(statement))) }
+        @log.debug "Statement compiled."
+        statement
       end
       
       def query(compiled_query)
-        @database_mutex.synchronize { compiled_query.query(Data::State.new) }
+        response = @database_mutex.synchronize { compiled_query.query(Data::State.new) }
+        @log.debug "Query executed."
+        response
       end
       
       def execute(compiled_command)
-        @database_mutex.synchronize { compiled_command.execute(Data::State.new) }
+        response = @database_mutex.synchronize { compiled_command.execute(Data::State.new) }
+        @log.debug "Statement executed."
+        response
       end
     
     private 
   
       def initialize(file, config)
+        @log = Logging.logger[self]
         @closed = true
         if config[:create_database]
-          raise "File #{file} exists in file system." if File.exists?(file) && !config[:force]
+          @log.debug "Creating database for file #{file}."
+          raise "File #{file} exists in file system." if file.exist? && !config[:force]
           @closed = false
           @file = File.new(file, "w+b")
           @file.flock(File::LOCK_EX)
@@ -70,12 +78,13 @@ module SquirrelDB
             raise
           end
         else
-          raise "Database file #{file} does not exist." unless File.exists?(file)
+          raise "Database file #{file} does not exist." unless file.exist?
           @closed = false
           @file = File.new(file, "r+b")
           @file.flock(File::LOCK_EX)
         end
         begin
+          @log.debug "Creating objects."
           @storage_factory ||= Storage::StorageFactory.new(@file)
           @page_wrapper ||= @storage_factory.page_wrapper
           @data_initializer ||= Data::DataInitializer.new(@page_wrapper)
@@ -93,9 +102,10 @@ module SquirrelDB
           @table_manager.internal_evaluator = @internal_evaluator
           @schema_manager.internal_evaluator = @internal_evaluator
           @database_mutex = Mutex.new
-        rescue Exception
+          @log.debug "Initialized all objects."
+        rescue Exception => e
           close
-          raise
+          raise e
         end
       end
     

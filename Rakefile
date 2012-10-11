@@ -21,3 +21,11 @@ Rake::RDocTask.new do |rd|
   rd.rdoc_files.exclude("lib/**/*.tab.rb")
   rd.rdoc_dir = "doc"
 end
+
+task :createdb => :racc do
+  ruby 'squirreldb_server -vf --create-database'
+end
+
+task :start_server => :racc do
+  ruby 'squirreldb_server -v'
+end

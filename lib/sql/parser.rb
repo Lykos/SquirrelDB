@@ -1,4 +1,5 @@
-require 'ast_parser'
+require 'sql/ast_parser.tab'
+require 'sql/lexer'
 
 module SquirrelDB
 

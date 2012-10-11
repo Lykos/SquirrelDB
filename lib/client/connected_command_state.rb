@@ -1,6 +1,7 @@
 #encoding: UTF-8
 
 require 'client/command_state'
+require 'strscan'
 
 module SquirrelDB
   
@@ -9,22 +10,20 @@ module SquirrelDB
     # Represents a state of the keyboard handler in which he accepts commands and is connected to a server.
     class ConnectedCommandState < CommandState
 
+      # Splits line into SQL commands and sends them to the server.
       def receive_request(line)
-        @message << line
-        length = line.length
-        commands = @message.split(";")
-        @message = length == commands.map { |c| c.length + 1 }.reduce(0, :+) ? "" : commands.pop
-        if commands.empty?
-          @keyboard_handler.reactivate(@message)
-        else
-          commands.each do |command|
-            request = JSON::fast_generate({"request_type" => "sql", "sql" => command})
-            @connection_manager.request(request)
-          end
-          @keyboard_handler.wait_responses(commands.length, @message)
+        @message << " " << line
+        scanner = StringScanner.new(@message)
+        requests = []
+        while command = scanner.scan_until(/;/)
+          command.chop!
+          requests << JSON::fast_generate({"request_type" => "sql", "sql" => command})
         end
+        @keyboard_handler.wait_responses(requests.length, scanner.rest)
+        requests.each { |request| @connection_manager.request(request) }
       end
       
+      # Returns a prompt of the form "user@host > "
       def prompt
         @connection_manager.user + "@" + @connection_manager.host + " > " 
       end
