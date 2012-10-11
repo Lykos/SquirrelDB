@@ -25,7 +25,7 @@ module SquirrelDB
       end
             
       def ==(other)
-        super && @variable == other.name && @columns == other.columns && @inner == other.inner
+        super && @variable == other.variable && @columns == other.columns && @inner == other.inner
       end
       
       def hash

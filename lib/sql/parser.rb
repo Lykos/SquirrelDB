@@ -1,17 +1,21 @@
+require 'ast_parser'
+
 module SquirrelDB
 
   module SQL
 
     class Parser
 
-      def initialize( pre_parser, lexical_parser, syntactic_parser )
-        @pre_parser = pre_parser
-        @lexical_parser = lexical_parser
-        @syntactic_parser = syntactic_parser
+      def initialize(preprocessor)
+        @preprocessor = preprocessor
       end
 
-      def process( string )
-        @syntactic_parser.process( @lexical_parser.process( @pre_parser.process( string ) ) )
+      def process(string)
+        ast_parser = ASTParser.new
+        lexer = Lexer.new
+        lexer.start(@preprocessor.process(string))
+        ast_parser.lexer = lexer
+        ast_parser.parse
       end
       
     end

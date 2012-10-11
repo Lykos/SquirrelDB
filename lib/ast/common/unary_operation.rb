@@ -6,7 +6,7 @@ module SquirrelDB
 
     class UnaryOperation < Element
 
-      def initialize( operator, inner )
+      def initialize(operator, inner)
         @operator = operator
         @inner = inner
       end
@@ -31,16 +31,6 @@ module SquirrelDB
       
       def hash
         @hash ||= [super, @operator, @inner].hash
-      end
-
-      def evaluate( state )
-        case operator
-        when UNARY_PLUS then @inner.evaluate( state )
-        when UNARY_MINUS then -@inner.evaluate( state )
-        when NOT then @inner.evaluate( state )
-        else
-          raise
-        end
       end
 
     end

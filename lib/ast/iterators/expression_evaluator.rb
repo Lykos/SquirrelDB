@@ -97,6 +97,7 @@ module SquirrelDB
         when Operator::UNARY_PLUS then inner
         when Operator::UNARY_MINUS then -inner
         when Operator::NOT then !inner
+        when Operator::BIT_NOT then ~inner
         else
           raise
         end

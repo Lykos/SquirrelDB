@@ -1,3 +1,5 @@
 *~
 try
 doc
+*.tab.rb
+ast_parser.output

@@ -10,19 +10,11 @@ module SquirrelDB
     class ParserFactory
 
       def parser
-        Parser.new(preprocessor, lexical_parser, syntactic_parser)
+        @parser ||= Parser.new(preprocessor)
       end
 
       def preprocessor
         @preprocessor ||= Preprocessor.new
-      end
-
-      def lexical_parser
-        @lexical_parser ||= LexicalParser.new
-      end
-
-      def syntactic_parser
-        @syntactic_parser ||= SyntacticParser.new
       end
       
     end

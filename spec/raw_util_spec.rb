@@ -7,7 +7,7 @@ describe RawUtil do
 
   it "should be invertible" do
     string = "asdasfasdfasfasd"
-    encode_int( extract_int( string ), string.length ).should == string
+    encode_int( extract_int( string ), string.length ).should eq(string)
     int = 23423234234
     extract_int( encode_int( int, 20 ) ).should == int
   end

@@ -16,6 +16,7 @@ module SquirrelDB
      
       TRUE = Constant.new(true, Type::BOOLEAN)
       FALSE = Constant.new(false, Type::BOOLEAN)
+      UNKNOWN = Constant.new(nil, Type::BOOLEAN)
       INTEGER_NULL = Constant.new(nil, Type::INTEGER)
       BOOLEAN_NULL = Constant.new(nil, Type::BOOLEAN)
       STRING_NULL = Constant.new(nil, Type::STRING)

@@ -18,9 +18,9 @@ module SquirrelDB
       attr_reader :name, :page_no, :schema, :inner
       
       def ==(other)
-        @name == other.name
-        @page_no == other.page_no
-        @schema == other.schema
+        @name == other.name &&
+        @page_no == other.page_no &&
+        @schema == other.schema &&
         @inner == other.inner
       end
       

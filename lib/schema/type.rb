@@ -6,18 +6,18 @@ module SquirrelDB
       
       # TODO Make the ids automatically and make it easy to iterate etc, make new private
 
-      def initialize( name, type_id )
+      def initialize(name, type_id)
         @name = name
         @type_id = type_id
       end
       
       attr_reader :name, :type_id
 
-      INTEGER = Type.new( "Integer", 1 )
-      STRING = Type.new( "String", 2 )
-      BOOLEAN = Type.new( "Boolean", 3 )
-      DOUBLE = Type.new( "Double", 4 )
-      SHORT = Type.new( "Short", 5 )
+      INTEGER = Type.new("Integer", 1)
+      STRING = Type.new("String", 2)
+      BOOLEAN = Type.new("Boolean", 3)
+      DOUBLE = Type.new("Double", 4)
+      SHORT = Type.new("Short", 5)
       
       def self.by_id(id)
         case id
@@ -26,6 +26,16 @@ module SquirrelDB
         when 3 then BOOLEAN
         when 4 then DOUBLE
         when 5 then SHORT
+        end
+      end
+      
+      def self.by_name(name)
+        case name.downcase
+        when "integer" then INTEGER
+        when "string" then STRING
+        when "boolean" then BOOLEAN
+        when "double" then DOUBLE
+        when "short" then SHORT
         end
       end
 

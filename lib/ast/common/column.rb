@@ -36,9 +36,9 @@ module SquirrelDB
       end
       
       def ==(other)
-        @name == other.name
-        @type == other.type
-        @default == other.default
+        @name == other.name &&
+        @type == other.type &&
+        @default == other.default &&
         @index == other.index
       end
       

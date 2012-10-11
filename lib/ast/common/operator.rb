@@ -1,4 +1,5 @@
 require 'ast/common/element'
+require 'errors/internal_error'
 
 module SquirrelDB
 
@@ -8,23 +9,16 @@ module SquirrelDB
       
       CARDINALITIES = [:binary, :unary]
 
-      def initialize( symbol, cardinality,
-          precedence=10, right_associative=false, alternative_symbols=[] )
+      def initialize(symbol, cardinality, *alternative_symbols)
         unless CARDINALITIES.include?(cardinality)
-          raise "Invalid cardinality #{cardinality}. Only #{CARDINALITIES.join(", ")} are supported."
+          raise InternalError, "Invalid cardinality #{cardinality}. Only #{CARDINALITIES.join(", ")} are supported."
         end
         @symbol = symbol
         @cardinality = cardinality
-        @precedence = precedence
-        @right_associative = right_associative
         @alternative_symbols = alternative_symbols
       end
 
-      attr_reader :symbol, :cardinality, :precedence
-
-      def right_associative?
-        @right_associative
-      end
+      attr_reader :symbol, :cardinality
 
       def to_s
         @symbol
@@ -34,8 +28,8 @@ module SquirrelDB
         @cardinality.to_s + " " + @symbol
       end
 
-      def to_regexp
-        @regexp ||= Regexp.union( @symbol, *@alternative_symbols )
+      def pattern
+        @pattern ||= Regexp.union(([@symbol] + @alternative_symbols).collect { |s| Regexp.new(Regexp.escape(s), Regexp::IGNORECASE) })
       end
 
       def unary?
@@ -54,41 +48,57 @@ module SquirrelDB
         super && @symbol == other.symbol && @cardinality == other.cardinality
       end
 
-      PLUS = Operator.new( '+', :binary, 90 )
-      MINUS = Operator.new( '-', :binary, 90 )
-      TIMES = Operator.new( '*', :binary, 100 )
-      DIVIDED_BY = Operator.new( '/', :binary, 100 )
-      MODULO = Operator.new( '/', :binary, 100 )
-      POWER = Operator.new( '**', :binary, 120, true )
-      EQUAL = Operator.new( '=', :binary, 70 )
-      UNEQUAL = Operator.new( '!=', :binary, 70 )
-      GREATER = Operator.new( '>', :binary, 80 )
-      GREATER_EQUAL = Operator.new( '>=', :binary, 80 )
-      SMALLER = Operator.new( '<', :binary, 80 )
-      SMALLER_EQUAL = Operator.new( '<=', :binary, 80 )
-      OR = Operator.new( '||', :binary, 30, false, ['OR'] )
-      XOR = Operator.new( '^', :binary, 40, false, ['XOR'] )
-      AND = Operator.new( '&&', :binary, 50, false, ['AND'] )
-      IMPLIES = Operator.new( '->', :binary, 20, true, ['IMPLIES'] )
-      IS_IMPLIED = Operator.new( '<-', :binary, 20 )
-      EQUIVALENT = Operator.new( '<->', :binary, 10, false, ['EQUIVALENT'] )
-      UNARY_PLUS = Operator.new( '+', :unary, 110 )
-      UNARY_MINUS = Operator.new( '-', :unary, 110 )
-      NOT = Operator.new( '!', :unary, 60, ['NOT'] )
-      ALL_OPERATORS = [PLUS, MINUS, TIMES, DIVIDED_BY, MODULO, POWER, EQUAL, UNEQUAL, GREATER,
-        GREATER_EQUAL, SMALLER, SMALLER_EQUAL, OR, XOR, AND, IMPLIES, IS_IMPLIED, EQUIVALENT,
+      POWER = Operator.new('**', :binary)
+      UNARY_PLUS = Operator.new('+', :unary)
+      UNARY_MINUS = Operator.new('-', :unary)
+      BIT_NOT = Operator.new('~', :unary)
+      NOT = Operator.new('!', :unary, 'NOT')
+      TIMES = Operator.new('*', :binary)
+      DIVIDED_BY = Operator.new('/', :binary)
+      MODULO = Operator.new('%', :binary)
+      PLUS = Operator.new('+', :binary)
+      MINUS = Operator.new('-', :binary)
+      LEFT_SHIFT = Operator.new('<<', :binary)
+      RIGHT_SHIFT = Operator.new('>>', :binary)
+      BIT_AND = Operator.new('&', :binary)
+      BIT_XOR = Operator.new('^', :binary)
+      BIT_OR = Operator.new('|', :binary)
+      GREATER = Operator.new('>', :binary)
+      GREATER_EQUAL = Operator.new('>=', :binary)
+      SMALLER = Operator.new('<', :binary)
+      SMALLER_EQUAL = Operator.new('<=', :binary)
+      EQUAL = Operator.new('=', :binary)
+      UNEQUAL = Operator.new('!=', :binary)
+      AND = Operator.new('&&', :binary, 'AND')
+      XOR = Operator.new('^^', :binary, 'XOR')
+      OR = Operator.new('||', :binary, 'OR')
+      IMPLIES = Operator.new('->', :binary, 'IMPLIES')
+      IS_IMPLIED = Operator.new('<-', :binary)
+      EQUIVALENT = Operator.new('<->', :binary, 'EQUIVALENT')
+      
+      # All operators ordered in the order they are parsed, i.e. ** has to appear before *. But this has nothing to do with the precedence, only with the symbols.
+      ALL_OPERATORS = [EQUIVALENT, IMPLIES, IS_IMPLIED, BIT_NOT, POWER, PLUS, MINUS, TIMES, DIVIDED_BY, MODULO, LEFT_SHIFT, RIGHT_SHIFT, EQUAL, UNEQUAL, GREATER,
+        GREATER_EQUAL, SMALLER, SMALLER_EQUAL, OR, XOR, AND, BIT_OR, BIT_XOR, BIT_AND,
         UNARY_PLUS, UNARY_MINUS, NOT]
+      UNARY_OPERATORS = ALL_OPERATORS.select { |o| o.unary? }
+      BINARY_OPERATORS = ALL_OPERATORS.select { |o| o.binary? }
 
-      def self.choose_unary_operator( symbol )
-        op = ALL_OPERATORS.find { |o| symbol =~ o.to_regexp and o.unary? }
-        raise "No unary Operation for #{symbol.inspect} found." unless op
+      def self.choose_unary_operator(symbol)
+        op = UNARY_OPERATORS.find { |o| symbol =~ o.pattern }
+        raise InternalError, "No unary Operation for #{symbol.inspect} found." unless op
         op
       end
 
-      def self.choose_binary_operator( symbol )
-        op = ALL_OPERATORS.find { |o| symbol =~ o.to_regexp and o.binary? }
-        raise "No binary Operation for #{symbol.inspect} found." unless op
+      def self.choose_binary_operator(symbol)
+        op = BINARY_OPERATORS.find { |o| symbol =~ o.pattern }
+        raise InternalError, "No binary Operation for #{symbol.inspect} found." unless op
         op
+      end
+      
+      private
+      
+      def new(*args)
+        super
       end
 
     end
