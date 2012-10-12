@@ -14,7 +14,6 @@ module SquirrelDB
 
       attr_reader :variable, :arguments
       
-
       def to_s
         @variable.to_s + "( " + @arguments.collect { |p| p.to_s }.join( "," ) + " )"
       end

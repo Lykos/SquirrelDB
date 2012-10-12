@@ -7,14 +7,16 @@ require 'ast/common/renaming'
 require 'ast/common/expression'
 require 'ast/iterators/dummy_iterator'
 require 'ast/visitors/transform_visitor'
-require 'schema/table_schema'
+require 'schema/schema'
 require 'schema/function'
 require 'errors/symbol_error'
 require 'errors/type_error'
+require 'errors/internal_error'
+require 'compiler/link_helper'
 
 module SquirrelDB
 
-  module RelAlg
+  module Compiler
 
     # Creates the type annotations for the expressions
     # and the schemas for tables and raises errors in case of type errors or unresolvable symbols.
@@ -22,28 +24,26 @@ module SquirrelDB
       
       include AST
       include TransformVisitor
+      include LinkHelper
             
-      def initialize(table_manager, schema_manager)
-        @table_manager = table_manager
+      def initialize(schema_manager, table_manager)
         @schema_manager = schema_manager
-        @column_stack = []
-        @used = false
+        @table_manager = table_manager
       end
 
       def process(statement)
-        raise "StatefulPreLinker can only be used once." if @used
-        @used = true
-        ast = visit(statement)
-        raise "Column Stack not empty." unless @column_stack.empty?
+        column_stack = []
+        ast = visit(statement, column_stack)
+        raise InternalError, "Column Stack not empty." unless column_stack.empty?
         ast
       end
-
+      
       # Reads type information from the tables in the from clause.
-      def visit_from_clause(from_clause)
+      def visit_from_clause(from_clause, column_stack)
         # TODO Check for ambiguities
-        columns = @column_stack.empty? ? {} : @column_stack.last.dup
         tables = from_clause.tables.map do |c|
-          if c.kind_of?(Renaming) && c.expression.is_variable?
+          if c.kind_of?(Renaming)
+            raise InternalError, "#{c.expression.inspect} is not supported yet in a from clause." unless c.expression.is_variable?
             var = c.expression
             names = [c.name]
           elsif c.variable?
@@ -53,60 +53,48 @@ module SquirrelDB
               names << c.variable
             end
           else
-            var = nil
+            raise InternalError, "#{c.inspect} is not supported yet in a from clause."
           end
-          if var
-            schema = @schema_manager.get(var)
-            schema.each_column do |col|
-              col_var = Variable.new(col.name)
-              columns[col_var] = col.type
-              names.each do |n|
-                columns[ScopedVariable.new(n, col_var)] = col.type
-              end
-            end
-            offset += schema.length
-            PreLinkedTable.new(schema, names[0], @table_manager.variable_id(var))
-          else
-            c
+          schema = @schema_manager.get(var)
+          each_link_info(names, schema) do |name, column|
+            column_stack.last[name] = column.type
           end
+          PreLinkedTable.new(schema, names, @table_manager.variable_id(var))
         end
-        @column_stack << columns
+        column_stack << columns
         FromClause.new(tables)
       end
-      
-      def unvisit_from_clause
-        @column_stack.pop
-      end
   
-      def type(variable)
-        if !@column_stack.empty? && @column_stack.last.has_key?(variable)
-          @column_stack.last[variable]
+      def type(variable, column_stack)
+        if !column_stack.empty? && column_stack.last.has_key?(variable)
+          column_stack.last[variable]
         else
           raise SymbolError, "Variable #{variable} cannot be resolved."
         end
       end
       
-      def visit_variable(variable)
-        Variable.new(variable.name, type(variable))
+      def visit_variable(variable, column_stack)
+        Variable.new(variable.name, type(variable, column_stack))
       end
       
-      def visit_scoped_variable(scoped_variable)
-        ScopedVariable.new(scoped_variable.scope, scoped_variable.variable, type(scoped_variable))
+      def visit_scoped_variable(scoped_variable, column_stack)
+        ScopedVariable.new(scoped_variable.scope, scoped_variable.variable, type(scoped_variable, column_stack))
       end
 
-      def visit_select_statement(select_statement)
-        from_clause = visit(select_statement.from_clause)
-        where_clause = visit(select_statement.where_clause)
-        select_clause = visit(select_statement.select_clause)
-        unvisit_from_clause
-        SelectStatement.new(select_clause, from_clause, where_clause)
+      def visit_select_statement(select_statement, column_stack)
+        column_stack << column_stack.empty? ? {} : column_stack.last.dup
+        from_clause = visit(select_statement.from_clause, column_stack)
+        where_clause = visit(select_statement.where_clause, column_stack)
+        select_clause = visit(select_statement.select_clause, column_stack)
+        column_stack.pop
+        SelectStatement.new(select_clause, from_clause, where_clause, column_stack)
       end
       
-      def visit_expression(expression)
+      def visit_expression(expression, column_stack)
         if expression.is_a?(Expression)
-          visit(expression)
+          visit(expression, column_stack)
         elsif expression.is_a?(SelectStatement)
-          select = visit(expression)
+          select = visit(expression, column_stack)
           schema = select.schema
           if select.schema.length != 1
             raise TypeError, "A select statement inside an expression has to return exactly one column."
@@ -117,8 +105,8 @@ module SquirrelDB
         end
       end
       
-      def visit_function_application(fun_app)
-        arguments = fun_app.arguments.map { |arg| visit_expression(arg) } 
+      def visit_function_application(fun_app, column_stack)
+        arguments = fun_app.arguments.map { |arg| visit_expression(arg, column_stack) } 
         f = Function.function(fun_app.variable, arguments)
         case f
         when :no_candidates then raise SymbolError, "Function #{fun_app.variable} cannot be resolved."
@@ -129,8 +117,8 @@ module SquirrelDB
         end
       end
       
-      def visit_unary_operation(unop)
-        inner = visit_expression(unop.inner)
+      def visit_unary_operation(unop, column_stack)
+        inner = visit_expression(unop.inner, column_stack)
         f = Function.function(unop.operator, [inner.type])
         case f
         when :no_candidates then raise InternalError, "Invalid operator #{binop.operator}"
@@ -141,9 +129,9 @@ module SquirrelDB
         end
       end
       
-      def visit_binary_operation(binop)
-        left = visit_expression(binop.left)
-        right = visit_expression(binop.right)
+      def visit_binary_operation(binop, column_stack)
+        left = visit_expression(binop.left, column_stack)
+        right = visit_expression(binop.right, column_stack)
         f = Function.function(binop.operator, [left.type, right.type])
         case f
         when :no_candidates then raise InternalError, "Invalid operator #{binop.operator}"
@@ -154,16 +142,16 @@ module SquirrelDB
         end
       end
       
-      def visit_insert(insert)
+      def visit_insert(insert, column_stack)
         schema = @schema_manager.get(insert.variable)
         pre_linked_table = PreLinkedTable.new(schema, insert.variable.name, @table_manager.variable_id(insert.variable))
-        cols = insert.columns.collect { |col| visit(col) }
+        cols = insert.columns.collect { |col| visit(col, column_stack) }
         inner = if insert.inner.kind_of?(Array)
-          dummy_schema = Schema::TableSchema.new(insert.inner.collect { |v, i| Column.new(v.to_s, v.type) })
-          values = insert.inner.collect { |v| visit_expression(v) }
+          dummy_schema = Schema::Schema.new(insert.inner.collect { |v, i| Column.new(v.to_s, v.type) })
+          values = insert.inner.collect { |v| visit_expression(v, column_stack) }
           DummyIterator.new(dummy_schema, values)
         else
-          visit(insert.inner)
+          visit(insert.inner, column_stack)
         end
         Insert.new(pre_linked_table, cols, inner)
       end

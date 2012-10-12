@@ -7,7 +7,7 @@ module SquirrelDB
   
   module Schema
 
-    class TableSchema
+    class Schema
 
       def initialize(columns)
         @columns = columns
@@ -24,11 +24,11 @@ module SquirrelDB
       end
 
       def to_s
-        "TableSchema( " + @columns.map { |c| "#{c.name.to_s}::#{c.type.to_s}#{c.has_default? ? " = " + c.default.to_s : ""}" }.join(", ") + " )"
+        "Schema( " + @columns.map { |c| "#{c.name.to_s}::#{c.type.to_s}#{c.has_default? ? " = " + c.default.to_s : ""}" }.join(", ") + " )"
       end
       
       def inspect
-        "TableSchema( " + @columns.map { |c| c.inspect }.join(", ") + " )"
+        "Schema( " + @columns.map { |c| c.inspect }.join(", ") + " )"
       end
       
       def hash

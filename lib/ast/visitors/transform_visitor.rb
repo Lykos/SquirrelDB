@@ -12,34 +12,34 @@ module SquirrelDB
       
       include Visitor
      
-      def visit_select_statement(select_statement)
+      def visit_select_statement(select_statement, *args)
         SelectStatement.new(
-          visit(select_statement.select_clause),
-          visit(select_statement.from_clause),
-          visit(select_statement.where_clause)
+          visit(select_statement.select_clause, *args),
+          visit(select_statement.from_clause, *args),
+          visit(select_statement.where_clause, *args)
         )
       end
       
-      def visit_dummy_table(dummy_table)
+      def visit_dummy_table(dummy_table, *args)
         DummyTable.new(
           dummy_table.schema,
           dummy_table.tuple
         )
       end
 
-      def visit_select_clause(select_clause)
+      def visit_select_clause(select_clause, *args)
         SelectClause.new(select_clause.columns.collect { |c| visit(c) })
       end
 
-      def visit_from_clause(from_clause)
+      def visit_from_clause(from_clause, *args)
         FromClause.new(from_clause.tables.collect { |t| visit(t) })
       end
       
-      def visit_where_clause(where_clause)
+      def visit_where_clause(where_clause, *args)
         WhereClause.new(visit(where_clause.expression))
       end
       
-      def visit_pre_linked_table(table)
+      def visit_pre_linked_table(table, *args)
         PreLinkedTable.new(table.schema, table.name, table.table_id)
       end
 
@@ -104,17 +104,17 @@ module SquirrelDB
         )
       end
       
-      def visit_projector(projector)
+      def visit_projector(projector, *args)
         Projector.new(
-          projector.column_evaluators.map { |ev| visit(ev) },
-          visit(projector.inner)
+          projector.column_evaluators.map { |ev| visit(ev, *args) },
+          visit(projector.inner, *args)
         )
       end
       
-      def visit_create_table(create_table)
+      def visit_create_table(create_table, *args)
         CreateTable.new(
-          visit(create_table.variable),
-          create_table.columns.collect { |column| visit(column) }
+          visit(create_table.variable, *args),
+          create_table.columns.collect { |column| visit(column, *args) }
         )
       end
       
@@ -140,23 +140,23 @@ module SquirrelDB
         )
       end
       
-      def visit_expression_evaluator(expression_evaluator)
-        ExpressionEvaluator.new(visit(expression_evaluator.expression))
+      def visit_expression_evaluator(expression_evaluator, *args)
+        ExpressionEvaluator.new(visit(expression_evaluator.expression, *args))
       end
       
-      def visit_column(column)
+      def visit_column(column, *args)
         Column.new(
           column.name,
           column.type,
           column.index,
-          visit(column.default)
+          visit(column.default, *args)
         )
       end
       
-      def visit_selection(selection)
+      def visit_selection(selection, *args)
         Selection.new(
-          visit(selection.expression),
-          visit(selection.inner)
+          visit(selection.expression, *args),
+          visit(selection.inner, *args)
         )
       end
       

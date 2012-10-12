@@ -1,6 +1,3 @@
-require 'ast/iterators/rel_alg_iterator'
-require 'ast/common/tuple'
-
 module SquirrelDB
 
   module AST

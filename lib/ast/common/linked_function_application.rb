@@ -13,6 +13,10 @@ module SquirrelDB
 
       attr_reader :proc
 
+      def call(*arguments)
+        @proc.call(*arguments)
+      end
+
       def ==(other)
         super &&
         @proc == other.proc

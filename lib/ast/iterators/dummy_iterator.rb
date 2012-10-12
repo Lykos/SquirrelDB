@@ -1,7 +1,7 @@
 require 'ast/iterators/rel_alg_iterator'
 require 'ast/common/column'
 require 'ast/common/constant'
-require 'schema/table_schema'
+require 'schema/schema'
 require 'schema/expression_type'
 
 module SquirrelDB
@@ -15,8 +15,8 @@ module SquirrelDB
         @expressions = expressions
       end
       
-      attr_reader :schema, :tuple
-      
+      attr_reader :schema, :expressions
+    
       def hash
         @hash ||= [super, @tuple].hash
       end
@@ -46,8 +46,10 @@ module SquirrelDB
         super
       end
       
+      include Schema
+      
       DUAL_COLUMN = Column.new("value", "string")
-      DUAL_SCHEMA = TableSchema.new([DUAL_COLUMN])
+      DUAL_SCHEMA = Schema.new([DUAL_COLUMN])
       DUAL_VALUES = [Constant.new("X", ExpressionType::STRING)]
       DUAL_TABLE = DummyIterator.new(DUAL_SCHEMA, DUAL_VALUES)
       

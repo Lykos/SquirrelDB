@@ -20,7 +20,7 @@ module SquirrelDB
           visit(select_statement.from_clause)
         )
         select_columns = visit(select_statement.select_clause)
-        # TODO General wild card handling
+        # TODO More general wild card handling
         if select_columns.length == 1 && select_columns[0].kind_of?(WildCard)
           selection
         else

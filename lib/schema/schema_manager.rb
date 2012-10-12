@@ -1,7 +1,7 @@
 require 'ast/common/scoped_variable'
 require 'ast/common/variable'
 require 'ast/common/column'
-require 'schema/table_schema'
+require 'schema/schema'
 require 'schema/storage_type'
 require 'data/constants'
 require 'schema/constants'
@@ -23,7 +23,7 @@ module SquirrelDB
           INTERNAL_SCHEMATA[table.variable.name]
         else
           table_id = @table_manager.variable_id(table)
-          TableSchema.new(
+          Schema.new(
             @internal_evaluator.select(
               ["column_name", "index", "type_id", "short_default", "boolean_default", "string_default", "double_default", "integer_default"],
               "schemata",

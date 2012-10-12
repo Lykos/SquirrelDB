@@ -1,23 +1,34 @@
-require 'compiler/iterator_compiler'
+require 'compiler/rel_alg_converter'
 require 'compiler/compiler'
 require 'compiler/linker'
+require 'compiler/type_annotator'
 
 module SquirrelDB
   
-  module Data
+  module Compiler
     
     class CompilerFactory
       
-      def compiler(tuple_wrapper, table_manager, schema_manager)
-        @compiler ||= Compiler.new(iterator_compiler, linker(tuple_wrapper, table_manager, schema_manager))
+      def initialize(tuple_wrapper, schema_manager, table_manager)
+        @tuple_wrapper = tuple_wrapper
+        @schema_manager = schema_manager
+        @table_manager = table_manager
       end
       
-      def iterator_compiler
-        @iterator_compiler ||= IteratorCompiler.new
+      def type_annotator
+        @type_annotator ||= TypeAnnotator.new(@schema_manager, @table_manager)
       end
       
-      def linker(tuple_wrapper, table_manager, schema_manager)
-        @linker ||= Linker.new(tuple_wrapper, table_manager, schema_manager)
+      def compiler
+        @compiler ||= Compiler.new(type_annotator, rel_alg_converter, linker)
+      end
+      
+      def linker
+        @linker ||= Linker.new(@tuple_wrapper, @schema_manager, @table_manager)
+      end
+      
+      def rel_alg_converter
+        @rel_alg_converter ||= RelAlgConverter.new
       end
       
     end

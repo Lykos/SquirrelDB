@@ -40,7 +40,7 @@ module SquirrelDB
       end
       
       def compile(statement)
-        statement = @database_mutex.synchronize { @compiler.process(@converter.process(@parser.process(statement))) }
+        statement = @database_mutex.synchronize { @compiler.process(@parser.process(statement)) }
         @log.debug "Statement compiled."
         statement
       end
@@ -95,9 +95,8 @@ module SquirrelDB
           @table_manager.sequence_manager = @sequence_manager
           @table_manager.data_initializer = @data_initializer
           @parser = SQL::ParserFactory.new.parser
-          @converter = RelAlg::ConverterFactory.new.converter(@table_manager, @schema_manager)
           @tuple_wrapper = @storage_factory.tuple_wrapper
-          @compiler = Data::CompilerFactory.new.compiler(@tuple_wrapper, @table_manager, @schema_manager)
+          @compiler = Compiler::CompilerFactory.new(@tuple_wrapper, @schema_manager, @table_manager).compiler
           @internal_evaluator = Data::InternalEvaluator.new(@compiler)
           @table_manager.internal_evaluator = @internal_evaluator
           @schema_manager.internal_evaluator = @internal_evaluator
