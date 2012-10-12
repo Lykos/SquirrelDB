@@ -1,35 +1,47 @@
-require 'ast/common/element'
+require 'ast/common/variable'
 require 'errors/internal_error'
 
 module SquirrelDB
 
   module AST
 
-    class Operator < Element
+    class Operator < Variable
       
       CARDINALITIES = [:binary, :unary]
-
+      ALL_OPERATORS = []
+      
+      protected
+      
+      def self.new(*args)
+        super
+      end
+      
       def initialize(symbol, cardinality, *alternative_symbols)
+        super(symbol)
         unless CARDINALITIES.include?(cardinality)
           raise InternalError, "Invalid cardinality #{cardinality}. Only #{CARDINALITIES.join(", ")} are supported."
         end
-        @symbol = symbol
         @cardinality = cardinality
         @alternative_symbols = alternative_symbols
+        ALL_OPERATORS << self
       end
+      
+      public
+
+      alias symbol :name
 
       attr_reader :symbol, :cardinality
 
       def to_s
-        @symbol
+        symbol
       end
 
       def inspect
-        @cardinality.to_s + " " + @symbol
+        @cardinality.to_s + " " + symbol
       end
 
       def pattern
-        @pattern ||= Regexp.union(([@symbol] + @alternative_symbols).collect { |s| Regexp.new(Regexp.escape(s), Regexp::IGNORECASE) })
+        @pattern ||= Regexp.union(([symbol] + @alternative_symbols).collect { |s| Regexp.new(Regexp.escape(s), Regexp::IGNORECASE) })
       end
 
       def unary?
@@ -41,12 +53,15 @@ module SquirrelDB
       end
       
       def hash
-        @hash ||= [super, @symbol, @cardinality].hash
+        @hash ||= [super, @cardinality, @alternative_symbols].hash
       end
 
       def ==(other)
-        super && @symbol == other.symbol && @cardinality == other.cardinality
+        super && @cardinality == other.cardinality && @alternative_symbols == other.alternative_symbols
       end
+
+      # All operators ordered in the order they are parsed, i.e. ** has to appear before *. But this has nothing to do with the precedence
+      # only with the symbols which are a prefix of other symbols.
 
       POWER = Operator.new('**', :binary)
       UNARY_PLUS = Operator.new('+', :unary)
@@ -58,6 +73,12 @@ module SquirrelDB
       MODULO = Operator.new('%', :binary)
       PLUS = Operator.new('+', :binary)
       MINUS = Operator.new('-', :binary)
+      AND = Operator.new('&&', :binary, 'AND')
+      XOR = Operator.new('^^', :binary, 'XOR')
+      OR = Operator.new('||', :binary, 'OR')
+      IMPLIES = Operator.new('->', :binary, 'IMPLIES')
+      IS_IMPLIED = Operator.new('<-', :binary)
+      EQUIVALENT = Operator.new('<->', :binary, 'EQUIVALENT')
       LEFT_SHIFT = Operator.new('<<', :binary)
       RIGHT_SHIFT = Operator.new('>>', :binary)
       BIT_AND = Operator.new('&', :binary)
@@ -69,20 +90,23 @@ module SquirrelDB
       SMALLER_EQUAL = Operator.new('<=', :binary)
       EQUAL = Operator.new('=', :binary)
       UNEQUAL = Operator.new('!=', :binary)
-      AND = Operator.new('&&', :binary, 'AND')
-      XOR = Operator.new('^^', :binary, 'XOR')
-      OR = Operator.new('||', :binary, 'OR')
-      IMPLIES = Operator.new('->', :binary, 'IMPLIES')
-      IS_IMPLIED = Operator.new('<-', :binary)
-      EQUIVALENT = Operator.new('<->', :binary, 'EQUIVALENT')
       
-      # All operators ordered in the order they are parsed, i.e. ** has to appear before *. But this has nothing to do with the precedence, only with the symbols.
-      ALL_OPERATORS = [EQUIVALENT, IMPLIES, IS_IMPLIED, BIT_NOT, POWER, PLUS, MINUS, TIMES, DIVIDED_BY, MODULO, LEFT_SHIFT, RIGHT_SHIFT, EQUAL, UNEQUAL, GREATER,
-        GREATER_EQUAL, SMALLER, SMALLER_EQUAL, OR, XOR, AND, BIT_OR, BIT_XOR, BIT_AND,
-        UNARY_PLUS, UNARY_MINUS, NOT]
       UNARY_OPERATORS = ALL_OPERATORS.select { |o| o.unary? }
       BINARY_OPERATORS = ALL_OPERATORS.select { |o| o.binary? }
 
+      def self.unary_operator(symbol)
+        @@unary_operators[symbol] ||= choose_unary_operator(symbol)
+      end
+      
+      def self.binary_operator(symbol)
+        @@binary_operators[symbol] ||= choose_binary_operator(symbol)
+      end
+
+      protected
+      
+      @@unary_operators = {}
+      @@binary_operators = {}
+      
       def self.choose_unary_operator(symbol)
         op = UNARY_OPERATORS.find { |o| symbol =~ o.pattern }
         raise InternalError, "No unary Operation for #{symbol.inspect} found." unless op

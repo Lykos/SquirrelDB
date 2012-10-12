@@ -1,38 +1,29 @@
-require 'ast/common/element'
+require 'ast/common/function_application'
 
 module SquirrelDB
 
   module AST
 
-    class UnaryOperation < Element
+    class UnaryOperation < FunctionApplication
 
-      def initialize(operator, inner)
-        @operator = operator
-        @inner = inner
+      def initialize(operator, inner, type=nil)
+        super(operator, [inner], type)
       end
 
-      attr_reader :operator, :inner
-
-      def type
-        @inner.type
-      end
+      alias :operator :variable
       
+      def inner
+        @arguments[0]
+      end
+            
       def to_s
-        "(" + @operator.to_s + @inner.to_s + ")"
+        "(" + operator.symbol + inner.to_s + ")"
       end
 
       def inspect
-        "(" + @operator.to_s + @inner.inspect + ")"
-      end
-
-      def ==(other)
-        super && @operator == other.operator && @inner == other.inner
+        "(" + operator.symbol + inner.inspect + ")" + type_string
       end
       
-      def hash
-        @hash ||= [super, @operator, @inner].hash
-      end
-
     end
 
   end

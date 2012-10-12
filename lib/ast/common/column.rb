@@ -4,20 +4,18 @@ module SquirrelDB
 
   module AST
 
-    # TODO This is used in two different contexts: Once as column, once just as variable plus type information
-    # 
+    # Represents one column of the Schema
     class Column < Element
 
-      def initialize(name, type, index, default=Constant.null(type))
+      def initialize(name, type, default=Constant.null(type))
         raise "Default for column #{name} has an invalid type #{default.type} instead of #{type}." unless default.type == type
         raise "Invalid column index #{index}." unless index.kind_of?(Integer) && index >= 0
         @name = name
         @type = type
         @default = default
-        @index = index
       end
 
-      attr_reader :name, :type, :default, :index
+      attr_reader :name, :type, :default
       
       def inspect
         "Column_{#{@index}}( #{@name.inspect}:#{@type.to_s}#{has_default? ? " = " + @default.value.inspect : ""} )"
@@ -36,6 +34,7 @@ module SquirrelDB
       end
       
       def ==(other)
+        super &&
         @name == other.name &&
         @type == other.type &&
         @default == other.default &&

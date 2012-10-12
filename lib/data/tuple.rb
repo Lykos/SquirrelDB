@@ -1,14 +1,11 @@
-require 'ast/common/element'
-
 module SquirrelDB
   
-  module AST
+  module Data
   
     # Represents a tuple
-    # TODO Move
     class Tuple
   
-      def initialize( values )
+      def initialize(values)
         @values = values
       end
   

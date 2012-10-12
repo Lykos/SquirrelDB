@@ -2,7 +2,7 @@ require 'ast/common/scoped_variable'
 require 'ast/common/variable'
 require 'ast/common/column'
 require 'schema/table_schema'
-require 'schema/type'
+require 'schema/storage_type'
 require 'data/constants'
 require 'schema/constants'
 
@@ -25,31 +25,26 @@ module SquirrelDB
           table_id = @table_manager.variable_id(table)
           TableSchema.new(
             @internal_evaluator.select(
-              ["column_name", "type_id", "short_default", "boolean_default", "string_default", "double_default", "integer_default", "index"],
+              ["column_name", "index", "type_id", "short_default", "boolean_default", "string_default", "double_default", "integer_default"],
               "schemata",
               ["table_id"],
               [table_id]
-            ).sort_by { |tuple| tuple[-1] }.map do |tuple|
+            ).sort_by { |tuple| tuple[1] }.map do |tuple|
               name = tuple[0]
-              type = Type.by_id(tuple[1])
-              index = tuple[-1]
-              default = if type == Type::SHORT
-                tuple[2]
-              elsif type == Type::BOOLEAN
-                tuple[3]
-              elsif type == Type::STRING
-                tuple[4]
-              elsif type == Type::DOUBLE
-                tuple[5]
-              elsif type == Type::INTEGER
-                tuple[6]
+              type = StorageType.by_id(tuple[2])
+              case type 
+              when StorageType::SHORT then tuple[3]
+              when StorageType::BOOLEAN then tuple[4]
+              when StorageType::STRING then tuple[5]
+              when StorageType::DOUBLE then tuple[6]
+              when StorageType::INTEGER then tuple[7]
               else
                 raise
               end
               if default.nil?
-                Column.new(name, type, index)
+                Column.new(name, type)
               else
-                Column.new(name, type, index, default)
+                Column.new(name, type, default)
               end
             end
           )

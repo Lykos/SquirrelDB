@@ -1,28 +1,25 @@
-require 'ast/common/element'
+require 'ast/common/variable'
 
 module SquirrelDB
 
   module AST
 
-    class ScopedVariable < Element
+    class ScopedVariable < Variable
 
-      def initialize( scope, variable )
+      def initialize(scope, variable)
         @scope = scope
         @variable = variable
+        super(to_s)
       end
 
       attr_reader :scope, :variable
-
-      def variable?
-        true
-      end
       
       def to_s
         @scope.to_s + "." + @variable.to_s
       end
 
       def inspect
-        @scope.inspect + "." + @variable.inspect
+        @scope.inspect + "." + @variable.inspect + type_string
       end
 
       def ==(other)

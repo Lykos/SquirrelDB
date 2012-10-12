@@ -57,7 +57,7 @@ module SquirrelDB
             return nil
           end
         end
-        @left_item + t
+        @left_item + right_item
       end
 
       def close

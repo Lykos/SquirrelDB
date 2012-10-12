@@ -52,15 +52,6 @@ module SquirrelDB
         ts
       end
 
-      def evaluate(state)
-        self.itopen(state)
-        res = next_item
-        raise "No result for #{self}." unless res
-        raise if next_item
-        close
-        res
-      end
-
     end
 
   end

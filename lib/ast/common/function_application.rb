@@ -1,38 +1,36 @@
-require 'ast/common/element'
+require 'ast/common/expression'
 
 module SquirrelDB
 
   module AST
 
-    class FunctionApplication < Element
+    class FunctionApplication < Expression
 
-      def initialize( function, parameters )
-        @function = function
-        @parameters = parameters
+      def initialize(variable, arguments, type=nil)
+        super(type)
+        @variable = variable
+        @arguments = arguments
       end
 
-      attr_reader :function, :parameters
+      attr_reader :variable, :arguments
+      
 
       def to_s
-        @function.to_s + "( " + @parameters.collect { |p| p.to_s }.join( "," ) + " )"
+        @variable.to_s + "( " + @arguments.collect { |p| p.to_s }.join( "," ) + " )"
       end
 
       def inspect
-        @function.to_s + "( " + @parameters.collect { |p| p.inspect }.join( "," ) + " )"
+        @variable.to_s + "( " + @arguments.collect { |p| p.inspect }.join( "," ) + " )" + type_string
       end
 
       def ==(other)
-        super && @function == other.function && @parameters == other.parameters
+        super && @variable == other.variable && @arguments == other.arguments
       end
       
       def hash
-        @hash ||= [super, @function, @parameters].hash
+        @hash ||= [super, @variable, @arguments].hash
       end
-
-      def evaluate( state )
-        state.get_function( @function ).call( *@parameters )
-      end
-
+      
     end
 
   end

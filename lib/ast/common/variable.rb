@@ -1,12 +1,12 @@
-require 'ast/common/element'
+require 'ast/common/expression'
 
 module SquirrelDB
 
   module AST
 
-    class Variable < Element
+    class Variable < Expression
 
-      def initialize( name )
+      def initialize(name)
         @name = name
       end
 

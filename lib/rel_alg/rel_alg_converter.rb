@@ -37,7 +37,7 @@ module SquirrelDB
       
       def visit_from_clause(from_clause)
         if from_clause.tables.empty?
-          DummyTable.new(Schema::TableSchema.new([Column.new("x", Schema::Type::SHORT, 0)]), Tuple.new([0])) # TODO Refactor dummytable
+          DummyIterator.DUAL_TABLE
         else
           from_clause.tables.reduce { |a, b| Cartesian.new(a, b) }
         end
@@ -45,10 +45,6 @@ module SquirrelDB
       
       def visit_where_clause(where_clause)
         where_clause.expression
-      end
-      
-      def visit_tuple(tuple)
-        DummyTable.new(tuple.dup)
       end
 
     end

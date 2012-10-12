@@ -1,6 +1,7 @@
 require 'ast/common/binary_operation'
 require 'ast/common/constant'
 require 'ast/common/function_application'
+require 'ast/common/linked_function_application'
 require 'ast/common/column'
 require 'ast/common/operator'
 require 'ast/common/pre_linked_table'

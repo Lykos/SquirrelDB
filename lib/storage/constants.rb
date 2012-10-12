@@ -8,7 +8,7 @@ module SquirrelDB
     module Constants
       
       # Bits of a byte
-      BYTE_SIZE = 8
+      BYTE_BITS = 8
 
       # Size of a page that is always read and written at once in bytes
       PAGE_SIZE = 8192
@@ -29,19 +29,19 @@ module SquirrelDB
       ITEM_LENGTH_SIZE = 2
 
       # Mask to extract the length of an item
-      ITEM_LENGTH_MASK = (1 << (ITEM_OFFSET_SIZE * BYTE_SIZE - 1)) - 1
+      ITEM_LENGTH_MASK = (1 << (ITEM_OFFSET_SIZE * BYTE_BITS - 1)) - 1
 
       # Mask to extract a nonzero value if the item is moved
-      ITEM_MOVED_MASK = (1 << (ITEM_OFFSET_SIZE * BYTE_SIZE - 1))
+      ITEM_MOVED_MASK = (1 << (ITEM_OFFSET_SIZE * BYTE_BITS - 1))
       
       # Length of the header of an item in a page in bytes
       ITEM_HEADER_SIZE = ITEM_OFFSET_SIZE + ITEM_LENGTH_SIZE
       
       # Length of the part, where the page type is stored in bytes
       TYPE_SIZE = 2
-      
+            
       # Mask to extract a byte
-      BYTE_MASK = (1 << BYTE_SIZE) - 1
+      BYTE_MASK = (1 << BYTE_BITS) - 1
       
       # Type ids of the types
       TYPES_IDS = {
@@ -55,9 +55,9 @@ module SquirrelDB
       IDS_TYPES = TYPES_IDS.invert
 
       # Check some constraints for the constants
-      if (ITEM_HEADER_SIZE + 1) * (1 << (TUPLE_NO_SIZE * BYTE_SIZE)) < PAGE_SIZE
+      if (ITEM_HEADER_SIZE + 1) * (1 << (TUPLE_NO_SIZE * BYTE_BITS)) < PAGE_SIZE
         raise StorageError, "With page size #{PAGE_SIZE} and tuple no size #{TUPLE_NO_SIZE}, more small tuples fit on a page than can be addressed."
-      elsif (1 << (ITEM_OFFSET_SIZE * BYTE_SIZE)) < PAGE_SIZE
+      elsif (1 << (ITEM_OFFSET_SIZE * BYTE_BITS)) < PAGE_SIZE
         raise StorageError, "With page size #{PAGE_SIZE} and offset size #{ITEM_OFFSET_SIZE}, only part of the page can be used."
       elsif ITEM_HEADER_SIZE <= ITEM_OFFSET_SIZE
         raise StorageError, "The item header size has to be bigger than the item offset size."
@@ -65,9 +65,9 @@ module SquirrelDB
         raise StorageError, "The item header size has to be bigger than the item length size."
       elsif TID_SIZE <= TUPLE_NO_SIZE
         raise StorageError, "The tid size has to be bigger than the tuple no size."
-      elsif (1 << (BYTE_SIZE * (ITEM_HEADER_SIZE - ITEM_OFFSET_SIZE) - 1)) < PAGE_SIZE
+      elsif (1 << (BYTE_BITS * (ITEM_HEADER_SIZE - ITEM_OFFSET_SIZE) - 1)) < PAGE_SIZE
         raise StorageError, "A tuple could never fill the whole page with these constants."
-      elsif TYPES_IDS.any? { |type, id| id >= 1 << TYPE_SIZE * BYTE_SIZE }
+      elsif TYPES_IDS.any? { |type, id| id >= 1 << TYPE_SIZE * BYTE_BITS }
         raise StorageError, "Not all page types can be represented with this type size."
       end
       

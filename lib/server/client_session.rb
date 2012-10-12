@@ -16,7 +16,6 @@ module SquirrelDB
       
       # Receive and handle a message
       def receive_message(message)
-        @log.debug { "Got request #{message} from client." }
         begin
           request = JSON::load(message)
         rescue JSON::JSONError => e
@@ -24,6 +23,7 @@ module SquirrelDB
           @log.error e
           response = {"response_type" => "error", "error" => JSONError.name, "reason" => e.to_s}
         else
+          @log.debug { "Got request #{request} from client." }
           case request["request_type"]
           when "close"
             @log.debug "Closing after close request."
@@ -49,7 +49,7 @@ module SquirrelDB
         if response
           response["id"] = request["id"]
           response["context_info"] = request["context_info"] if request["context_info"]
-          @log.debug { "Sending response response to client." }
+          @log.debug { "Sending response #{response} to client." }
           @connection.send_message(JSON::fast_generate(response))
         end
       end

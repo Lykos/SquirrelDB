@@ -1,41 +1,34 @@
-require 'ast/common/element'
+require 'ast/common/function_application'
 
 module SquirrelDB
 
   module AST
 
-    class BinaryOperation < Element
+    class BinaryOperation < FunctionApplication
     
-      def initialize( operator, left, right )
+      def initialize(operator, left, right, type=nil)
+        super(type)
         @operator = operator
         @left = left
         @right = right
       end
+      
+      alias :operator :variable
 
-      attr_reader :operator, :left, :right
-
-      def ==(other)
-        super && @operator == other.operator && @left == other.left && @right == other.right
+      def left
+        @arguments[0]
       end
       
-      def hash
-        @hash ||= [@operator, @left, @right].hash
-      end
-      
-      def type
-        if @left.type == @right.type
-          @left.type
-        else
-          raise
-        end
+      def right
+        @arguments[1]
       end
 
       def to_s
-        "(" + @left.to_s + " " + @operator.to_s + " " + @right.to_s + ")"
+        "(" + left.to_s + " " + operator.symbol + " " + right.to_s + ")"
       end
 
       def inspect
-        "(" + @left.inspect + " " + @operator.to_s + " " + @right.inspect + ")"
+        "(" + left.inspect + " " + operator.symbol + " " + right.inspect + ")" + type_string
       end
 
     end

@@ -1,44 +1,27 @@
-require 'ast/common/element'
-require 'schema/type'
+require 'ast/common/expression'
+require 'schema/expression_type'
 
 module SquirrelDB
 
   module AST
 
-    class Constant < Element
+    class Constant < Expression
 
-      def initialize(value, type)
+      def initialize(value, type=nil)
+        super(type)
         @value = value
-        @type = type
       end
       
       include Schema
      
-      TRUE = Constant.new(true, Type::BOOLEAN)
-      FALSE = Constant.new(false, Type::BOOLEAN)
-      UNKNOWN = Constant.new(nil, Type::BOOLEAN)
-      INTEGER_NULL = Constant.new(nil, Type::INTEGER)
-      BOOLEAN_NULL = Constant.new(nil, Type::BOOLEAN)
-      STRING_NULL = Constant.new(nil, Type::STRING)
-      DOUBLE_NULL = Constant.new(nil, Type::DOUBLE)
-      SHORT_NULL = Constant.new(nil, Type::SHORT)
+      TRUE = Constant.new(true, ExpressionType::BOOLEAN)
+      FALSE = Constant.new(false, ExpressionType::BOOLEAN)
+      NULL = Constant.new(nil, ExpressionType::NULL_TYPE)
       
-      def self.null(type)
-        case type
-        when Type::BOOLEAN then BOOLEAN_NULL
-        when Type::INTEGER then INTEGER_NULL
-        when Type::SHORT then SHORT_NULL
-        when Type::STRING then STRING_NULL
-        when Type::DOUBLE then DOUBLE_NULL
-        else
-          raise "No null value known for Type #{type}."
-        end
-      end
-
-      attr_reader :value, :type
+      attr_reader :value
       
       def hash
-        @hash ||= [super, @value, @type].hash
+        @hash ||= [super, @value].hash
       end
 
       def to_s
@@ -46,15 +29,11 @@ module SquirrelDB
       end
 
       def inspect
-        (@value.nil? ? "null" : @value.inspect) + ":" + @type.to_s
+        (@value.nil? ? "null" : @value.inspect) + type_string
       end
 
       def ==(other)
-        super && @type == other.type && @value == other.value
-      end
-
-      def evaluate( state )
-        @value
+        super && @value == other.value
       end
 
     end
