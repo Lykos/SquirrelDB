@@ -57,7 +57,7 @@ module SquirrelDB
       def ==(other)
         self.class == other.class &&
         @name == other.name &&
-        @auto_conversions == other.auto_conversions
+        auto_conversions == other.auto_conversions
       end
       
       def eql?(other)
@@ -65,7 +65,7 @@ module SquirrelDB
       end
       
       def hash
-        @hash ||= [self.class.hash, @name, @auto_conversions].hash
+        @hash ||= [self.class.hash, @name, auto_conversions].hash
       end
 
       def to_s
@@ -77,23 +77,37 @@ module SquirrelDB
       end
 
       def auto_converts_to?(other)
-        self == other || @auto_conversions.has_key?(other)
+        self == other || auto_conversions.has_key?(other)
       end
       
       def auto_conversion_to(other)
         raise InternalError, "Conversion from expression type #{self} to expression type #{other} not possible." unless auto_converts_to?(other)
-        if self == other then IDENTITY else @auto_conversions[other] end
+        if self == other then IDENTITY else auto_conversions[other] end
       end
       
       protected
       
       attr_writer :auto_conversions
       
-      INTEGER.auto_conversions = { DOUBLE => lambda { |i| i.to_f } }
-      STRING.auto_conversions = {}
-      BOOLEAN.auto_conversions = {}
-      DOUBLE.auto_conversions = {}
-      NULL_TYPE.auto_conversions = TYPES.each.with_object({}) { |t, h| h[t] = IDENTITY }
+      def INTEGER.auto_conversions
+        @auto_conversions ||= { DOUBLE => lambda { |i| i.to_f } }
+      end  
+      
+      def STRING.auto_conversions
+        @auto_conversions ||= {}
+      end
+      
+      def BOOLEAN.auto_conversions
+        @auto_conversions ||= {}
+      end
+      
+      def DOUBLE.auto_conversions
+        @auto_conversions ||= {}
+      end
+      
+      def NULL_TYPE.auto_conversions
+        @auto_conversions ||= TYPES.each.with_object({}) { |t, h| h[t] = IDENTITY }
+      end
             
     end
 

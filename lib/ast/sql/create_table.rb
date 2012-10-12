@@ -1,5 +1,5 @@
 require 'ast/common/element'
-require 'schema/table_schema'
+require 'schema/schema'
 
 module SquirrelDB
 

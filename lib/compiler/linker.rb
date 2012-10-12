@@ -41,6 +41,14 @@ module SquirrelDB
         )
       end
       
+      def visit_select_expression(select, column_stack, offset_stack)
+        offset_stack << offset_stack.last
+        column_stack << column_stack.last.dup
+        super
+        column_stack.pop
+        offset_stack.pop        
+      end
+      
       def link_variable(variable, column_stack, offset_stack)
         raise InternalError, "Unresolved variable #{variable}." unless column_stack.last.hast_key?(variable)
         LinkedVariable.new(variable, column_stack.last[variable])
@@ -50,14 +58,11 @@ module SquirrelDB
       alias visit_variable link_variable
       
       def visit_projection(projection, column_stack, offset_stack)
-        offset_stack << offset_stack.last
-        column_stack << column_stack.last.dup
+        inner = visit(projection.inner, collumn_stack, offset_stack)
         Projector.new(
           projection.columns.collect { |c| ExpressionEvaluator.new(visit(c, column_stack, offset_stack)) },
-          visit(projection.inner)
+          inner
         )
-        column_stack.pop
-        offset_stack.pop
       end
       
       def visit_cartesian(cartesian, column_stack, offset_stack)
@@ -86,14 +91,16 @@ module SquirrelDB
       end
       
       def visit_insert(insert, column_stack, offset_stack)
+        # TODO Finish this
+        inner = visit(insert.inner)
         pre_linked_table = insert.variable
         page_no = @table_manager.page_no(pre_linked_table.table_id)
         name = pre_linked_table.name
         schema = pre_linked_table.schema
         table_columns = schema.columns # The columns of the table
         insert_columns = insert.columns # The columns we want to fill with new non-default values
-        value_columns = insert.inner.schema.columns # How the columns of our values look like
-        columns = table_columns.collect do |col|
+        value_columns = inner.schema.columns # How the columns of our values look like
+        columns = table_columns.collect.with_index do |col, i|
           if index = insert_columns.find_index { |c| c.index == col.index }
             unless col.type == insert_columns[index].type && col.name == insert_columns[index].name
               raise "Incompatible columns insert_column: #{insert_columns[index].inspect} for table_column #{col.inspect}."
@@ -104,11 +111,11 @@ module SquirrelDB
             value_columns[index] # TODO index is wrong in case of nested stuff
           else
             col.default
-          end
-        end
+          end # each
+        end # collect
         inner = Projector.new(
-          columns.map { |col| ExpressionEvaluator.new(col) },
-          visit(insert.inner)
+          columns.map { |col| ExpressionEvaluator.new(link_variable(col, column_stack, offset_stack)) },
+          inner
         )
         Inserter.new(name, page_no, @tuple_wrapper, schema, inner)
       end

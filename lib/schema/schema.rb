@@ -1,4 +1,4 @@
-require 'ast/common/tuple'
+require 'data/tuple'
 require 'ast/common/column'
 require 'errors/internal_error'
 require 'errors/encoding_error'
