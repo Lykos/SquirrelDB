@@ -36,7 +36,8 @@ module SquirrelDB
         :quit => ["q", "quit", "exit"],
         :connect => ["c", "connect"],
         :disconnect => ["d", "disconnect"],
-        :reset => ["r", "reset"]
+        :reset => ["r", "reset"],
+        :print => ["p", "print"]
       }
     
       # :doc:
@@ -50,13 +51,6 @@ module SquirrelDB
       def disconnect(*args)
         if @client.connected?
           @client.disconnect
-          timer = EM.add_periodic_timer(0.1) do
-            unless @client.connected?
-              timer.cancel
-              puts "Disconnected from server."
-              @client.activate(:command_state)
-            end
-          end
         else
           puts "Not connected!"
           @client.reactivate
@@ -97,6 +91,20 @@ module SquirrelDB
         end
         connect_id = ConnectId.parse(connections[0])
         @client.connect(connect_id.user, connect_id.host, options[:port] || @config[:port])
+      end
+      
+      # :doc:
+      # Print the command buffer
+      def print(*args)
+        puts @client.command_buffer
+        @client.reactivate
+      end
+      
+      # :doc:
+      # Resets the command buffer
+      def reset(*args)
+        @client.clear_command_buffer
+        @client.reactivate
       end
       
       protected

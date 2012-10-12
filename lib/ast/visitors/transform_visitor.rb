@@ -126,6 +126,20 @@ module SquirrelDB
         )
       end
       
+      def visit_cartesian_iterator(cartesian_iterator)
+        CartesianIterator.new(
+          visit(cartesian_iterator.left),
+          visit(cartesian_iterator.right)
+        )
+      end
+      
+      def visit_cartesian(cartesian)
+        Cartesian.new(
+          visit(cartesian.left),
+          visit(cartesian.right)
+        )
+      end
+      
       def visit_expression_evaluator(expression_evaluator)
         ExpressionEvaluator.new(visit(expression_evaluator.expression))
       end

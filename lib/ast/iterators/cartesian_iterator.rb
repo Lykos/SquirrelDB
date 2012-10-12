@@ -6,7 +6,7 @@ module SquirrelDB
 
     class CartesianIterator < RelAlgIterator
 
-      def initialize( left, right )
+      def initialize(left, right)
         super()
         @left = left
         @right = right

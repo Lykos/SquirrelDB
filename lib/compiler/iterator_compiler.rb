@@ -28,6 +28,13 @@ module SquirrelDB
         )
       end
       
+      def visit_cartesian(cartesian)
+        CartesianIterator.new(
+          visit(cartesian.left),
+          visit(cartesian.right)
+        )
+      end
+      
     end
 
   end

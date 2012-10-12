@@ -12,7 +12,7 @@ module SquirrelDB
 
       # Tells the client to add the line to the command buffer and flush it.
       def receive_request(line)
-        @client.append_command_buffer(line)
+        @client.append_command_buffer(line + "\n")
         @client.flush_command_buffer
       end
       

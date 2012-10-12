@@ -23,8 +23,7 @@ module SquirrelDB
       end
       
       # Activates this state
-      def activate(message="")
-        @message = message
+      def activate
         super()
       end
       
