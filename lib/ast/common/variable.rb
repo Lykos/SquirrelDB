@@ -6,7 +6,8 @@ module SquirrelDB
 
     class Variable < Expression
 
-      def initialize(name)
+      def initialize(name, type=nil)
+        super(type)
         @name = name
       end
 
@@ -17,7 +18,7 @@ module SquirrelDB
       end
 
       def inspect
-        @name
+        "Variable( #{@name} )" + type_string
       end
       
       def variable?
@@ -26,14 +27,6 @@ module SquirrelDB
 
       def ==(other)
         super && @name == other.name
-      end
-      
-      def to_s
-        @name
-      end
-      
-      def inspect
-        "Variable(" + @name + ")"
       end
       
       def hash

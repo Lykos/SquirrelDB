@@ -43,6 +43,10 @@ module SquirrelDB
         constant.value
       end
       
+      def visit_linked_variable(linked_variable, state)
+        state[linked_variable.offset]
+      end
+      
       def visit_select_expression(select_expression, state)
         select = select_expression.select_statement
         select.open(state)

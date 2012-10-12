@@ -32,9 +32,9 @@ module SquirrelDB
       end
 
       def process(statement)
-        column_stack = []
+        column_stack = [{}]
         ast = visit(statement, column_stack)
-        raise InternalError, "Column Stack not empty." unless column_stack.empty?
+        raise InternalError, "Column Stack not empty." unless column_stack.length == 1
         ast
       end
       
@@ -82,7 +82,7 @@ module SquirrelDB
       end
 
       def visit_select_statement(select_statement, column_stack)
-        column_stack << column_stack.empty? ? {} : column_stack.last.dup
+        column_stack << column_stack.last.dup
         from_clause = visit(select_statement.from_clause, column_stack)
         where_clause = visit(select_statement.where_clause, column_stack)
         select_clause = visit(select_statement.select_clause, column_stack)

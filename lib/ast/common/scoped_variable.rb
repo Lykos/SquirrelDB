@@ -19,7 +19,7 @@ module SquirrelDB
       end
 
       def inspect
-        @scope.inspect + "." + @variable.inspect + type_string
+        "ScopedVariable( " + @scope.inspect + "." + @variable.inspect + " )" + type_string
       end
 
       def ==(other)
