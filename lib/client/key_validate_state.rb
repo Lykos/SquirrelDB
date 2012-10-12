@@ -1,46 +1,50 @@
+require 'client/keyboard_handler_state'
+
 module SquirrelDB
   
   module Client
     
     # Represents a state of the keyboard handler in which an answer from the user is needed.
-    class KeyValidateState
+    class KeyValidateState < KeyboardHandlerState
     
       def activate(host, packed_key)
         key = packed_key.unpack("H*")[0].encode(Encoding::UTF_8)
         case validation_result = @key_validator.validate_key(host, key)
         when :unknown
-          puts "Unknown key received from server: "
-          puts key
-          @keyboard_handler.activate(@keyboard_handler.prompt_state, "Continue? [yN] ", lambda { |l| handle_prompt_result(host, key, l) })
+          puts "Unknown key received from server:"
         when :invalid
-          puts "Unknown key received from server: "
-          puts key
-          @keyboard_handler.activate(@keyboard_handler.prompt_state, "Continue? [yN] ", lambda { |l| handle_prompt_result(host, key, l) })
-
+          puts "Invalid key received from server:"
         when :valid
-          @keyboard_handler.activate(@keyboard_handler.connected_command_state)
+          @client.activate(:connected_command_state)
+          return
         else
           raise RuntimeError, "Invalid validation result #{validation_result}."
         end
+        # Only :invalid and :unknown allow that the control flow reaches this point
+        puts key
+        @client.activate(:prompt_state, prompt, lambda { |user_input| handle_prompt_result(host, key, user_input) } )
+      end
+      
+      def prompt
+        "Continue? [yN] "
       end
       
       protected
       
-      def initialize(keyboard_handler, connection_manager, key_validator)
-        @keyboard_handler = keyboard_handler
-        @connection_manager = connection_manager
-        @key_validator = key_validator
+      def initialize(keyboard_handler, client)
+        super(keyboard_handler)
+        @client = client
+        @key_validator = client.key_validator
       end
       
       private
       
-      def handle_prompt_result(host, key, line)
-        if ["y", "Y"].include?(line.chomp)
+      def handle_prompt_result(host, key, user_input)
+        if ["y", "Y"].include?(user_input.chomp)
           @key_validator.accept(host, key)
-          @keyboard_handler.activate(@keyboard_handler.connected_command_state)
+          @client.activate(:connected_command_state)
         else
-          @connection_manager.disconnect
-          @keyboard_handler.activate(@keyboard_handler.command_state)
+          @client.disconnect
         end
       end
         

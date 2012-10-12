@@ -6,9 +6,7 @@ module SquirrelDB
         
     # Handles internal commands called from the client.
     class CommandHandler
-      
-      attr_writer :keyboard_handler
-    
+          
       # Checks if the line is a command, i.e., if it starts with the prefix "/".
       # +line+:: The potential command.  
       def command?(line)
@@ -37,35 +35,36 @@ module SquirrelDB
       COMMANDS = {
         :quit => ["q", "quit", "exit"],
         :connect => ["c", "connect"],
-        :disconnect => ["d", "disconnect"]
+        :disconnect => ["d", "disconnect"],
+        :reset => ["r", "reset"]
       }
     
+      # :doc:
+      # Quits the execution.
       def quit(*args)
-        @connection_manager.disconnect if @connection_manager.connected?
-        EM.add_periodic_timer(0.1) do
-          unless @connection_manager.connected?
-            puts "Closing session."
-            EM.stop_event_loop
-          end
-        end
+        @client.close_session
       end
     
+      # :doc:
+      # Disconnects from server.
       def disconnect(*args)
-        if @connection_manager.connected?
-          @connection_manager.disconnect
+        if @client.connected?
+          @client.disconnect
           timer = EM.add_periodic_timer(0.1) do
-            unless @connection_manager.connected?
+            unless @client.connected?
               timer.cancel
               puts "Disconnected from server."
-              @keyboard_handler.activate(@keyboard_handler.command_state)
+              @client.activate(:command_state)
             end
           end
         else
           puts "Not connected!"
-          @keyboard_handler.reactivate
+          @client.reactivate
         end
       end
     
+      # :doc:
+      # Connects to server. Accepts "-h" and "-p" PORT and a connection string of the form [user@](host|alias|ipv4_address|ipv6_address) as arguments.
       def connect(*args)
         options = {}
         begin
@@ -77,7 +76,7 @@ module SquirrelDB
       
             opts.on("-h", "--help") do |h|
               puts opts
-              @keyboard_handler.reactivate
+              @client.reactivate
               return
             end
           end
@@ -89,23 +88,23 @@ module SquirrelDB
         connections = args.select { |arg| ConnectId::PATTERN.match(arg) }
         if connections.length == 0
           puts "No connection specified."
-          @keyboard_handler.reactivate
+          @client.reactivate
           return
         elsif connections.length > 1
           puts "More than one connection specified."
-          @keyboard_handler.reactivate
+          @client.reactivate
           return
         end
         connect_id = ConnectId.parse(connections[0])
-        @connection_manager.connect(connect_id.user, connect_id.host, options[:port] || @config[:port])
+        @client.connect(connect_id.user, connect_id.host, options[:port] || @config[:port])
       end
       
       protected
 
       # +connection_manager+:: An object that handles the connections
-      def initialize(connection_manager, config)
-          @connection_manager = connection_manager
-          @config = config
+      def initialize(client)
+        @client = client
+        @config = client.config
       end
       
     end

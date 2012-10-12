@@ -1,8 +1,3 @@
-require 'client/command_handler'
-require 'json'
-require 'client/connection_manager'
-require 'RubyCrypto'
-
 module SquirrelDB
   
   module Client

@@ -2,7 +2,6 @@ require 'client/command_state'
 require 'client/prompt_state'
 require 'client/key_validate_state'
 require 'client/connected_command_state'
-require 'RubyCrypto'
 gem 'eventmachine'
 require 'eventmachine'
 
@@ -18,8 +17,14 @@ module SquirrelDB
       
       # Forwards the line to its state and deactivates itself
       def receive_line(line)
-        pause
-        @state.receive_line(line)
+        begin
+          pause
+          @state.receive_line(line)
+        rescue Exception => e
+          puts e
+          puts e.backtrace
+          @client.close_session
+        end
       end
       
       # Activate the previous state with the given arguments.
@@ -30,37 +35,22 @@ module SquirrelDB
       end
       
       # Activate a given state with the given arguments.
-      # +state+:: A state.
+      # +state+:: Either a state object or a symbol that represents a state.
       # +args+:: The arguments handled to the state during activation.
       def activate(state, *args)
-        @state = state
+        @state = state.is_a?(Symbol) ? send(state) : state
         @state.activate(*args)
         resume
       end
       
-      # +responses+:: The number of responses the keyboard handler should wait for before it automatically reactivates the last state.
-      def wait_responses(responses, *args)
-        if responses > 0
-          @args = args
-          @responses = responses
-        else
-          reactivate(*args)
-        end
-      end
-      
-      # Get one response and reactivate, if we have enough
-      def respond
-        @responses -= 1
-        reactivate(*@args) if @responses <= 0
-      end
-      
       protected
       
-      def initialize(command_handler, connection_manager, key_validator)
+      def initialize(client)
+        @client = client
         @prompt_state = PromptState.new(self)
-        @key_validate_state = KeyValidateState.new(self, connection_manager, key_validator)
-        @command_state = CommandState.new(self, command_handler, connection_manager)
-        @connected_command_state = ConnectedCommandState.new(self, command_handler, connection_manager)
+        @key_validate_state = KeyValidateState.new(self, client)
+        @command_state = CommandState.new(self, client)
+        @connected_command_state = ConnectedCommandState.new(self, client)
         @state = @command_state
       end
     

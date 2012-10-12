@@ -1,30 +1,28 @@
-require 'client/command_handler'
-require 'client/response_handler'
-require 'json'
-require 'client/connection_manager'
-require 'RubyCrypto'
-gem 'eventmachine'
-require 'eventmachine'
+require 'client/keyboard_handler_state'
 
 module SquirrelDB
   
   module Client
     
     # Represents a state of the keyboard handler in which he has to ask for a prompt and then act accordingly.
-    class PromptState
+    class PromptState < KeyboardHandlerState
       
+      attr_reader :prompt
+      
+      # +prompt+:: The prompt to be printed.
+      # +callback+:: The callback, to which the result is yielded.
       def activate(prompt, callback)
         @callback = callback
-        print prompt
-        @keyboard_handler.resume
+        @prompt = prompt
+        super()
       end
-
+      
       def receive_line(line)
         @callback.call(line)
       end
       
       def initialize(keyboard_handler)
-        @keyboard_handler = keyboard_handler
+        super(keyboard_handler)
       end
     
     end

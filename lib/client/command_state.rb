@@ -1,35 +1,31 @@
 #encoding: UTF-8
 
+require 'client/keyboard_handler_state'
+
 module SquirrelDB
   
   module Client
     
     # Represents a state of the keyboard handler in which he accepts commands.
-    class CommandState
+    class CommandState < KeyboardHandlerState
 
       def receive_line(line)
-        if line.chomp[-1] == "\\"
-          @message << line.chomp[0..-2] << " "
-          @keyboard_handler.reactivate(@message)
+        if @command_handler.command?(line)
+          @command_handler.handle(line)
         else
-          if @command_handler.command?(line)
-            @command_handler.handle(line)
-          else
-            receive_request(line)
-          end # if
+          receive_request(line)
         end # if
       end
       
-      def receive_request(line)
+      def receive_request
         puts "Not connected. Unable to send to server."
-        @keyboard_handler.reactivate
+        @client.reactivate
       end
       
       # Activates this state
       def activate(message="")
         @message = message
-        print prompt
-        @keyboard_handler.resume
+        super()
       end
       
       def prompt
@@ -38,13 +34,12 @@ module SquirrelDB
       
       protected
       
-      # +keyboard_handler+:: An object that handles the keyboard events
-      # +command_handler+:: An object that handles commands
-      # +connection_handler+:: An object that handles the connections
-      def initialize(keyboard_handler, command_handler, connection_manager)
-        @keyboard_handler = keyboard_handler
-        @command_handler = command_handler
-        @connection_manager = connection_manager
+      # +keyboard_handler+:: Object which handles keyboard events.
+      # +client+:: The client facade
+      def initialize(keyboard_handler, client)
+        super(keyboard_handler)
+        @client = client
+        @command_handler = client.command_handler
       end      
     
     end

@@ -10,10 +10,8 @@ module SquirrelDB
     
     class ServerConnection < EventMachine::Connection
       
-      def initialize(connection_manager, keyboard_handler, response_handler)
-        @connection_manager = connection_manager
-        @keyboard_handler = keyboard_handler
-        @response_handler = response_handler
+      def initialize(client)
+        @client = client
         @protocol = ClientProtocol.new
         @state = ServerHelloState.new(self, @protocol)
       end
@@ -29,12 +27,12 @@ module SquirrelDB
       
       def unbind
         @connected = false
-        @connection_manager.connection_lost unless @intentionally
+        @client.connection_lost unless @intentionally
       end
       
       def connection_established
         @connected = true
-        @keyboard_handler.activate(@keyboard_handler.key_validate_state, @connection_manager.host, @protocol.public_key)
+        @client.connection_established(@protocol.public_key)
       end
       
       def receive_data(data)
@@ -42,7 +40,7 @@ module SquirrelDB
       end
       
       def receive_message(message)
-        @response_handler.handle_response(message)
+        @client.handle_response(message)
       end
 
       def connected?
