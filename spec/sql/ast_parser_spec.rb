@@ -1,6 +1,7 @@
 require 'sql/ast_parser.tab'
 require 'ast/common/all'
-require 'schema/type'
+require 'schema/expression_type'
+require 'schema/storage_type'
 require 'spec_helper'
 
 include SquirrelDB
@@ -27,23 +28,23 @@ describe ASTParser do
   end
   
   it "should parse a boolean constant correctly" do
-    set_expr_tokens([:BOOLEAN, "UnKnown"])
-    @parser.parse.should calculate_expression(Constant.new(nil, Type::BOOLEAN))
+    set_expr_tokens([:BOOLEAN, "faLsE"])
+    @parser.parse.should calculate_expression(Constant.new(false, ExpressionType::BOOLEAN))
   end
   
   it "should parse a string constant correctly" do
     set_expr_tokens([:STRING, "23"])
-    @parser.parse.should calculate_expression(Constant.new("23", Type::STRING))
+    @parser.parse.should calculate_expression(Constant.new("23", ExpressionType::STRING))
   end
   
   it "should parse a double constant correctly" do
     set_expr_tokens([:DOUBLE, "2.3"])
-    @parser.parse.should calculate_expression(Constant.new(2.3, Type::DOUBLE))
+    @parser.parse.should calculate_expression(Constant.new(2.3, ExpressionType::DOUBLE))
   end
   
   it "should parse an integer constant correctly" do
     set_expr_tokens([:INTEGER, "23"])
-    @parser.parse.should calculate_expression(Constant.new(23, Type::INTEGER))
+    @parser.parse.should calculate_expression(Constant.new(23, ExpressionType::INTEGER))
   end
   
   it "should parse an expression enclosed with brackets correctly" do
@@ -52,7 +53,7 @@ describe ASTParser do
       [:INTEGER, "22"],
       [")", ")"]
     )
-    @parser.parse.should calculate_expression(Constant.new(22, Type::INTEGER))
+    @parser.parse.should calculate_expression(Constant.new(22, ExpressionType::INTEGER))
   end
   
   it "should parse a variable correctly" do
@@ -108,7 +109,7 @@ describe ASTParser do
     @parser.parse.should calculate_expression(
       FunctionApplication.new(
         Variable.new("a"),
-        [Constant.new(22, Type::INTEGER)]
+        [Constant.new(22, ExpressionType::INTEGER)]
       )
     )
   end
@@ -134,7 +135,7 @@ describe ASTParser do
           ),
           Variable.new("c")
         ),
-        [Constant.new(22, Type::INTEGER)]
+        [Constant.new(22, ExpressionType::INTEGER)]
       )
     )
   end
@@ -154,9 +155,9 @@ describe ASTParser do
       FunctionApplication.new(
         Variable.new("a"),
         [
-          Constant.new(22, Type::INTEGER),
-          Constant.new(23, Type::INTEGER),
-          Constant.new(24, Type::INTEGER)
+          Constant.new(22, ExpressionType::INTEGER),
+          Constant.new(23, ExpressionType::INTEGER),
+          Constant.new(24, ExpressionType::INTEGER)
         ]
       )
     )
@@ -170,7 +171,7 @@ describe ASTParser do
     @parser.parse.should calculate_expression(
       UnaryOperation.new(
         Operator::UNARY_PLUS,
-        Constant.new(22, Type::INTEGER)
+        Constant.new(22, ExpressionType::INTEGER)
       )
     )
   end
@@ -184,8 +185,8 @@ describe ASTParser do
     @parser.parse.should calculate_expression(
       BinaryOperation.new(
         Operator::PLUS,
-        Constant.new(23, Type::INTEGER),
-        Constant.new(22, Type::INTEGER)
+        Constant.new(23, ExpressionType::INTEGER),
+        Constant.new(22, ExpressionType::INTEGER)
       )
     )
   end
@@ -203,14 +204,14 @@ describe ASTParser do
     @parser.parse.should calculate_expression(
       BinaryOperation.new(
         Operator::POWER,
-        Constant.new(23, Type::INTEGER),
+        Constant.new(23, ExpressionType::INTEGER),
         BinaryOperation.new(
           Operator::POWER,
-          Constant.new(22, Type::INTEGER),
+          Constant.new(22, ExpressionType::INTEGER),
           BinaryOperation.new(
             Operator::POWER,
-            Constant.new(22, Type::INTEGER),
-            Constant.new(21, Type::INTEGER)
+            Constant.new(22, ExpressionType::INTEGER),
+            Constant.new(21, ExpressionType::INTEGER)
           )
         )
       )
@@ -234,12 +235,12 @@ describe ASTParser do
           Operator::PLUS,
           BinaryOperation.new(
             Operator::PLUS,
-            Constant.new(23, Type::INTEGER),
-            Constant.new(22, Type::INTEGER)
+            Constant.new(23, ExpressionType::INTEGER),
+            Constant.new(22, ExpressionType::INTEGER)
           ),
-          Constant.new(22, Type::INTEGER)
+          Constant.new(22, ExpressionType::INTEGER)
         ),
-        Constant.new(21, Type::INTEGER)
+        Constant.new(21, ExpressionType::INTEGER)
       )
     )
   end
@@ -255,11 +256,11 @@ describe ASTParser do
     @parser.parse.should calculate_expression(
       BinaryOperation.new(
         Operator::PLUS,
-        Constant.new(23, Type::INTEGER),
+        Constant.new(23, ExpressionType::INTEGER),
         BinaryOperation.new(
           Operator::TIMES,
-          Constant.new(22, Type::INTEGER),
-          Constant.new(21, Type::INTEGER)
+          Constant.new(22, ExpressionType::INTEGER),
+          Constant.new(21, ExpressionType::INTEGER)
         )
       )
     )   
@@ -280,10 +281,10 @@ describe ASTParser do
         Operator::TIMES,
         BinaryOperation.new(
           Operator::PLUS,
-          Constant.new(23, Type::INTEGER),
-          Constant.new(22, Type::INTEGER)
+          Constant.new(23, ExpressionType::INTEGER),
+          Constant.new(22, ExpressionType::INTEGER)
         ),
-        Constant.new(21, Type::INTEGER)
+        Constant.new(21, ExpressionType::INTEGER)
       )
     )   
   end
@@ -303,9 +304,9 @@ describe ASTParser do
           Operator::POWER,
           UnaryOperation.new(
             Operator::BIT_NOT,
-            Constant.new(22, Type::INTEGER)
+            Constant.new(22, ExpressionType::INTEGER)
           ),
-          Constant.new(21, Type::INTEGER)
+          Constant.new(21, ExpressionType::INTEGER)
         )
       )
     )   
@@ -328,10 +329,10 @@ describe ASTParser do
           Operator::UNARY_PLUS,
           UnaryOperation.new(
             Operator::BIT_NOT,
-            Constant.new(22, Type::INTEGER)
+            Constant.new(22, ExpressionType::INTEGER)
           )
         ),
-        Constant.new(21, Type::INTEGER)
+        Constant.new(21, ExpressionType::INTEGER)
       )
     )   
   end
@@ -411,8 +412,8 @@ describe ASTParser do
           Variable.new("d")
         ],
         [
-          Constant.new(2, Type::INTEGER),
-          Constant.new(3, Type::INTEGER)
+          Constant.new(2, ExpressionType::INTEGER),
+          Constant.new(3, ExpressionType::INTEGER)
         ]
       )
     )
@@ -442,11 +443,11 @@ describe ASTParser do
           Variable.new("b")
         ),
         [
-          Column.new("c", Type::INTEGER, 0, Constant.new(3, Type::INTEGER)),
-          Column.new("d", Type::STRING, 1)
+          Column.new("c", StorageType::INTEGER, Constant.new(3, ExpressionType::INTEGER)),
+          Column.new("d", StorageType::STRING)
         ],
       )
-    )    
+    )  
   end
   
 end

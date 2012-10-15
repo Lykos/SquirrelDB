@@ -7,7 +7,7 @@ module SquirrelDB
     class BinaryOperation < FunctionApplication
     
       def initialize(operator, left, right, type=nil)
-        super(type)
+        super(operator, [left, right], type)
         @operator = operator
         @left = left
         @right = right

@@ -26,7 +26,7 @@ module SquirrelDB
             integer >>= BYTE_BITS
           end
         else
-          raise StorageError, "#{integer} does not fit into a string of length #{length}" if int >= 1 << BYTE_BITS * length 
+          raise StorageError, "#{integer} does not fit into a string of length #{length}" if integer >= 1 << BYTE_BITS * length 
           string = " " * length
           length.times do |i|
             string.setbyte(i, BYTE_MASK & integer)

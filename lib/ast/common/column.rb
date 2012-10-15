@@ -1,4 +1,5 @@
 require 'ast/common/element'
+require 'ast/common/constant'
 
 module SquirrelDB
 
@@ -7,9 +8,7 @@ module SquirrelDB
     # Represents one column of the Schema
     class Column < Element
 
-      def initialize(name, type, default=Constant.null(type))
-        raise "Default for column #{name} has an invalid type #{default.type} instead of #{type}." unless default.type == type
-        raise "Invalid column index #{index}." unless index.kind_of?(Integer) && index >= 0
+      def initialize(name, type, default=Constant::NULL)
         @name = name
         @type = type
         @default = default
@@ -18,7 +17,7 @@ module SquirrelDB
       attr_reader :name, :type, :default
       
       def inspect
-        "Column_{#{@index}}( #{@name.inspect}:#{@type.to_s}#{has_default? ? " = " + @default.value.inspect : ""} )"
+        "Column( #{@name.inspect}:#{@type.to_s}#{has_default? ? " = " + @default.value.inspect : ""} )"
       end
       
       def has_default?
@@ -30,19 +29,14 @@ module SquirrelDB
       end
       
       def hash
-        @hash ||= [super, @name, @type, @default, @index].hash
+        @hash ||= [super, @name, @type, @default].hash
       end
       
       def ==(other)
         super &&
         @name == other.name &&
         @type == other.type &&
-        @default == other.default &&
-        @index == other.index
-      end
-      
-      def evaluate(state)
-        state[@index]
+        @default == other.default
       end
       
     end

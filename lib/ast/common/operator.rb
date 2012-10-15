@@ -30,7 +30,7 @@ module SquirrelDB
 
       alias symbol :name
 
-      attr_reader :symbol, :cardinality
+      attr_reader :cardinality, :alternative_symbols
 
       def to_s
         symbol
@@ -76,9 +76,9 @@ module SquirrelDB
       AND = Operator.new('&&', :binary, 'AND')
       XOR = Operator.new('^^', :binary, 'XOR')
       OR = Operator.new('||', :binary, 'OR')
+      EQUIVALENT = Operator.new('<->', :binary, 'EQUIVALENT')
       IMPLIES = Operator.new('->', :binary, 'IMPLIES')
       IS_IMPLIED = Operator.new('<-', :binary)
-      EQUIVALENT = Operator.new('<->', :binary, 'EQUIVALENT')
       LEFT_SHIFT = Operator.new('<<', :binary)
       RIGHT_SHIFT = Operator.new('>>', :binary)
       BIT_AND = Operator.new('&', :binary)

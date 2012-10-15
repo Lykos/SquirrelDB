@@ -10,12 +10,15 @@ module SquirrelDB
       def initialize(type)
         @type = type
       end
+      
+      attr_reader :type
             
       def typed?
         @typed ||= !@type.nil?
       end
       
       def ==(other)
+        super &&
         @type == other.type
       end
       

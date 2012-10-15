@@ -1,4 +1,5 @@
 require 'ast/common/element'
+require 'ast/common/constant'
 
 module SquirrelDB
 
@@ -11,6 +12,8 @@ module SquirrelDB
       end
     
       attr_reader :expression
+      
+      EMPTY = WhereClause.new(Constant::TRUE)
 
       def to_s
         "where " + @expression.to_s

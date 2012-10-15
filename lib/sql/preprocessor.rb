@@ -7,9 +7,7 @@ module SquirrelDB
 
       # Remove comments
       def process( string )
-        string.lines.collect do |line|
-          line.gsub( /--.*?$/, '' )
-        end.join( ' ' ).gsub( /\/\*.*?\*\//, ' ' )
+        string.lines.collect { |line| line.gsub( /--.*?$/, '' ) }.join( ' ' )
       end
 
     end

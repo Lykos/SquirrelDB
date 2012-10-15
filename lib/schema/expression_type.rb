@@ -26,11 +26,11 @@ module SquirrelDB
       
       attr_reader :name
     
-      INTEGER = ExpressionType.new("Integer")
-      STRING = ExpressionType.new("String")
-      BOOLEAN = ExpressionType.new("Boolean")
-      DOUBLE = ExpressionType.new("Double")
-      NULL_TYPE = ExpressionType.new("NullType")
+      INTEGER = ExpressionType.new("integer")
+      STRING = ExpressionType.new("string")
+      BOOLEAN = ExpressionType.new("boolean")
+      DOUBLE = ExpressionType.new("double")
+      NULL_TYPE = ExpressionType.new("null_type")
       IDENTITY = lambda { |x| x }
       
 
@@ -56,8 +56,7 @@ module SquirrelDB
         
       def ==(other)
         self.class == other.class &&
-        @name == other.name &&
-        auto_conversions == other.auto_conversions
+        @name == other.name
       end
       
       def eql?(other)
@@ -69,7 +68,7 @@ module SquirrelDB
       end
 
       def to_s
-        @name
+        @name + "_et"
       end
 
       def inspect

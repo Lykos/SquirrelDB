@@ -1,4 +1,4 @@
-require 'types/expression_type'
+require 'schema/expression_type'
 require 'errors/internal_error'
 require 'errors/storage_error'
 require 'errors/encoding_error'
@@ -44,11 +44,11 @@ module SquirrelDB
       
       attr_reader :name, :type_id, :expression_type
       
-      INTEGER = StorageType.new("Integer")
-      STRING = StorageType.new("String")
-      BOOLEAN = StorageType.new("Boolean")
-      DOUBLE = StorageType.new("Double")
-      SHORT = StorageType.new("Short")
+      INTEGER = StorageType.new("integer", 1, ExpressionType::INTEGER)
+      STRING = StorageType.new("string", 2, ExpressionType::STRING)
+      BOOLEAN = StorageType.new("boolean", 3, ExpressionType::BOOLEAN)
+      DOUBLE = StorageType.new("double", 4, ExpressionType::DOUBLE)
+      SHORT = StorageType.new("short", 5, ExpressionType::INTEGER)
       
       def load_variant_indicator(raw)
         raise EncodingError unless raw.encoding == Encoding::BINARY
@@ -147,7 +147,7 @@ module SquirrelDB
       # exception, if no such type exists. 
       def self.by_name(name)
         type = TYPES.find { |t| t.name == name }
-        raise InternalError, "No type with type id #{id} known." unless type
+        raise InternalError, "No type with type name #{name} known." unless type
         type
       end
       
@@ -172,7 +172,7 @@ module SquirrelDB
       end
 
       def to_s
-        @name
+        @name + "_st"
       end
 
       def inspect

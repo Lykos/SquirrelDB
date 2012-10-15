@@ -2,6 +2,7 @@
 
 gem 'rspec-encoding-matchers'
 require 'rspec_encoding_matchers'
+require 'schema/expression_type'
 require 'ast/sql/select_statement'
 require 'ast/sql/select_clause'
 
@@ -53,9 +54,32 @@ module SquirrelDB
     def calculate_expression(expected)
       CalculateExpression.new(expected)
     end
-
-  end
   
+    class HaveType
+      
+      include Schema
+      
+      def initialize(type_sym)
+        @type = ExpressionType.const_get(type_sym.upcase)
+      end
+      
+      def matches?(target)
+        @target = target
+        target.type == @type
+      end
+      
+      def failure_message
+        "expected type #{@type}, but got type #{@target.type}."
+      end
+      
+      def failure_message
+        "expected not type #{@type}, but got type #{@target.type}."
+      end
+      
+    end
+  
+  end
+ 
 end
 
 RSpec.configure do |config|

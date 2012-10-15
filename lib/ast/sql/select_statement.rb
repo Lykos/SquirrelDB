@@ -6,7 +6,7 @@ module SquirrelDB
 
     class SelectStatement < Element
 
-      def initialize( select_clause, from_clause, where_clause )
+      def initialize(select_clause, from_clause, where_clause)
         @select_clause = select_clause
         @from_clause = from_clause
         @where_clause = where_clause

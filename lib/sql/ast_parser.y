@@ -73,7 +73,7 @@ class SquirrelDB::SQL::ASTParser
     table: "(" select ")" { val[1] }
          | name
          
-    where_clause: { WhereClause.new(Constant::TRUE) }
+    where_clause: { WhereClause::EMPTY }
                 | "where" expression
                   { WhereClause.new(val[1]) }
                  
@@ -116,26 +116,16 @@ class SquirrelDB::SQL::ASTParser
                 | "create" "table" name "as" select
                   { CreateTableAs.new(val[2], val[4]) }
                   
-    schema_columns: IDENTIFIER type default_value
-                    {
-                      if val[2]
-                        [Column.new(val[0], val[1], 0, val[2])]
-                      else
-                        [Column.new(val[0], val[1], 0)]
-                      end
-                    }
-                  | schema_columns "," IDENTIFIER type default_value
-                    {
-                      column = if val[4]
-                        Column.new(val[2], val[3], val[0].length, val[4])
-                      else
-                        Column.new(val[2], val[3], val[0].length)
-                      end
-                      val[0] << column
-                    }
+    schema_columns: schema_column
+                    { val }
+                  | schema_column "," schema_columns
+                    { [val[0]].concat(val[2]) }
                     
+    schema_column: IDENTIFIER type default_value
+                   { val[2] ? Column.new(val[0], val[1], val[2]) : Column.new(val[0], val[1]) }
+                                       
     type: IDENTIFIER
-          { Type.by_name(val[0]) }
+          { StorageType.by_name(val[0].downcase) }
                     
     default_value: { nil }
                  | "default" constant
@@ -215,13 +205,13 @@ class SquirrelDB::SQL::ASTParser
             | double_constant
             | boolean_constant
             | null
-              { Constant.new(nil, Type::NULL) }
+              { Constant.new(nil, ExpressionType::NULL) }
             
     integer_constant: INTEGER
-                      { Constant.new(val[0].to_i, Type::INTEGER) }
+                      { Constant.new(val[0].to_i, ExpressionType::INTEGER) }
                       
     string_constant: STRING
-                     { Constant.new(val[0], Type::STRING) }
+                     { Constant.new(val[0], ExpressionType::STRING) }
                      
     boolean_constant: BOOLEAN
                      {
@@ -230,16 +220,14 @@ class SquirrelDB::SQL::ASTParser
                          true
                        when "false"
                          false
-                       when "unknown"
-                         nil
                        else
-                         raise InternalError
+                         raise InternalError, "Unknown boolean value #{val[0]}."
                        end
-                       Constant.new(value, Type::BOOLEAN)
+                       Constant.new(value, ExpressionType::BOOLEAN)
                      }
                      
     double_constant: DOUBLE
-                     { Constant.new(val[0].to_f, Type::DOUBLE) }
+                     { Constant.new(val[0].to_f, ExpressionType::DOUBLE) }
 end
 
 ---- header
@@ -247,7 +235,8 @@ require 'ast/common/all'
 require 'ast/sql/all'
 require 'errors/internal_error'
 require 'errors/parse_error'
-require 'schema/type'
+require 'schema/expression_type'
+require 'schema/storage_type'
 
 include SquirrelDB::Schema
 include SquirrelDB::AST

@@ -1,4 +1,5 @@
 require 'ast/iterators/memory_table_scanner'
+require 'errors/internal_compiler_error'
 require 'ast/iterators/inserter'
 require 'ast/iterators/expression_evaluator'
 require 'ast/visitors/transform_visitor'
@@ -57,6 +58,7 @@ module SquirrelDB
       alias visit_scoped_variable link_variable
       alias visit_variable link_variable
       
+      # TODO Problems with nested projections, if things that are used outside get projected away.
       def visit_projection(projection, column_stack, offset_stack)
         inner = visit(projection.inner, collumn_stack, offset_stack)
         Projector.new(
@@ -78,6 +80,7 @@ module SquirrelDB
         page_no = @table_manager.page_no(pre_linked_table.table_id)
         names = pre_linked_table.names
         schema = pre_linked_table.schema
+        # Add the link info of this table
         each_link_info.with_index(names, schema) do |name, col, i|
           column_stack.last[name] = offset_stack.last
           offset_stack.last += 1
@@ -85,7 +88,6 @@ module SquirrelDB
         MemoryTableScanner.new(names[0], page_no, @tuple_wrapper, schema)
       end
       
-      # TODO Do this differently
       def visit_create_table(create_table, column_stack, offset_stack)
         TableCreator.new(visit, column_stack)
       end
@@ -101,20 +103,20 @@ module SquirrelDB
         insert_columns = insert.columns # The columns we want to fill with new non-default values
         value_columns = inner.schema.columns # How the columns of our values look like
         columns = table_columns.collect.with_index do |col, i|
-          if index = insert_columns.find_index { |c| c.index == col.index }
+          if index = insert_columns.any? { |c| c.name == col.name }
             unless col.type == insert_columns[index].type && col.name == insert_columns[index].name
-              raise "Incompatible columns insert_column: #{insert_columns[index].inspect} for table_column #{col.inspect}."
+              raise InternalCompilerError, "Incompatible columns insert_column: #{insert_columns[index].inspect} for table_column #{col.inspect}."
             end
             unless col.type == insert_columns[index].type
               raise "Incompatible columns insert_column: #{value_columns[index].inspect} for value_column #{col.inspect}."
             end
-            value_columns[index] # TODO index is wrong in case of nested stuff
+            value_columns[index]
           else
             col.default
-          end # each
+          end # if
         end # collect
         inner = Projector.new(
-          columns.map { |col| ExpressionEvaluator.new(link_variable(col, column_stack, offset_stack)) },
+          columns.map { |col| ExpressionEvaluator.new(visit(col, column_stack, offset_stack)) },
           inner
         )
         Inserter.new(name, page_no, @tuple_wrapper, schema, inner)
