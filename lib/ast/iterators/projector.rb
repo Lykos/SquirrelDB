@@ -1,13 +1,15 @@
-require 'forwardable'
 require 'ast/iterators/rel_alg_iterator' 
 require 'data/state'
 require 'schema/schema'
+require 'data/tuple'
 
 module SquirrelDB
 
   module AST
 
     class Projector < RelAlgIterator
+      
+      include Data
 
       def initialize(column_evaluators, inner)
         @column_evaluators = column_evaluators

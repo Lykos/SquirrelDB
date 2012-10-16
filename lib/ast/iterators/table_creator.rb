@@ -4,28 +4,28 @@ module SquirrelDB
 
     class TableCreator
 
-      def initialize(variable, columns, schema_manager)
+      def initialize(variable, schema, schema_manager)
         @variable = variable
-        @columns = columns
+        @schema = schema
         @schema_manager = schema_manager
       end
 
-      attr_reader :variable, :columns
+      attr_reader :variable, :schema
 
       def to_s
-        "TableCreator( #{@variable.to_s}, [ " + @columns.collect { |c| c.name.to_s + " " + c.type.to_s }.join(", ") + " ] )"
+        "TableCreator( #{@variable.to_s}, #{@schema.to_s} )"
       end
 
       def inspect
-        "TableCreator( #{@variable.inspect}, [ " + @columns.collect { |c| c.inspect }.join(", ") + " ] )"
+        "TableCreator( #{@variable.inspect}, #{@schema.inspect} )"
       end
 
       def ==(other)
-        super && @variable == other.variable && @columns == other.columns
+        super && @variable == other.variable && @schema == other.schema
       end
       
       def hash
-        @hash ||= [super, @variable, @columns].hash
+        @hash ||= [super, @variable, @schema].hash
       end
       
       def query?
@@ -33,7 +33,7 @@ module SquirrelDB
       end
       
       def execute(state)
-        @schema_manager.add(@variable, Schema::TableSchema.new(@columns))
+        @schema_manager.add(@variable, @schema)
       end
 
     end

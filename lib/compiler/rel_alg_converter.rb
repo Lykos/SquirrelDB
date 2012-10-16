@@ -3,7 +3,7 @@ require 'ast/visitors/transform_visitor'
 
 module SquirrelDB
 
-  module RelAlg
+  module Compiler
 
     class RelAlgConverter
       

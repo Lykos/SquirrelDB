@@ -59,10 +59,11 @@ module SquirrelDB
           raise NameError, "Table #{var} does not exist." unless @schema_manager.has?(var)
           schema = @schema_manager.get(var)
           each_link_info(names, schema) do |name, column|
+            type = column.type.expression_type
             if column_stack.last.has_key?(name)
               column_stack.last[name] = :ambiguous
             else
-              column_stack.last[name] = column.type.expression_type
+              column_stack.last[name] = type
             end
           end
           PreLinkedTable.new(schema, names, @table_manager.variable_id(var))
@@ -185,7 +186,7 @@ module SquirrelDB
       
       def visit_insert(insert, column_stack)
         schema = @schema_manager.get(insert.variable)
-        pre_linked_table = PreLinkedTable.new(schema, insert.variable.name, @table_manager.variable_id(insert.variable))
+        pre_linked_table = PreLinkedTable.new(schema, insert.variable.to_s, @table_manager.variable_id(insert.variable))
         columns = insert.columns.collect { |c| schema.column(c.name) }
         inner = visit(insert.inner, column_stack)
         if inner.length != columns.length

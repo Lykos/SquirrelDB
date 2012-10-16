@@ -17,7 +17,7 @@ module SquirrelDB
       attr_reader :name, :type, :default
       
       def inspect
-        "Column( #{@name.inspect}:#{@type.to_s}#{has_default? ? " = " + @default.value.inspect : ""} )"
+        "Column( #{@name.to_s}:#{@type.to_s}#{has_default? ? " = " + @default.value.inspect : ""} )"
       end
       
       def has_default?
@@ -25,7 +25,7 @@ module SquirrelDB
       end
       
       def to_s
-        @name.to_s
+        "Column( #{@name.to_s}:#{@type.to_s}#{has_default? ? " = " + @default.value.to_s : ""} )"
       end
       
       def hash

@@ -19,7 +19,7 @@ module SquirrelDB
       def receive_line(line)
         begin
           pause
-          threads  threads  @state.receive_line(line)
+          @state.receive_line(line)
         rescue Exception => e
           puts e
           puts e.backtrace

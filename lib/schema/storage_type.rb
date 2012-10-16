@@ -13,6 +13,8 @@ module SquirrelDB
       
       TYPES = []
       
+      private
+
       include Storage::RawUtil
 
       # Size of long integers (which are short compared to ruby integers) Note that the highest one is the sign/null byte
@@ -20,15 +22,15 @@ module SquirrelDB
       DOUBLE_BYTES = 8
       STRING_LENGTH_BYTES = 2
       INTEGER_LENGTH_BYTES = 2
-      NULL_INDICATOR = 0xFF
-      NORMAL_INDICATOR = 0
-      SIGN_POSITIVE = 0
-      SIGN_NEGATIVE = 1
-      BOOLEAN_TRUE = 1
-      BOOLEAN_FALSE = 0
-      
+      NULL_INDICATOR = 0xFF.chr.force_encoding(Encoding::BINARY)
+      NORMAL_INDICATOR = 0.chr.force_encoding(Encoding::BINARY)
+      SIGN_POSITIVE = 0.chr.force_encoding(Encoding::BINARY)
+      SIGN_NEGATIVE = 1.chr.force_encoding(Encoding::BINARY)
+      BOOLEAN_TRUE = 1.chr.force_encoding(Encoding::BINARY)
+      BOOLEAN_FALSE = 0.chr.force_encoding(Encoding::BINARY)
+    
       protected
-      
+    
       def self.new(*args)
         super
       end
@@ -52,7 +54,7 @@ module SquirrelDB
       
       def load_variant_indicator(raw)
         raise EncodingError unless raw.encoding == Encoding::BINARY
-        raw.slice!(0).unpack("C")[0]
+        raw.slice!(0)
       end
       
       def sign_indicator(variant_indicator)
@@ -60,7 +62,7 @@ module SquirrelDB
         when SIGN_POSITIVE then 1
         when SIGN_NEGATIVE then -1
         else
-          raise StorageError, "Invalid sign encoding #{variant_indicator}."
+          raise StorageError, "Invalid sign encoding #{variant_indicator.dump}."
         end
       end
       
@@ -73,11 +75,11 @@ module SquirrelDB
         return nil if variant_indicator == NULL_INDICATOR
         sign = sign_indicator(variant_indicator)
         length = extract_int(raw.slice!(0, INTEGER_LENGTH_BYTES))
-        sign * extract_int(raw_string.slice!(0, length))
+        sign * extract_int(raw.slice!(0, length))
       end
       
       def INTEGER.store(integer)
-        return NULL_INDICATOR unless integer
+        return NULL_INDICATOR.dup unless integer
         raw = encode_int(integer.abs)
         sign_variant(integer) + encode_int(raw.length, INTEGER_LENGTH_BYTES) + raw
       end
@@ -86,28 +88,28 @@ module SquirrelDB
         variant_indicator = load_variant_indicator(raw)
         return nil if variant_indicator == NULL_INDICATOR
         case variant_indicator
-        when BOOLEAN_POSITIVE then true
-        when BOOLEAN_NEGATIVE then false
+        when BOOLEAN_TRUE then true
+        when BOOLEAN_FALSE then false
         else
-          raise StorageError, "Invalid encoding of a boolean #{extract_int(variant_indicator)}."
+          raise StorageError, "Invalid encoding of a boolean #{variant_indicator.dump}."
         end
       end
       
       def BOOLEAN.store(boolean)
-        return NULL_INDICATOR if boolean.nil?
-        (boolean ? BOOLEAN_POSITIVE : BOOLEAN_NEGATIVE).chr.force_encoding(Encoding::BINARY)
+        return NULL_INDICATOR.dup if boolean.nil?
+        (boolean ? BOOLEAN_TRUE : BOOLEAN_FALSE).chr.force_encoding(Encoding::BINARY)
       end
       
       def STRING.load(raw)
         variant_indicator = load_variant_indicator(raw)
-        return nil if variant_indicator == variant_indicator
-        raise "Unknown String variant #{variant_indicator}." unless variant_indicator == NORMAL_INDICATOR
+        return nil if variant_indicator == NULL_INDICATOR
+        raise "Unknown String variant #{variant_indicator.dump}." unless variant_indicator == NORMAL_INDICATOR
         length = extract_int(raw.slice!(0, STRING_LENGTH_BYTES))
         raw.slice!(0, length).force_encoding(Encoding::UTF_8)
       end
       
       def STRING.store(string)
-        return NULL_INDICATOR unless STRING
+        return NULL_INDICATOR.dup unless string
         NORMAL_INDICATOR.chr.force_encoding(Encoding::BINARY) + encode_int(string.length, STRING_LENGTH_BYTES) + string.force_encoding(Encoding::BINARY)
       end
       
@@ -115,11 +117,11 @@ module SquirrelDB
         variant_indicator = load_variant_indicator(raw)
         return nil if variant_indicator == NULL_INDICATOR
         sign = sign_indicator(variant_indicator)
-        sign * extract_int(raw_string.slice!(0, SHORT_BYTES))
+        sign * extract_int(raw.slice!(0, SHORT_BYTES))
       end
       
       def SHORT.store(integer)
-        return NULL_INDICATOR unless integer
+        return NULL_INDICATOR.dup unless integer
         sign_variant(integer) + encode_int(integer.abs, SHORT_BYTES)
       end
       
@@ -127,11 +129,11 @@ module SquirrelDB
         variant_indicator = load_variant_indicator(raw)
         return nil if variant_indicator == NULL_INDICATOR
         raise "Unknown Double variant #{variant_indicator}." unless variant_indicator == NORMAL_INDICATOR
-        raw.slice!(0, DOUBLE_BYTES).unpack(E)[0]
+        raw.slice!(0, DOUBLE_BYTES).unpack("E")[0]
       end
       
       def DOUBLE.store(double)
-        return NULL_INDICATOR unless double
+        return NULL_INDICATOR.dup unless double
         NORMAL_INDICATOR.chr.force_encoding(Encoding::BINARY) + [double].pack("E").force_encoding(Encoding::BINARY)
       end
     

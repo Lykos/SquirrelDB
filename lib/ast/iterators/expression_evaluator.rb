@@ -5,12 +5,15 @@ require 'schema/schema'
 require 'schema/expression_type'
 require 'errors/no_rows_error'
 require 'errors/too_many_rows_error'
+require 'ast/visitors/visitor'
 
 module SquirrelDB
 
   module AST
 
     class ExpressionEvaluator < Element
+      
+      include Visitor
             
       def initialize(expression)
         @expression = expression

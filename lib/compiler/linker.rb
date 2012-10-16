@@ -1,8 +1,7 @@
-require 'ast/iterators/memory_table_scanner'
-require 'ast/iterators/inserter'
-require 'ast/iterators/expression_evaluator'
+require 'ast/iterators/all'
 require 'ast/visitors/transform_visitor'
-require 'ast/common/column'
+require 'ast/common/linked_variable'
+require 'errors/compiler_error'
 require 'compiler/link_helper'
 
 module SquirrelDB
@@ -34,11 +33,18 @@ module SquirrelDB
       include TransformVisitor
       
       def visit_selection(selection, column_stack, offset_stack)
-        inner = visit(selection.inner)
+        inner = visit(selection.inner, column_stack, offset_stack)
         Selector.new(
           ExpressionEvaluator.new(visit(selection.expression, column_stack, offset_stack)),
           inner
         )
+      end
+      
+      def visit_dummy_iterator(dummy_iterator, column_stack, offset_stack)
+        expression_evaluators = dummy_iterator.expression_evaluators.collect do |e|
+          ExpressionEvaluator.new(visit(e, column_stack, offset_stack))
+        end
+        DummyIterator.new(dummy_iterator.types, expression_evaluators)
       end
       
       def visit_select_expression(select, column_stack, offset_stack)
@@ -50,16 +56,15 @@ module SquirrelDB
       end
       
       def link_variable(variable, column_stack, offset_stack)
-        raise InternalError, "Unresolved variable #{variable}." unless column_stack.last.hast_key?(variable)
+        raise CompilerError, "Unresolved variable #{variable}." unless column_stack.last.has_key?(variable)
         LinkedVariable.new(variable, column_stack.last[variable])
       end
       
       alias visit_scoped_variable link_variable
       alias visit_variable link_variable
       
-      # TODO Problems with nested projections, if things that are used outside get projected away.
       def visit_projection(projection, column_stack, offset_stack)
-        inner = visit(projection.inner, collumn_stack, offset_stack)
+        inner = visit(projection.inner, column_stack, offset_stack)
         Projector.new(
           projection.columns.collect { |c| ExpressionEvaluator.new(visit(c, column_stack, offset_stack)) },
           inner
@@ -80,23 +85,22 @@ module SquirrelDB
         names = pre_linked_table.names
         schema = pre_linked_table.schema
         # Add the link info of this table
-        each_link_info.with_index(names, schema) do |name, col, i|
-          column_stack.last[name] = offset_stack.last
-          offset_stack.last += 1
+        each_link_info(names, schema) do |name, col, i|
+          column_stack.last[name.typed(col.type.expression_type)] = offset_stack.last + i
         end
+        offset_stack[-1] += schema.length
         MemoryTableScanner.new(names[0], page_no, @tuple_wrapper, schema)
       end
       
       def visit_create_table(create_table, column_stack, offset_stack)
-        TableCreator.new(visit, column_stack)
+        TableCreator.new(create_table.variable, Schema::Schema.new(create_table.columns), @schema_manager)
       end
       
       def visit_insert(insert, column_stack, offset_stack)
-        # TODO Finish this
-        inner = visit(insert.inner)
+        inner = visit(insert.inner, column_stack, offset_stack)
         pre_linked_table = insert.variable
         page_no = @table_manager.page_no(pre_linked_table.table_id)
-        name = pre_linked_table.name
+        name = pre_linked_table.names[0].to_s
         schema = pre_linked_table.schema
         table_columns = schema.columns # The columns of the table
         insert_columns = insert.columns # The columns we want to fill with new non-default values

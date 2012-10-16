@@ -59,15 +59,15 @@ module SquirrelDB
       
       def add(table_name, schema)
         table_id = @table_manager.add_table(table_name)
-        schema.each_column do |c|
-          @internal_evaluator.insert("schemata", ["table_id", "column_name", "type_id", c.type.name.downcase + "_default", "index"], [table_id, c.name, c.type.type_id, c.default.value, c.index])
+        schema.each_column.with_index do |c, i|
+          @internal_evaluator.insert("schemata", ["table_id", "column_name", "type_id", c.type.name.downcase + "_default", "index"], [table_id, c.name, c.type.type_id, c.default.value, i])
         end
       end
       
       private
       
       def internal?(table)
-        table.kind_of?(ScopedVariable) && table.scope.kind_of?(Variable) && table.scope.variable.name == Data::Constants::INTERNAL_SCOPE       
+        table.kind_of?(ScopedVariable) && table.scope.kind_of?(Variable) && table.scope.name == Data::Constants::INTERNAL_SCOPE       
       end
 
     end

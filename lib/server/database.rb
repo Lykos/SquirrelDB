@@ -1,6 +1,7 @@
 require 'data/table_manager'
 require 'data/sequence_manager'
 require 'data/data_initializer'
+require 'data/internal_evaluator'
 require 'schema/function_manager'
 require 'schema/function'
 require 'schema/schema_manager'
@@ -62,6 +63,8 @@ module SquirrelDB
     
     private 
   
+      # +file+:: Pathname to the database file
+      # +config+:: Hash table which may contain the key +:force+ or +:create_database+
       def initialize(file, config)
         @log = Logging.logger[self]
         @closed = true

@@ -6,11 +6,11 @@ module SquirrelDB
 
       def each_link_info(names, schema, &block)
         Enumerator.new do |yielder|
-          schema.each_column do |col|
+          schema.each_column.with_index do |col, i|
             col_var = Variable.new(col.name)
-            yielder.yield col_var, col
+            yielder.yield col_var, col, i
             names.each do |n|
-              yielder.yield ScopedVariable.new(n, col_var), col
+              yielder.yield ScopedVariable.new(n, col_var), col, i
             end
           end
         end.each(&block)

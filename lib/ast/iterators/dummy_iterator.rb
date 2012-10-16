@@ -10,23 +10,27 @@ module SquirrelDB
 
     class DummyIterator < RelAlgIterator
             
-      def initialize(types, expressions)
+      def initialize(types, expression_evaluators)
         @types = types
-        @expressions = expressions
+        @expression_evaluators = expression_evaluators
       end
       
-      attr_reader :types, :expressions
+      attr_reader :types, :expression_evaluators
     
       def hash
-        @hash ||= [super, @tuple].hash
+        @hash ||= [super, @expression_evaluators].hash
+      end
+      
+      def ==(other)
+        super && @types == other.types && @expression_evaluators == other.expression_evaluators
       end
       
       def to_s
-        "DummyTable( " + @schema.to_s + ", [ " + @expressions.collect { |e| e.to_s }.join(",") + " ] )"
+        "DummyTable( " + @schema.to_s + ", [ " + @expression_evaluators.collect { |e| e.to_s }.join(",") + " ] )"
       end
       
       def inspect
-        "DummyTable( " + @schema.to_s + ", [ " + @expressions.collect { |e| e.inspect }.join(",") + " ] )"
+        "DummyTable( " + @schema.to_s + ", [ " + @expression_evaluators.collect { |e| e.inspect }.join(",") + " ] )"
       end
       
       def length
@@ -42,7 +46,7 @@ module SquirrelDB
         super
         return nil unless @start
         @start = false
-        @tuple.dup
+        @expression_evaluators.collect { |ev| ev.evaluate(@state) }
       end
 
       def rewind

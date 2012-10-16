@@ -14,7 +14,7 @@ module SquirrelDB
       attr_reader :expressions
       
       def to_s
-        "(" + @expressions.collect { |v| v.to_s }.join(", ") + ")"
+        "values ( " + @expressions.collect { |v| v.to_s }.join(", ") + " )"
       end
       
       def length
@@ -22,7 +22,7 @@ module SquirrelDB
       end
       
       def inspect
-        "(" + @expressions.collect { |v| v.inspect }.join(", ") + ")"
+        "Values( " + @expressions.collect { |v| v.inspect }.join(", ") + " )"
       end
             
       def ==(other)

@@ -20,10 +20,10 @@ module SquirrelDB
         )
       end
       
-      def visit_dummy_table(dummy_table, *args)
-        DummyTable.new(
-          dummy_table.schema,
-          dummy_table.tuple
+      def visit_dummy_iterator(dummy_iterator, *args)
+        DummyIterator.new(
+          dummy_iterator.types,
+          dummy_iterator.expression_evaluators
         )
       end
 
@@ -40,7 +40,7 @@ module SquirrelDB
       end
       
       def visit_pre_linked_table(table, *args)
-        PreLinkedTable.new(table.schema, table.name, table.table_id)
+        PreLinkedTable.new(table.schema, table.names, table.table_id)
       end
 
       def visit_from_clause(from_clause, *args)
@@ -59,15 +59,15 @@ module SquirrelDB
       def visit_binary_operation(binary_operation, *args)
         BinaryOperation.new(
           binary_operation.operator,
-          visit(binary_operation.left),
-          visit(binary_operation.right)
+          visit(binary_operation.left, *args),
+          visit(binary_operation.right, *args)
         )
       end
 
       def visit_unary_operation(unary_operation, *args)
         UnaryOperation.new(
           unary_operation.operator,
-          visit(unary_operation.inner)
+          visit(unary_operation.inner, *args)
         )
       end
 

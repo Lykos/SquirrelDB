@@ -24,6 +24,10 @@ module SquirrelDB
       def variable?
         true
       end
+      
+      def typed(type)
+        Variable.new(@name, type)
+      end
 
       def ==(other)
         super && @name == other.name

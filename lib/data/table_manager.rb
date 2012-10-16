@@ -1,6 +1,7 @@
 require 'ast/common/scoped_variable'
 require 'ast/common/variable'
 require 'data/constants'
+require 'errors/data_error'
 
 module SquirrelDB
   
@@ -46,14 +47,14 @@ module SquirrelDB
           ["scope_id", "variable_name"],
           [scope_id, variable.name]
         )
-        raise InternalError, "More than one table id for table #{variable.to_s}." if id.length > 1
+        raise DataError, "More than one table id for table #{variable.to_s}." if id.length > 1
         !id.empty?
       end
             
       # Returns the variable_id of the given variable.
       def variable_id(variable)
         if internal?(variable)
-          return INTERNAL_TABLE_IDS[table.variable.name]
+          return INTERNAL_TABLE_IDS[variable.variable.name]
         end
         if variable.kind_of?(ScopedVariable)
           scope_id = variable_id(variable.scope)
@@ -66,8 +67,8 @@ module SquirrelDB
           ["scope_id", "variable_name"],
           [scope_id, variable.name]
         )
-        raise InternalError, "More than one table id for table #{variable.to_s}." if id.length > 1
-        raise InternalError, "No table id for table #{variable.to_s}." if id.length == 0
+        raise DataError, "More than one table id for table #{variable.to_s}." if id.length > 1
+        raise DataError, "No table id for table #{variable.to_s}." if id.length == 0
         id[0][0]
       end
       

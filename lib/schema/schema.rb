@@ -8,6 +8,8 @@ module SquirrelDB
   module Schema
 
     class Schema
+      
+      include Data
 
       def initialize(columns)
         @columns = columns
@@ -24,7 +26,7 @@ module SquirrelDB
       end
 
       def to_s
-        "Schema( " + @columns.map { |c| "#{c.name.to_s}::#{c.type.to_s}#{c.has_default? ? " = " + c.default.to_s : ""}" }.join(", ") + " )"
+        "Schema( " + @columns.map { |c| c.to_s }.join(", ") + " )"
       end
       
       def inspect
@@ -43,13 +45,13 @@ module SquirrelDB
       def raw_to_tuple(raw)
         raise EncodingError, "The raw string from which we read tuples has an invalid encoding." unless raw.encoding == Encoding::BINARY
         fields = @columns.map { |col| col.type.load(raw) }
-        raise StorageError, "There is #{raw.length} left over after reading the tuple #{fields}." unless raw.empty?
-        AST::Tuple.new(fields)
+        raise StorageError, "There is #{raw.length} left over after reading the tuple #{fields} with schema #{self}." unless raw.empty?
+        Tuple.new(fields)
       end
 
       def tuple_to_raw(tuple)
         raise InternalError, "Tuple #{tuple.to_s} and schema #{to_s} have different lengths." if tuple.values.length != @columns.length
-        @columns.zip(tuple.values).map do |col_val|
+        raw = @columns.zip(tuple.values).map do |col_val|
           col, val = col_val
           col.type.store(val)
         end.join

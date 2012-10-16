@@ -32,7 +32,7 @@ module SquirrelDB
       
       # Initializes a new empty page.
       def init_empty
-        @content = "\x00" * PAGE_SIZE
+        @content = "\x00".force_encoding(Encoding::BINARY) * PAGE_SIZE
         @type = self.class.to_s.split("::")[-1].intern
         @type_id = TYPES_IDS[@type]
         raise StorageError, "Page type #{self.class} has no type id." unless @type_id

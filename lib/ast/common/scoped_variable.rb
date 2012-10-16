@@ -33,6 +33,10 @@ module SquirrelDB
       def hash
         @hash ||= [super, @scope, @variable].hash
       end
+      
+      def typed(type)
+        ScopedVariable.new(@scope, @variable, type)
+      end
 
     end
 
