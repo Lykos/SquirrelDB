@@ -1,4 +1,5 @@
 require 'ast/common/variable'
+require 'ast/common/operator'
 require 'ast/common/scoped_variable'
 require 'schema/expression_type'
 require 'errors/divide_by_zero_error'
@@ -27,7 +28,6 @@ module SquirrelDB
         self.class == other.class &&
         @variable == other.variable &&
         @arg_types == other.arg_types
-        @proc == other.proc &&
         @return_type == other.return_type
       end
       
@@ -36,7 +36,15 @@ module SquirrelDB
       end
       
       def hash
-        @hash ||= [@proc, @return_type].hash
+        @hash ||= [self.class, @variable, @arg_types, @return_type].hash
+      end
+      
+      def to_s
+        return_type.to_s + " " + variable.to_s + "( " + arg_types.collect { |t| t.to_s }.join(", ") + " )"
+      end
+      
+      def inspect
+        "Function(" + to_s + ")"
       end
       
       protected
@@ -94,8 +102,8 @@ module SquirrelDB
         *[INTEGER, DOUBLE].map { |type| Function.new(Operator::GREATER_EQUAL, [type, type], BOOLEAN) { |a, b| a.nil? || b.nil? ? nil : a >= b } },
         *[INTEGER, DOUBLE].map { |type| Function.new(Operator::SMALLER, [type, type], BOOLEAN) { |a, b| a.nil? || b.nil? ? nil : a < b } },
         *[INTEGER, DOUBLE].map { |type| Function.new(Operator::SMALLER_EQUAL, [type, type], BOOLEAN) { |a, b| a.nil? || b.nil? ? nil : a <= b } },
-        *[INTEGER, DOUBLE].map { |type| Function.new(Operator::EQUAL, [type, type], BOOLEAN) { |a, b| a.nil? || b.nil? ? nil : a == b } },
-        *[INTEGER, DOUBLE].map { |type| Function.new(Operator::UNEQUAL, [type, type], BOOLEAN) { |a, b| a.nil? || b.nil? ? nil : a != b } },
+        *[INTEGER, DOUBLE, STRING].map { |type| Function.new(Operator::EQUALS, [type, type], BOOLEAN) { |a, b| a.nil? || b.nil? ? nil : a == b } },
+        *[INTEGER, DOUBLE, STRING].map { |type| Function.new(Operator::NOT_EQUALS, [type, type], BOOLEAN) { |a, b| a.nil? || b.nil? ? nil : a != b } },
         Function.new(Operator::NOT, [BOOLEAN], BOOLEAN) { |a| a.nil? ? nil : !a },
         Function.new(Operator::AND, [BOOLEAN, BOOLEAN], BOOLEAN) { |a, b| a == false || b == false ? false : (a.nil? || b.nil ? nil : true) },
         Function.new(Operator::OR, [BOOLEAN, BOOLEAN], BOOLEAN) { |a, b| a || b ? true : (a.nil? || b.nil ? nil : false) },

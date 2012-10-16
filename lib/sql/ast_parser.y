@@ -87,7 +87,7 @@ class SquirrelDB::SQL::ASTParser
                     
     insert_values: select
                  | "values" "(" expressions ")"
-                   { val[2] }
+                   { Values.new(val[2]) }
                    
     expressions: expression
                  { val }

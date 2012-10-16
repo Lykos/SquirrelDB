@@ -1,5 +1,4 @@
 require 'ast/iterators/memory_table_scanner'
-require 'errors/internal_compiler_error'
 require 'ast/iterators/inserter'
 require 'ast/iterators/expression_evaluator'
 require 'ast/visitors/transform_visitor'
@@ -101,22 +100,15 @@ module SquirrelDB
         schema = pre_linked_table.schema
         table_columns = schema.columns # The columns of the table
         insert_columns = insert.columns # The columns we want to fill with new non-default values
-        value_columns = inner.schema.columns # How the columns of our values look like
         columns = table_columns.collect.with_index do |col, i|
-          if index = insert_columns.any? { |c| c.name == col.name }
-            unless col.type == insert_columns[index].type && col.name == insert_columns[index].name
-              raise InternalCompilerError, "Incompatible columns insert_column: #{insert_columns[index].inspect} for table_column #{col.inspect}."
-            end
-            unless col.type == insert_columns[index].type
-              raise "Incompatible columns insert_column: #{value_columns[index].inspect} for value_column #{col.inspect}."
-            end
-            value_columns[index]
+          if index = insert_columns.find_index { |c| c.name == col.name }
+            LinkedVariable.new("column #{index}", offset_stack[-2].to_i + index)
           else
             col.default
           end # if
         end # collect
         inner = Projector.new(
-          columns.map { |col| ExpressionEvaluator.new(visit(col, column_stack, offset_stack)) },
+          columns.map { |col| ExpressionEvaluator.new(col) },
           inner
         )
         Inserter.new(name, page_no, @tuple_wrapper, schema, inner)

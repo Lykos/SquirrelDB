@@ -3,7 +3,7 @@
 require 'server/server_protocol'
 require 'RubyCrypto'
 require 'errors/encoding_error'
-require 'errors/internal_connection_error'
+require 'errors/communication_error'
 require 'server/protocol_shared_examples'
 require 'spec_helper'
 
@@ -50,7 +50,7 @@ describe ServerProtocol do
 
   it "should raise an exception after reading a second client_hello" do
     @sp.read_client_hello(@client_hello)
-    lambda { @sp.read_client_hello(@client_hello) }.should raise_error(InternalConnectionError)
+    lambda { @sp.read_client_hello(@client_hello) }.should raise_error(CommunicationError)
   end
   
   it "should return a server hello with an ASCII 8 Bit encoding" do

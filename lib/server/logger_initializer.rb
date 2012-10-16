@@ -17,7 +17,7 @@ module SquirrelDB
         Logging.logger.root.add_appenders(
           Logging.appenders.stdout(
             :backtrace => false,
-            :level => @config[:verbose] ? :debug : :warn,
+            :level => @config[:verbose] ? :debug : :info,
             :layout => Logging.layouts.pattern(:pattern => STDOUT_PATTERN)
           ),
           Logging.appenders.rolling_file(

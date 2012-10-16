@@ -16,8 +16,12 @@ module SquirrelDB
 
       attr_reader :column_evaluators, :inner
       
-      def schema
-        @schema ||= Schema::TableSchema.new(column_evaluators.collect.with_index { |ev, i| Column.new(ev.expression.to_s, ev.type, i) }) 
+      def types
+        @types ||= column_evaluators.collect { |ev| ev.type } 
+      end
+      
+      def length
+        @length ||= column_evaluators.length
       end
       
       def itopen(state)

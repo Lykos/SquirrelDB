@@ -18,8 +18,8 @@ module SquirrelDB
         super && @left == other.left && @right == other.right
       end
       
-      def schema
-        @schema ||= @left.schema + @right.schema
+      def types
+        @types ||= @left.types + @right.types
       end
       
       def inspect
@@ -32,6 +32,10 @@ module SquirrelDB
       
       def hash
         @hash ||= [super, @left, @right].hash
+      end
+      
+      def length
+        @length ||= @left.length + @right.length
       end
 
       def itopen( state )

@@ -14,11 +14,11 @@ module SquirrelDB
       attr_reader :name
 
       def to_s
-        @name
+        @name.to_s
       end
 
       def inspect
-        "Variable( #{@name} )" + type_string
+        "Variable( #{@name.inspect} )" + type_string
       end
       
       def variable?

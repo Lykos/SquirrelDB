@@ -88,8 +88,8 @@ module SquirrelDB
       GREATER_EQUAL = Operator.new('>=', :binary)
       SMALLER = Operator.new('<', :binary)
       SMALLER_EQUAL = Operator.new('<=', :binary)
-      EQUAL = Operator.new('=', :binary)
-      UNEQUAL = Operator.new('!=', :binary)
+      EQUALS = Operator.new('=', :binary)
+      NOT_EQUALS = Operator.new('!=', :binary)
       
       UNARY_OPERATORS = ALL_OPERATORS.select { |o| o.unary? }
       BINARY_OPERATORS = ALL_OPERATORS.select { |o| o.binary? }

@@ -1,6 +1,7 @@
 #encoding: UTF-8
 
 require 'errors/encoding_error'
+require 'errors/communication_error'
 require 'RubyCrypto'
 
 module SquirrelDB
@@ -124,7 +125,7 @@ module SquirrelDB
       def generate_crypto_objects(secret, nonces)
         raise EncodingError, "Secret is not an ASCII 8 Bit String." unless secret.encoding == Encoding::BINARY
         raise EncodingError, "Nonces is not an ASCII 8 Bit String." unless nonces.encoding == Encoding::BINARY
-        raise InternalConnectionError, "Generated crypto objects twice." if @crypto_objects_generated
+        raise CommunicationError, "Generated crypto objects twice." if @crypto_objects_generated
         hasher = SHA2Hasher.new(2 * AES_KEY_LENGTH)
         
         keys = hasher.hash(secret + nonces)
@@ -145,17 +146,17 @@ module SquirrelDB
       # Signs and encrypts a given UTF-8 String and returns an ASCII 8 Bit String with the encrypted data.
       # +data+:: The String to be encrypted.
       def sign_encrypt(data)
-        raise InternalConnectionError, "Crypto objects have not been generated yet." unless @crypto_objects_generated
+        raise CommunicationError, "Crypto objects have not been generated yet." unless @crypto_objects_generated
         raise EncodingError, "data has to be an UTF-8 Bit String." unless data.encoding == Encoding::UTF_8
         begin
           signed_message = @aes_signer.sign(data)
         rescue CryptoException => e
-          raise InternalConnectionError, "Error while signing: #{e.message}"
+          raise CommunicationError, "Error while signing: #{e.message}"
         end
         begin
           encrypted_message = @aes_encrypter.encrypt(signed_message)
         rescue CryptoException => e
-          raise InternalConnectionError, "Error while encrypting: #{e.message}"
+          raise CommunicationError, "Error while encrypting: #{e.message}"
         end
         pack_length(encrypted_message.length) + encrypted_message.force_encoding(Encoding::BINARY)
       end
@@ -165,7 +166,7 @@ module SquirrelDB
       # is present. A +ConnectionError+ is thrown if the verifier is not happy with the MAC or if the message has an invalid format.
       # +data+:: The signed and encrypted string.
       def decrypt_verify(data)
-        raise InternalConnectionError, "Crypto objects have not been generated yet." unless @crypto_objects_generated
+        raise CommunicationError, "Crypto objects have not been generated yet." unless @crypto_objects_generated
         raise EncodingError, "data has to be an ASCII 8 Bit String." unless data.encoding == Encoding::BINARY
         return nil if data.length < MESSAGE_LENGTH_BYTES
         length = unpack_length(data.byteslice(0, MESSAGE_LENGTH_BYTES))
@@ -180,18 +181,18 @@ module SquirrelDB
           if e.message == "The padding of the message has an invalid format"
             raise ConnectionError, "The padding of the encrypted message has an invalid format."
           else
-            raise InternalConnectionError, "Encrypted message was invalid: #{e.message}"
+            raise CommunicationError, "Encrypted message was invalid: #{e.message}"
           end
         end
         begin
           raise ConnectionError, "Got invalid MAC." unless @aes_verifier.verify(signed_message)
         rescue CryptoException => e
-          raise InternalConnectionError, "Error while verifying signature: #{e.message}"
+          raise CommunicationError, "Error while verifying signature: #{e.message}"
         end
         begin
           [@aes_verifier.remove_signature(signed_message).force_encoding(Encoding::UTF_8), data]
         rescue CryptoException => e
-          raise InternalConnectionError, "Error while removing signature: #{e.message}"
+          raise CommunicationError, "Error while removing signature: #{e.message}"
         end
       end
       

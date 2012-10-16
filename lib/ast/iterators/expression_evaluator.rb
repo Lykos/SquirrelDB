@@ -19,7 +19,7 @@ module SquirrelDB
       attr_reader :expression
       
       def type
-        @expression.type
+        @type ||= @expression.type
       end
       
       def hash

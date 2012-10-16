@@ -2,7 +2,7 @@
 
 require 'client/client_protocol'
 require 'errors/encoding_error'
-require 'errors/internal_connection_error'
+require 'errors/connection_error'
 require 'server/protocol_shared_examples'
 require 'spec_helper'
 
@@ -61,11 +61,11 @@ describe ClientProtocol do
   
   it "should raise an error if the server hello is read twice" do
     @cp.read_server_hello(@server_hello)
-    lambda { @cp.read_server_hello(@server_hello) }.should raise_error(InternalConnectionError)
+    lambda { @cp.read_server_hello(@server_hello) }.should raise_error(CommunicationError)
   end
   
   it "should raise an error if the Diffie Hellman part is generated before the server hello has been read" do
-    lambda { @cp.client_dh_part }.should raise_error(InternalConnectionError)
+    lambda { @cp.client_dh_part }.should raise_error(CommunicationError)
   end
   
 end

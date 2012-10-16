@@ -2,7 +2,7 @@ require 'errors/user_error'
 
 module SquirrelDB
 
-  class SymbolError < UserError
+  class NameError < UserError
     
   end
 

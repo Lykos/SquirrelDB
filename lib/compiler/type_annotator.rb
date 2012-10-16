@@ -5,14 +5,15 @@ require 'ast/common/column'
 require 'ast/common/pre_linked_table'
 require 'ast/common/renaming'
 require 'ast/common/expression'
+require 'ast/sql/values'
 require 'ast/iterators/dummy_iterator'
 require 'ast/visitors/transform_visitor'
+require 'schema/expression_type'
 require 'schema/schema'
-require 'errors/symbol_error'
+require 'errors/name_error'
 require 'errors/type_error'
 require 'errors/internal_error'
 require 'compiler/link_helper'
-require 'spec_helper'
 
 module SquirrelDB
 
@@ -41,36 +42,46 @@ module SquirrelDB
       
       # Reads type information from the tables in the from clause.
       def visit_from_clause(from_clause, column_stack)
-        # TODO Check for ambiguities
         tables = from_clause.tables.map do |c|
           if c.kind_of?(Renaming)
-            raise InternalError, "#{c.expression.inspect} is not supported yet in a from clause." unless c.expression.is_variable?
+            raise InternalError, "#{c.expression.inspect} is not supported yet in a from clause." unless c.expression.variable?
             var = c.expression
             names = [c.name]
           elsif c.variable?
             var = c
             names = [c]
-            if var.kind_of?(ScopedVariable)
-              names << c.variable
-            end
           else
             raise InternalError, "#{c.inspect} is not supported yet in a from clause."
           end
+          if var.kind_of?(ScopedVariable)
+            names << var.variable
+          end
+          raise NameError, "Table #{var} does not exist." unless @schema_manager.has?(var)
           schema = @schema_manager.get(var)
           each_link_info(names, schema) do |name, column|
-            column_stack.last[name] = column.type
+            if column_stack.last.has_key?(name)
+              column_stack.last[name] = :ambiguous
+            else
+              column_stack.last[name] = column.type.expression_type
+            end
           end
           PreLinkedTable.new(schema, names, @table_manager.variable_id(var))
         end
-        column_stack << columns
         FromClause.new(tables)
+      end
+      
+      def visit_where_clause(where_clause, column_stack)
+        expression = visit(where_clause.expression, column_stack)
+        raise TypeError, "The expression of a where clause has to return a boolean value." unless expression.type == ExpressionType::BOOLEAN
+        WhereClause.new(expression)
       end
   
       def type(variable, column_stack)
         if !column_stack.empty? && column_stack.last.has_key?(variable)
+          raise NameError, "#{variable} is ambiguous." if column_stack.last[variable] == :ambiguous 
           column_stack.last[variable]
         else
-          raise SymbolError, "Variable #{variable} cannot be resolved."
+          raise NameError, "Variable #{variable} cannot be resolved."
         end
       end
       
@@ -88,7 +99,7 @@ module SquirrelDB
         where_clause = visit(select_statement.where_clause, column_stack)
         select_clause = visit(select_statement.select_clause, column_stack)
         column_stack.pop
-        SelectStatement.new(select_clause, from_clause, where_clause, column_stack)
+        SelectStatement.new(select_clause, from_clause, where_clause)
       end
       
       def visit_expression(expression, column_stack)
@@ -108,13 +119,36 @@ module SquirrelDB
       
       def visit_function_application(fun_app, column_stack)
         arguments = fun_app.arguments.map { |arg| visit_expression(arg, column_stack) } 
-        f = @function_manager.function(fun_app.variable, arguments)
+        f = @function_manager.function(fun_app.variable, arguments.map { |arg| arg.type })
         case f
-        when :no_candidates then raise SymbolError, "Function #{fun_app.variable} cannot be resolved."
+        when :no_candidates then raise NameError, "Function #{fun_app.variable} cannot be resolved."
         when :none then raise TypeError, "Function #{fun_app.arguments} is not defined for types #{fun_app.arguments.collect { |t| t.to_s }.join(", ")}."
         when :ambiguous_fitting, :ambiguous_convertible then raise TypeError, "Function #{fun_app} is ambiguous for types #{fun_app.arguments.collect { |t| t.to_s }.join(", ")}}."
         else
           FunctionApplication.new(fun_app.variable, arguments, f.return_type)
+        end
+      end
+      
+      def visit_create_table(create_table, column_stack)
+        raise NameError, "Table #{create_table.variable} exists." if @schema_manager.has?(create_table.variable)
+        names = []
+        columns = create_table.columns.collect do |c|
+          if names.include? c.name
+            raise NameError, "Column name #{c.name} appears more than once."
+          end
+          names << c.name
+          visit(c, column_stack)
+        end
+        CreateTable.new(create_table.variable, columns)
+      end
+      
+      def visit_column(column, column_stack)
+        if column.has_default?
+          default = visit(column.default)
+          raise TypeError, "The default value of column #{column.name} has type #{default.type} which does not fit into a #{column.type}." unless column.type.converts_from?(default.type)
+          Column.new(column.name, column.type, default)
+        else
+          column
         end
       end
       
@@ -143,18 +177,24 @@ module SquirrelDB
         end
       end
       
+      def visit_values(values, column_stack)
+        vals = values.expressions.collect { |v| visit_expression(v, column_stack) }
+        types = vals.collect { |v, i| v.type }
+        DummyIterator.new(types, vals)
+      end
+      
       def visit_insert(insert, column_stack)
         schema = @schema_manager.get(insert.variable)
         pre_linked_table = PreLinkedTable.new(schema, insert.variable.name, @table_manager.variable_id(insert.variable))
-        cols = insert.columns.collect { |col| visit(col, column_stack) }
-        inner = if insert.inner.kind_of?(Array)
-          dummy_schema = Schema::Schema.new(insert.inner.collect { |v, i| Column.new(v.to_s, v.type) })
-          values = insert.inner.collect { |v| visit_expression(v, column_stack) }
-          DummyIterator.new(dummy_schema, values)
-        else
-          visit(insert.inner, column_stack)
+        columns = insert.columns.collect { |c| schema.column(c.name) }
+        inner = visit(insert.inner, column_stack)
+        if inner.length != columns.length
+          raise TypeError, "Insert for #{columns.length} columns has #{inner.length} values."
         end
-        Insert.new(pre_linked_table, cols, inner)
+        columns.zip(inner.types).each do |arg|
+          raise TypeError, "Value of type #{arg[1]} cannot be inserted into a column of type #{arg[0]}." unless arg[0].type.converts_from?(arg[1])
+        end
+        Insert.new(pre_linked_table, columns, inner)
       end
       
     end

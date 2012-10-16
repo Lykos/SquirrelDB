@@ -36,7 +36,7 @@ module SquirrelDB
       end
 
       def length
-        @columns.length
+        @length ||= @columns.length
       end
       
       # Creates a tuple from a binary string.

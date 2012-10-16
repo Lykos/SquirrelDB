@@ -18,8 +18,10 @@ module SquirrelDB
       
       attr_writer :internal_evaluator, :table_manager
 
+      # Returns the schema of a given table
+      # +table+:: A variable
       def get(table)
-        if table.kind_of?(ScopedVariable) && table.scope.kind_of?(Variable) && table.scope.variable.name == Data::Constants::INTERNAL_SCOPE
+        if internal?(table)
           INTERNAL_SCHEMATA[table.variable.name]
         else
           table_id = @table_manager.variable_id(table)
@@ -51,11 +53,21 @@ module SquirrelDB
         end
       end
       
+      def has?(table)
+        internal?(table) || @table_manager.has_variable?(table)
+      end
+      
       def add(table_name, schema)
         table_id = @table_manager.add_table(table_name)
         schema.each_column do |c|
           @internal_evaluator.insert("schemata", ["table_id", "column_name", "type_id", c.type.name.downcase + "_default", "index"], [table_id, c.name, c.type.type_id, c.default.value, c.index])
         end
+      end
+      
+      private
+      
+      def internal?(table)
+        table.kind_of?(ScopedVariable) && table.scope.kind_of?(Variable) && table.scope.variable.name == Data::Constants::INTERNAL_SCOPE       
       end
 
     end

@@ -71,7 +71,7 @@ module SquirrelDB
       end
       
       def hash
-        @hash ||= [self.class.hash, @name, auto_conversions].hash
+        @hash ||= [self.class.hash, @name].hash
       end
 
       def to_s

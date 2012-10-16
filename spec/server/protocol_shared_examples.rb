@@ -2,7 +2,7 @@
 
 require 'server/protocol'
 require 'errors/encoding_error'
-require 'errors/internal_connection_error'
+require 'errors/communication_error'
 require 'errors/connection_error'
 
 include SquirrelDB::Server::Protocol
@@ -133,11 +133,11 @@ shared_examples "protocols" do |protocol_class|
   end
 
   it "should raise an error if encrypt is called before the crypto objects are created" do
-    lambda { @p.sign_encrypt("asdf".force_encoding(Encoding::UTF_8)) }.should raise_error(InternalConnectionError)
+    lambda { @p.sign_encrypt("asdf".force_encoding(Encoding::UTF_8)) }.should raise_error(CommunicationError)
   end
   
   it "should raise an error if decrypt is called before the crypto objects are created" do
-    lambda { @p.decrypt_verify("lol".force_encoding(Encoding::BINARY)) }.should raise_error(InternalConnectionError)
+    lambda { @p.decrypt_verify("lol".force_encoding(Encoding::BINARY)) }.should raise_error(CommunicationError)
   end
 
   context "if the crypto objects are already there" do
@@ -149,7 +149,7 @@ shared_examples "protocols" do |protocol_class|
     it "should raise an error if the crypto objects are generated a second time" do
       lambda {
         @p.generate_crypto_objects("asdf".force_encoding(Encoding::BINARY), "blubb".force_encoding(Encoding::BINARY))
-      }.should raise_error(InternalConnectionError)
+      }.should raise_error(CommunicationError)
     end
     
     it "should raise an error if the message to be encrypted is not an UTF-8 String" do

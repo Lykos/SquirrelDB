@@ -6,7 +6,6 @@ require 'schema/function'
 require 'schema/schema_manager'
 require 'compiler/compiler_factory'
 require 'sql/parser_factory'
-require 'rel_alg/converter_factory'
 require 'data/state'
 require 'storage/storage_factory'
 
@@ -42,8 +41,10 @@ module SquirrelDB
       end
       
       def compile(statement)
+        parsed = @parser.process(statement)
+        @log.debug("Parsed #{parsed.inspect}.")
         statement = @database_mutex.synchronize { @compiler.process(@parser.process(statement)) }
-        @log.debug "Statement compiled."
+        @log.debug "Compiled #{statement}."
         statement
       end
       

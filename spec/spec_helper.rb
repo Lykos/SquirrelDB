@@ -72,7 +72,7 @@ module SquirrelDB
         "expected type #{@type}, but got type #{@target.type}."
       end
       
-      def failure_message
+      def negative_failure_message
         "expected not type #{@type}, but got type #{@target.type}."
       end
       

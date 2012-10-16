@@ -31,8 +31,28 @@ module SquirrelDB
         no[0][0]
       end
       
+      # Returns true if the variable exists
+      def has_variable?(variable)
+        return true if internal?(variable)
+        if variable.kind_of?(ScopedVariable)
+          return false unless has_variable?(variable.scope)
+          scope_id = variable_id(variable.scope)
+        else
+          scope_id = TOPLEVEL_SCOPE_ID
+        end
+        id = @internal_evaluator.select(
+          ["variable_id"],
+          "variables",
+          ["scope_id", "variable_name"],
+          [scope_id, variable.name]
+        )
+        raise InternalError, "More than one table id for table #{variable.to_s}." if id.length > 1
+        !id.empty?
+      end
+            
+      # Returns the variable_id of the given variable.
       def variable_id(variable)
-        if variable.kind_of?(ScopedVariable) && variable.scope.kind_of?(Variable) && variable.scope.name == INTERNAL_SCOPE
+        if internal?(variable)
           return INTERNAL_TABLE_IDS[table.variable.name]
         end
         if variable.kind_of?(ScopedVariable)
@@ -40,16 +60,14 @@ module SquirrelDB
         else
           scope_id = TOPLEVEL_SCOPE_ID
         end
-        # TODO Create constants for names in appropriate locations
         id = @internal_evaluator.select(
           ["variable_id"],
           "variables",
           ["scope_id", "variable_name"],
           [scope_id, variable.name]
         )
-        # TODO Appropriate exception
-        raise "More than one table id for table #{variable.to_s}." if id.length > 1
-        raise "No table id for table #{variable.to_s}." if id.length == 0
+        raise InternalError, "More than one table id for table #{variable.to_s}." if id.length > 1
+        raise InternalError, "No table id for table #{variable.to_s}." if id.length == 0
         id[0][0]
       end
       
@@ -67,6 +85,12 @@ module SquirrelDB
         variable_id = @sequence_manager.new_variable_id
         @internal_evaluator.insert("variables", ["scope_id", "variable_id", "variable_name"], [scope_id, variable_id, variable.name])
         variable_id
+      end
+      
+      private
+      
+      def internal?(variable)
+        variable.kind_of?(ScopedVariable) && variable.scope.kind_of?(Variable) && variable.scope.name == INTERNAL_SCOPE
       end
             
     end

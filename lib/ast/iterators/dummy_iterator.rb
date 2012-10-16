@@ -10,12 +10,12 @@ module SquirrelDB
 
     class DummyIterator < RelAlgIterator
             
-      def initialize(schema, expressions)
-        @schema = schema
+      def initialize(types, expressions)
+        @types = types
         @expressions = expressions
       end
       
-      attr_reader :schema, :expressions
+      attr_reader :types, :expressions
     
       def hash
         @hash ||= [super, @tuple].hash
@@ -27,6 +27,10 @@ module SquirrelDB
       
       def inspect
         "DummyTable( " + @schema.to_s + ", [ " + @expressions.collect { |e| e.inspect }.join(",") + " ] )"
+      end
+      
+      def length
+        @length ||= @types.length
       end
 
       def itopen(state)

@@ -1,7 +1,7 @@
 gem 'eventmachine'
 require 'eventmachine'
 require 'errors/internal_error'
-require 'errors/internal_connection_error'
+require 'errors/communication_error'
 require 'errors/user_error'
 require 'server/client_session'
 require 'server/client_hello_state'
@@ -67,7 +67,7 @@ module SquirrelDB
       
       # Send a message through the secure connection.
       def send_message(message)
-        raise InternalConnectionError, "Not connected yet." unless connected?
+        raise CommunicationError, "Not connected yet." unless connected?
         @state.send_message(message)
       end
       

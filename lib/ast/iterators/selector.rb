@@ -1,5 +1,6 @@
 require 'ast/iterators/rel_alg_iterator'
 require 'data/state'
+require 'forwardable'
 
 module SquirrelDB
 
@@ -15,7 +16,9 @@ module SquirrelDB
       
       attr_reader :expression_evaluator, :inner
       
-      def_delegators :@inner, :schema
+      extend Forwardable
+      
+      def_delegators :@inner, :types
   
       def itopen(state)
         super

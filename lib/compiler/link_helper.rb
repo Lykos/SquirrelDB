@@ -4,10 +4,11 @@ module SquirrelDB
     
     module LinkHelper
 
-      def each_link_info(names, schema)
-        Enumerator do |yielder|
+      def each_link_info(names, schema, &block)
+        Enumerator.new do |yielder|
           schema.each_column do |col|
-            yielder.yield Variable.new(col.name), col
+            col_var = Variable.new(col.name)
+            yielder.yield col_var, col
             names.each do |n|
               yielder.yield ScopedVariable.new(n, col_var), col
             end

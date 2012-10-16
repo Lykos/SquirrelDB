@@ -4,15 +4,19 @@ module SquirrelDB
 
   module AST
 
-    class ScopedVariable < Variable
+    class ScopedVariable < Expression
 
-      def initialize(scope, variable)
+      def initialize(scope, variable, type=nil)
+        super(type)
         @scope = scope
         @variable = variable
-        super(to_s)
       end
 
       attr_reader :scope, :variable
+      
+      def variable?
+        true
+      end
       
       def to_s
         @scope.to_s + "." + @variable.to_s

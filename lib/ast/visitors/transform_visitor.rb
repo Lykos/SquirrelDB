@@ -28,15 +28,15 @@ module SquirrelDB
       end
 
       def visit_select_clause(select_clause, *args)
-        SelectClause.new(select_clause.columns.collect { |c| visit(c) })
+        SelectClause.new(select_clause.columns.collect { |c| visit(c, *args) })
       end
 
       def visit_from_clause(from_clause, *args)
-        FromClause.new(from_clause.tables.collect { |t| visit(t) })
+        FromClause.new(from_clause.tables.collect { |t| visit(t, *args) })
       end
       
       def visit_where_clause(where_clause, *args)
-        WhereClause.new(visit(where_clause.expression))
+        WhereClause.new(visit(where_clause.expression, *args))
       end
       
       def visit_pre_linked_table(table, *args)
@@ -44,12 +44,8 @@ module SquirrelDB
       end
 
       def visit_from_clause(from_clause, *args)
-        tables = from_clause.tables.collect { |column| column.visit( self ) }
-        if tables.empty?
-          FromClause.new(DualTable.new)
-        else
-          FromClause.new(tables.reduce { |a, b| Cartesian.new(a, b) })
-        end
+        tables = from_clause.tables.collect { |column| column.visit(self, *args) }
+        FromClause.new(tables)
       end
       
       def visit_wild_card(wild_card, *args)
@@ -57,7 +53,7 @@ module SquirrelDB
       end
 
       def visit_renaming(renaming, *args)
-        Renaming.new(visit(renaming.expression), renaming.name)
+        Renaming.new(visit(renaming.expression, *args), visit(renaming.name, *args))
       end
 
       def visit_binary_operation(binary_operation, *args)
@@ -77,8 +73,8 @@ module SquirrelDB
 
       def visit_function_application(function_application, *args)
         FunctionApplication.new(
-          visit(function_application.function),
-          function_application.parameters.collect { |parameter| visit( parameter ) }
+          visit(function_application.variable, *args),
+          function_application.arguments.collect { |arg| visit(arg, *args) }
         )
       end
 
@@ -88,8 +84,8 @@ module SquirrelDB
 
       def visit_scoped_variable(scoped_variable, *args)
         ScopedVariable.new(
-          visit(scoped_variable.scope),
-          visit(scoped_variable.variable)
+          visit(scoped_variable.scope, *args),
+          visit(scoped_variable.variable, *args)
         )
       end
 
@@ -99,8 +95,8 @@ module SquirrelDB
       
       def visit_selector(selector, *args)
         Selector.new(
-          visit(selector.expression_evaluator),
-          visit(selector.inner)
+          visit(selector.expression_evaluator, *args),
+          visit(selector.inner, *args)
         )
       end
       
@@ -120,23 +116,23 @@ module SquirrelDB
       
       def visit_insert(insert, *args)
         Insert.new(
-          visit(insert.variable),
-          insert.columns.collect { |column| visit(column) },
-          visit(insert.inner)
+          visit(insert.variable, *args),
+          insert.columns.collect { |column| visit(column, *args) },
+          visit(insert.inner, *args)
         )
       end
       
       def visit_cartesian_iterator(cartesian_iterator, *args)
         CartesianIterator.new(
-          visit(cartesian_iterator.left),
-          visit(cartesian_iterator.right)
+          visit(cartesian_iterator.left, *args),
+          visit(cartesian_iterator.right, *args)
         )
       end
       
       def visit_cartesian(cartesian, *args)
         Cartesian.new(
-          visit(cartesian.left),
-          visit(cartesian.right)
+          visit(cartesian.left, *args),
+          visit(cartesian.right, *args)
         )
       end
       
@@ -145,12 +141,15 @@ module SquirrelDB
       end
       
       def visit_column(column, *args)
-        Column.new(
-          column.name,
-          column.type,
-          column.index,
-          visit(column.default, *args)
-        )
+        if column.has_default?
+          Column.new(
+            column.name,
+            column.type,
+            visit(column.default, *args)
+          )
+        else
+          column
+        end
       end
       
       def visit_selection(selection, *args)

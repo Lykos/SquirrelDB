@@ -1,7 +1,7 @@
 #encoding: UTF-8
 
 require 'errors/connection_error'
-require 'errors/internal_connection_error'
+require 'errors/communication_error'
 require 'server/protocol'
 require 'RubyCrypto'
 require 'errors/encoding_error'
@@ -31,7 +31,7 @@ module SquirrelDB
       #          the Diffie Hellman protocol.
       def read_server_hello(data)
         raise EncodingError, "data is not an ASCII 8 Bit String." unless data.encoding == Encoding::BINARY
-        raise InternalConnectionError, "Server hello read twice." if @server_hello_read
+        raise CommunicationError, "Server hello read twice." if @server_hello_read
         if data.length >= VERSION_BYTES
           client_version = unpack_version(data.byteslice(0, VERSION_BYTES))
           raise ConnectionError, "Server has version #{VERSION} and client has version #{client_version} which are not compatible." unless versions_compatible(VERSION, client_version)
@@ -62,7 +62,7 @@ module SquirrelDB
       
       # Return the client part for the Diffie Hellman protocol. Can only be called after the server part has been read.
       def client_dh_part
-        raise InternalConnectionError, "Client Diffie Hellman part can only be generated after the server hello has been read." unless @server_hello_read
+        raise CommunicationError, "Client Diffie Hellman part can only be generated after the server hello has been read." unless @server_hello_read
         @client_dh_part ||= dh.own_part
       end
       

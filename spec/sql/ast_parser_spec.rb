@@ -373,7 +373,7 @@ describe ASTParser do
         ]),
         WhereClause.new(
           BinaryOperation.new(
-            Operator::EQUAL,
+            Operator::EQUALS,
             Variable.new("i"),
             Variable.new("bui")
           )

@@ -19,6 +19,10 @@ module SquirrelDB
       
       attr_reader :name, :page_no, :schema
       
+      def types
+        @types ||= @schema.columns.collect { |c| s.type.expression_type }
+      end
+      
       def ==(other)
         super && @name == other.name && page_no == other.page_no && @schema == other.schema
       end
@@ -33,6 +37,10 @@ module SquirrelDB
       
       def inspect
         "MemoryTableScanner_{#{@schema.inspect}, #{@page_no}}(#{@name.inspect})"
+      end
+      
+      def length
+        @schema.length
       end
 
       def itopen(state)
