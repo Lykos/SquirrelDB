@@ -27,7 +27,19 @@ module SquirrelDB
       def inspect
         "SelectClause( " + @columns.collect { |c| c.inspect }.join( ", " ) + " )"
       end
+      
+      def length
+        @length ||= columns.length
+      end
+      
+      def types
+        @types ||= columns.collect { |c| c.type }
+      end
 
+    end
+    
+    def select(*columns)
+      SelectClause.new(columns)
     end
 
   end

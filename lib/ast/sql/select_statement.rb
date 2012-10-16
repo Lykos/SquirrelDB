@@ -30,6 +30,14 @@ module SquirrelDB
       def hash
         @hash ||= [super, @other].hash
       end
+      
+      def length
+        @length ||= select_clause.length
+      end
+      
+      def types
+        @types ||= select_clause.types
+      end
 
     end
 

@@ -34,6 +34,10 @@ module SquirrelDB
       end
 
     end
+    
+    def values(*expressions)
+      Values.new(expressions)
+    end
 
   end
 

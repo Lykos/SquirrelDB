@@ -6,7 +6,7 @@ module SquirrelDB
 
     class FromClause < Element
 
-      def initialize( tables )
+      def initialize(tables)
         @tables = tables
       end
 
@@ -28,6 +28,10 @@ module SquirrelDB
         @hash ||= [super, @tables].hash
       end
 
+    end
+    
+    def from(*tables)
+      FromClause.new(tables)
     end
 
   end

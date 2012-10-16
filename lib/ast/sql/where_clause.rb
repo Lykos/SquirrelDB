@@ -32,6 +32,10 @@ module SquirrelDB
       end
 
     end
+    
+    def where(expression)
+      WhereClause.new(expression)
+    end
 
   end
   

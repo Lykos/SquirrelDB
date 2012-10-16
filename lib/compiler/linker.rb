@@ -1,6 +1,7 @@
 require 'ast/iterators/all'
 require 'ast/visitors/transform_visitor'
 require 'ast/common/linked_variable'
+require 'ast/common/linked_function_application'
 require 'errors/compiler_error'
 require 'compiler/link_helper'
 
@@ -14,9 +15,10 @@ module SquirrelDB
       include TransformVisitor
       include LinkHelper
       
-      def initialize(tuple_wrapper, schema_manager, table_manager)
+      def initialize(tuple_wrapper, schema_manager, function_manager, table_manager)
         @tuple_wrapper = tuple_wrapper
         @table_manager = table_manager
+        @function_manager = function_manager
         @schema_manager = schema_manager
       end
 
@@ -57,7 +59,7 @@ module SquirrelDB
       
       def link_variable(variable, column_stack, offset_stack)
         raise CompilerError, "Unresolved variable #{variable}." unless column_stack.last.has_key?(variable)
-        LinkedVariable.new(variable, column_stack.last[variable])
+        LinkedVariable.new(variable, column_stack.last[variable], variable.type)
       end
       
       alias visit_scoped_variable link_variable
@@ -71,9 +73,31 @@ module SquirrelDB
         )
       end
       
+      def visit_function_application(fun_app, column_stack, offset_stack)
+        arguments = fun_app.arguments.map { |arg| visit(arg, column_stack, offset_stack) } 
+        f = @function_manager.function(fun_app.variable, arguments.map { |arg| arg.type })
+        raise CompilerError, "Function #{fun_app.variable} not found." unless f.kind_of?(Function)
+        LinkedFunctionApplication.new(fun_app.variable, f.proc, arguments, f.return_type)
+      end
+      
+      def visit_unary_operation(unop, column_stack, offset_stack)
+        inner = visit(unop.inner, column_stack, offset_stack)
+        f = @function_manager.function(unop.operator, [inner.type])
+        raise CompilerError, "Function #{fun_app.variable} not found." unless f.kind_of?(Function)
+        LinkedFunctionApplication.new(unop.operator, f.proc, [inner], f.return_type)
+      end
+      
+      def visit_binary_operation(binop, column_stack, offset_stack)
+        left = visit(binop.left, column_stack, offset_stack)
+        right = visit(binop.right, column_stack, offset_stack)
+        f = @function_manager.function(binop.operator, [left.type, right.type])
+        raise CompilerError, "Function #{fun_app.variable} not found." unless f.kind_of?(Function)
+        LinkedFunctionApplication.new(binop.operator, f.proc, [left, right], f.return_type)
+      end
+      
       def visit_cartesian(cartesian, column_stack, offset_stack)
-        left = visit(cartesian.left, column_stack)
-        right = visit(cartesian.right, column_stack)
+        left = visit(cartesian.left, column_stack, offset_stack)
+        right = visit(cartesian.right, column_stack, offset_stack)
         CartesianIterator.new(
           left,
           right
@@ -106,7 +130,7 @@ module SquirrelDB
         insert_columns = insert.columns # The columns we want to fill with new non-default values
         columns = table_columns.collect.with_index do |col, i|
           if index = insert_columns.find_index { |c| c.name == col.name }
-            LinkedVariable.new("column #{index}", offset_stack[-2].to_i + index)
+            LinkedVariable.new("column #{index}", offset_stack[-2].to_i + index, col.type.expression_type)
           else
             col.default
           end # if

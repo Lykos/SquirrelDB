@@ -60,21 +60,24 @@ module SquirrelDB
         BinaryOperation.new(
           binary_operation.operator,
           visit(binary_operation.left, *args),
-          visit(binary_operation.right, *args)
+          visit(binary_operation.right, *args),
+          binary_operation.type
         )
       end
 
       def visit_unary_operation(unary_operation, *args)
         UnaryOperation.new(
           unary_operation.operator,
-          visit(unary_operation.inner, *args)
+          visit(unary_operation.inner, *args),
+          unary_operation.type
         )
       end
 
       def visit_function_application(function_application, *args)
         FunctionApplication.new(
           visit(function_application.variable, *args),
-          function_application.arguments.collect { |arg| visit(arg, *args) }
+          function_application.arguments.collect { |arg| visit(arg, *args) },
+          function_application.type
         )
       end
 
@@ -83,10 +86,7 @@ module SquirrelDB
       end
 
       def visit_scoped_variable(scoped_variable, *args)
-        ScopedVariable.new(
-          visit(scoped_variable.scope, *args),
-          visit(scoped_variable.variable, *args)
-        )
+        scoped_variable
       end
 
       def visit_variable(variable, *args)

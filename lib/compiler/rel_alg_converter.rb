@@ -37,7 +37,7 @@ module SquirrelDB
       
       def visit_from_clause(from_clause)
         if from_clause.tables.empty?
-          DummyIterator.DUAL_TABLE
+          DummyIterator::DUAL_TABLE
         else
           from_clause.tables.reduce { |a, b| Cartesian.new(a, b) }
         end

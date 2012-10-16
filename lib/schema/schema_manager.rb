@@ -34,7 +34,7 @@ module SquirrelDB
             ).sort_by { |tuple| tuple[1] }.map do |tuple|
               name = tuple[0]
               type = StorageType.by_id(tuple[2])
-              case type 
+              default = case type 
               when StorageType::SHORT then tuple[3]
               when StorageType::BOOLEAN then tuple[4]
               when StorageType::STRING then tuple[5]

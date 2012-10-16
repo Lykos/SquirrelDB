@@ -105,7 +105,7 @@ module SquirrelDB
         *[INTEGER, DOUBLE, STRING].map { |type| Function.new(Operator::EQUALS, [type, type], BOOLEAN) { |a, b| a.nil? || b.nil? ? nil : a == b } },
         *[INTEGER, DOUBLE, STRING].map { |type| Function.new(Operator::NOT_EQUALS, [type, type], BOOLEAN) { |a, b| a.nil? || b.nil? ? nil : a != b } },
         Function.new(Operator::NOT, [BOOLEAN], BOOLEAN) { |a| a.nil? ? nil : !a },
-        Function.new(Operator::AND, [BOOLEAN, BOOLEAN], BOOLEAN) { |a, b| a == false || b == false ? false : (a.nil? || b.nil ? nil : true) },
+        Function.new(Operator::AND, [BOOLEAN, BOOLEAN], BOOLEAN) { |a, b| a == false || b == false ? false : (a.nil? || b.nil? ? nil : true) },
         Function.new(Operator::OR, [BOOLEAN, BOOLEAN], BOOLEAN) { |a, b| a || b ? true : (a.nil? || b.nil ? nil : false) },
         Function.new(Operator::XOR, [BOOLEAN, BOOLEAN], BOOLEAN) { |a, b| a.nil? || b.nil? ? nil : a != b },
         Function.new(Operator::IMPLIES, [BOOLEAN, BOOLEAN], BOOLEAN) { |a, b| a == false ? true : (a.nil? || b.nil? ? nil : b) },

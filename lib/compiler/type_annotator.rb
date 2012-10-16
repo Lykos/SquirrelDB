@@ -109,9 +109,7 @@ module SquirrelDB
         elsif expression.is_a?(SelectStatement)
           select = visit(expression, column_stack)
           schema = select.schema
-          if select.schema.length != 1
-            raise TypeError, "A select statement inside an expression has to return exactly one column."
-          end
+          raise TypeError, "A select statement inside an expression has to return exactly one column." if select.schema.length != 1
           SelectExpression.new(select, schema.columns[0].type)
         else
           raise InternalError, "Unkown expression #{expression.inspect}."

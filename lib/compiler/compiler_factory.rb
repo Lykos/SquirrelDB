@@ -25,7 +25,7 @@ module SquirrelDB
       end
       
       def linker
-        @linker ||= Linker.new(@tuple_wrapper, @schema_manager, @table_manager)
+        @linker ||= Linker.new(@tuple_wrapper, @schema_manager, @function_manager, @table_manager)
       end
       
       def rel_alg_converter

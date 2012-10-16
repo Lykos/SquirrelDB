@@ -211,7 +211,7 @@ class SquirrelDB::SQL::ASTParser
                       { Constant.new(val[0].to_i, ExpressionType::INTEGER) }
                       
     string_constant: STRING
-                     { Constant.new(val[0], ExpressionType::STRING) }
+                     { Constant.new(val[0][1..-2], ExpressionType::STRING) }
                      
     boolean_constant: BOOLEAN
                      {

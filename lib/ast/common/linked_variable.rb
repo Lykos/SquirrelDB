@@ -6,7 +6,8 @@ module SquirrelDB
 
     class LinkedVariable < Expression
 
-      def initialize(variable, offset)
+      def initialize(variable, offset, type)
+        super(type)
         @variable = variable
         @offset = offset
       end
@@ -18,7 +19,7 @@ module SquirrelDB
       end
       
       def inspect
-        "LinkedVariable( #{@name}, #{offset} )" + type_string
+        "LinkedVariable( #{@variable.to_s}, #{offset} )" + type_string
       end
       
       def variable?

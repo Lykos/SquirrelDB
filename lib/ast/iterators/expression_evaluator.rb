@@ -38,7 +38,7 @@ module SquirrelDB
       end
       
       def visit_linked_function_application(fun_app, state)
-        args = fun_app.arguments.collect { |arg| visit(arg) }
+        args = fun_app.arguments.collect { |arg| visit(arg, state) }
         fun_app.call(*args)
       end
       
