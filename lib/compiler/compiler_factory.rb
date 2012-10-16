@@ -9,14 +9,15 @@ module SquirrelDB
     
     class CompilerFactory
       
-      def initialize(tuple_wrapper, schema_manager, table_manager)
+      def initialize(tuple_wrapper, schema_manager, function_manager, table_manager)
         @tuple_wrapper = tuple_wrapper
         @schema_manager = schema_manager
+        @function_manager = function_manager
         @table_manager = table_manager
       end
       
       def type_annotator
-        @type_annotator ||= TypeAnnotator.new(@schema_manager, @table_manager)
+        @type_annotator ||= TypeAnnotator.new(@schema_manager, @function_manager, @table_manager)
       end
       
       def compiler

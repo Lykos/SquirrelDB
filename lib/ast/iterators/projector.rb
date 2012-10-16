@@ -1,7 +1,7 @@
 require 'forwardable'
 require 'ast/iterators/rel_alg_iterator' 
 require 'data/state'
-require 'schema/table_schema'
+require 'schema/schema'
 
 module SquirrelDB
 

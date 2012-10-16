@@ -1,7 +1,8 @@
 require 'data/table_manager'
 require 'data/sequence_manager'
 require 'data/data_initializer'
-require 'data/internal_evaluator'
+require 'schema/function_manager'
+require 'schema/function'
 require 'schema/schema_manager'
 require 'compiler/compiler_factory'
 require 'sql/parser_factory'
@@ -13,6 +14,7 @@ module SquirrelDB
   
   module Server
     
+    # Facade class that creates all the objects needed for the database and manages the communication.
     class Database
       
       def self.open(file, config)
@@ -90,13 +92,14 @@ module SquirrelDB
           @data_initializer ||= Data::DataInitializer.new(@page_wrapper)
           @table_manager = Data::TableManager.new
           @schema_manager = Schema::SchemaManager.new
+          @function_manager = Schema::FunctionManager.new(Function::BUILT_IN)
           @sequence_manager = Data::SequenceManager.new(@page_wrapper)
           @schema_manager.table_manager = @table_manager
           @table_manager.sequence_manager = @sequence_manager
           @table_manager.data_initializer = @data_initializer
           @parser = SQL::ParserFactory.new.parser
           @tuple_wrapper = @storage_factory.tuple_wrapper
-          @compiler = Compiler::CompilerFactory.new(@tuple_wrapper, @schema_manager, @table_manager).compiler
+          @compiler = Compiler::CompilerFactory.new(@tuple_wrapper, @schema_manager, @function_manager, @table_manager).compiler
           @internal_evaluator = Data::InternalEvaluator.new(@compiler)
           @table_manager.internal_evaluator = @internal_evaluator
           @schema_manager.internal_evaluator = @internal_evaluator

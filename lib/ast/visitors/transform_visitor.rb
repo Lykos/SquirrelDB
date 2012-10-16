@@ -43,7 +43,7 @@ module SquirrelDB
         PreLinkedTable.new(table.schema, table.name, table.table_id)
       end
 
-      def visit_from_clause( columns, tables, expression )
+      def visit_from_clause(from_clause, *args)
         tables = from_clause.tables.collect { |column| column.visit( self ) }
         if tables.empty?
           FromClause.new(DualTable.new)
@@ -52,15 +52,15 @@ module SquirrelDB
         end
       end
       
-      def visit_wild_card(wild_card)
+      def visit_wild_card(wild_card, *args)
         wild_card
       end
 
-      def visit_renaming(renaming)
+      def visit_renaming(renaming, *args)
         Renaming.new(visit(renaming.expression), renaming.name)
       end
 
-      def visit_binary_operation(binary_operation)
+      def visit_binary_operation(binary_operation, *args)
         BinaryOperation.new(
           binary_operation.operator,
           visit(binary_operation.left),
@@ -68,36 +68,36 @@ module SquirrelDB
         )
       end
 
-      def visit_unary_operation( unary_operation )
+      def visit_unary_operation(unary_operation, *args)
         UnaryOperation.new(
           unary_operation.operator,
           visit(unary_operation.inner)
         )
       end
 
-      def visit_function_application(function_application)
+      def visit_function_application(function_application, *args)
         FunctionApplication.new(
           visit(function_application.function),
           function_application.parameters.collect { |parameter| visit( parameter ) }
         )
       end
 
-      def visit_constant(constant)
+      def visit_constant(constant, *args)
         constant
       end
 
-      def visit_scoped_variable(scoped_variable)
+      def visit_scoped_variable(scoped_variable, *args)
         ScopedVariable.new(
           visit(scoped_variable.scope),
           visit(scoped_variable.variable)
         )
       end
 
-      def visit_variable(variable)
+      def visit_variable(variable, *args)
         variable
       end
       
-      def visit_selector(selector)
+      def visit_selector(selector, *args)
         Selector.new(
           visit(selector.expression_evaluator),
           visit(selector.inner)
@@ -118,7 +118,7 @@ module SquirrelDB
         )
       end
       
-      def visit_insert(insert)
+      def visit_insert(insert, *args)
         Insert.new(
           visit(insert.variable),
           insert.columns.collect { |column| visit(column) },
@@ -126,14 +126,14 @@ module SquirrelDB
         )
       end
       
-      def visit_cartesian_iterator(cartesian_iterator)
+      def visit_cartesian_iterator(cartesian_iterator, *args)
         CartesianIterator.new(
           visit(cartesian_iterator.left),
           visit(cartesian_iterator.right)
         )
       end
       
-      def visit_cartesian(cartesian)
+      def visit_cartesian(cartesian, *args)
         Cartesian.new(
           visit(cartesian.left),
           visit(cartesian.right)

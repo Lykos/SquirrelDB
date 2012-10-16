@@ -77,6 +77,10 @@ module SquirrelDB
       end
       
     end
+    
+    def have_type(type_sym)
+      HaveType.new(type_sym)
+    end
   
   end
  

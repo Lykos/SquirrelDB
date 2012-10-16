@@ -8,11 +8,11 @@ require 'ast/common/expression'
 require 'ast/iterators/dummy_iterator'
 require 'ast/visitors/transform_visitor'
 require 'schema/schema'
-require 'schema/function'
 require 'errors/symbol_error'
 require 'errors/type_error'
 require 'errors/internal_error'
 require 'compiler/link_helper'
+require 'spec_helper'
 
 module SquirrelDB
 
@@ -26,8 +26,9 @@ module SquirrelDB
       include TransformVisitor
       include LinkHelper
             
-      def initialize(schema_manager, table_manager)
+      def initialize(schema_manager, function_manager, table_manager)
         @schema_manager = schema_manager
+        @function_manager = function_manager
         @table_manager = table_manager
       end
 
@@ -107,38 +108,38 @@ module SquirrelDB
       
       def visit_function_application(fun_app, column_stack)
         arguments = fun_app.arguments.map { |arg| visit_expression(arg, column_stack) } 
-        f = Function.function(fun_app.variable, arguments)
+        f = @function_manager.function(fun_app.variable, arguments)
         case f
         when :no_candidates then raise SymbolError, "Function #{fun_app.variable} cannot be resolved."
         when :none then raise TypeError, "Function #{fun_app.arguments} is not defined for types #{fun_app.arguments.collect { |t| t.to_s }.join(", ")}."
-        when :ambiguous then raise TypeError, "Function #{fun_app} is ambiguous for types #{fun_app.arguments.collect { |t| t.to_s }.join(", ")}}."
+        when :ambiguous_fitting, :ambiguous_convertible then raise TypeError, "Function #{fun_app} is ambiguous for types #{fun_app.arguments.collect { |t| t.to_s }.join(", ")}}."
         else
-          FunctionApplication.new(fun_app.variable, arguments)
+          FunctionApplication.new(fun_app.variable, arguments, f.return_type)
         end
       end
       
       def visit_unary_operation(unop, column_stack)
         inner = visit_expression(unop.inner, column_stack)
-        f = Function.function(unop.operator, [inner.type])
+        f = @function_manager.function(unop.operator, [inner.type])
         case f
         when :no_candidates then raise InternalError, "Invalid operator #{binop.operator}"
         when :none then raise TypeError, "No operator #{unop.operator} defined for types #{inner.type}."
-        when :ambiguous then raise TypeError, "Operator #{unop.operator} is ambiguous for types #{inner.type}."
+        when :ambiguous_fitting, :ambiguous_convertible then raise TypeError, "Operator #{unop.operator} is ambiguous for types #{inner.type}."
         else
-          UnaryOperation.new(unop.operator, inner, f.type)
+          UnaryOperation.new(unop.operator, inner, f.return_type)
         end
       end
       
       def visit_binary_operation(binop, column_stack)
         left = visit_expression(binop.left, column_stack)
         right = visit_expression(binop.right, column_stack)
-        f = Function.function(binop.operator, [left.type, right.type])
+        f = @function_manager.function(binop.operator, [left.type, right.type])
         case f
         when :no_candidates then raise InternalError, "Invalid operator #{binop.operator}"
         when :none then raise TypeError, "No operator #{binop.operator} defined for types #{left.type}, #{right.type}."
-        when :ambiguous then raise TypeError, "Operator #{binop.operator} is ambiguous for types #{left.type}, #{right.type}."
+        when :ambiguous_fitting, :ambiguous_convertible  then raise TypeError, "Operator #{binop.operator} is ambiguous for types #{left.type}, #{right.type}."
         else
-          BinaryOperation.new(binop.operator, left, right, f.type)
+          BinaryOperation.new(binop.operator, left, right, f.return_type)
         end
       end
       

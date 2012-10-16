@@ -7,7 +7,7 @@ require 'spec_helper'
 include SquirrelDB
 include SQL
 include AST
-include Schema
+include SquirrelDB::Schema
 
 describe ASTParser do
   
@@ -411,10 +411,10 @@ describe ASTParser do
           Variable.new("c"),
           Variable.new("d")
         ],
-        [
+        Values.new([
           Constant.new(2, ExpressionType::INTEGER),
           Constant.new(3, ExpressionType::INTEGER)
-        ]
+        ])
       )
     )
   end

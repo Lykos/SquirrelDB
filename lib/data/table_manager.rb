@@ -1,6 +1,5 @@
 require 'ast/common/scoped_variable'
 require 'ast/common/variable'
-require 'schema/type'
 require 'data/constants'
 
 module SquirrelDB

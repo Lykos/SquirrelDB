@@ -49,7 +49,7 @@ module SquirrelDB
       include Schema
       
       DUAL_COLUMN = Column.new("value", "string")
-      DUAL_SCHEMA = Schema.new([DUAL_COLUMN])
+      DUAL_SCHEMA = Schema::Schema.new([DUAL_COLUMN])
       DUAL_VALUES = [Constant.new("X", ExpressionType::STRING)]
       DUAL_TABLE = DummyIterator.new(DUAL_SCHEMA, DUAL_VALUES)
       

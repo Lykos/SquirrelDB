@@ -1,10 +1,10 @@
 require 'ast/iterators/rel_alg_iterator'
 require 'ast/common/column'
 require 'ast/common/constant'
-require 'schema/table_schema'
+require 'schema/schema'
 require 'schema/expression_type'
-require 'errors/no_rows'
-require 'errors/too_many_rows'
+require 'errors/no_rows_error'
+require 'errors/too_many_rows_error'
 
 module SquirrelDB
 

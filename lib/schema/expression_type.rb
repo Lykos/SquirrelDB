@@ -32,7 +32,10 @@ module SquirrelDB
       DOUBLE = ExpressionType.new("double")
       NULL_TYPE = ExpressionType.new("null_type")
       IDENTITY = lambda { |x| x }
-      
+
+      def NULL_TYPE.null?
+        true
+      end      
 
       def INTEGER.parse(string)
         string.to_i
@@ -57,6 +60,10 @@ module SquirrelDB
       def ==(other)
         self.class == other.class &&
         @name == other.name
+      end
+      
+      def null?
+        false
       end
       
       def eql?(other)

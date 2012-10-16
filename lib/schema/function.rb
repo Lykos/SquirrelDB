@@ -1,23 +1,27 @@
 require 'ast/common/variable'
 require 'ast/common/scoped_variable'
-require 'schema/type'
+require 'schema/expression_type'
 require 'errors/divide_by_zero_error'
 
 module SquirrelDB
 
-  module Sql
+  module Schema
 
     class Function
-
-      def initialize(variable, arg_types, return_type, &proc)
+      
+      # +variable+:: The name of the function
+      # +arg_types+:: An Array with the types of the arguments
+      # +return_type+:: The return type
+      # +&block+:: The code to be executed
+      def initialize(variable, arg_types, return_type, &block)
         @variable = variable
         @arg_types = arg_types
-        @proc = proc
+        @proc = block
         @return_type = return_type
         @arg_types = arg_types
       end
 
-      attr_reader :proc, :return_type
+      attr_reader :variable, :arg_types, :proc, :return_type
       
       def ==(other)
         self.class == other.class &&
@@ -37,6 +41,8 @@ module SquirrelDB
       
       protected
       
+      # Shortcuts to make the notation more concise
+      
       STRING = ExpressionType::STRING
       INTEGER = ExpressionType::INTEGER
       BOOLEAN = ExpressionType::BOOLEAN
@@ -44,24 +50,26 @@ module SquirrelDB
       NULL_TYPE = ExpressionType::NULL_TYPE
       IDENTITY = lambda { |a| a }
       
+      include AST
+      
       public
       
-      BUILTIN_FUNCTIONS = [
-        Function.new(Variable("integer"), [STRING], INTEGER) { |s| s.nil? ? nil : s.to_i },
-        Function.new(Variable("integer"), [DOUBLE], INTEGER) { |d| d.nil? ? nil : d.to_i },
-        Function.new(Variable("integer"), [BOOLEAN], INTEGER) { |b| b.nil? ? nil : (b ? 1 : 0) },
-        Function.new(Variable("integer"), [INTEGER], INTEGER, &IDENTITY),
-        Function.new(Variable("integer"), [NULL_TYPE], INTEGER, &IDENTITY),
-        Function.new(Variable("double"), [STRING], DOUBLE) { |s| s.nil? ? nil : s.to_f },
-        Function.new(Variable("double"), [DOUBLE], DOUBLE, &IDENTITY),
-        Function.new(Variable("double"), [BOOLEAN], DOUBLE) { |b| b.nil? ? nil : (b ? 1.0 : 0.0) },
-        Function.new(Variable("double"), [INTEGER], DOUBLE) { |i| i.nil? ? nil : i.to_f },
-        Function.new(Variable("double"), [NULL_TYPE], DOUBLE, &IDENTITY),
-        Function.new(Variable("string"), [STRING], STRING, &IDENTITY),
-        Function.new(Variable("string"), [DOUBLE], STRING) { |d| d.nil? ? nil : d.to_s },
-        Function.new(Variable("string"), [BOOLEAN], STRING) { |b| b.nil? ? nil : (b ? "true" : "false") },
-        Function.new(Variable("string"), [INTEGER], STRING) { |i| i.to_s },
-        Function.new(Variable("string"), [NULL_TYPE], STRING, &IDENTITY),
+      BUILT_IN = [
+        Function.new(Variable.new("integer"), [STRING], INTEGER) { |s| s.nil? ? nil : s.to_i },
+        Function.new(Variable.new("integer"), [DOUBLE], INTEGER) { |d| d.nil? ? nil : d.to_i },
+        Function.new(Variable.new("integer"), [BOOLEAN], INTEGER) { |b| b.nil? ? nil : (b ? 1 : 0) },
+        Function.new(Variable.new("integer"), [INTEGER], INTEGER, &IDENTITY),
+        Function.new(Variable.new("integer"), [NULL_TYPE], INTEGER, &IDENTITY),
+        Function.new(Variable.new("double"), [STRING], DOUBLE) { |s| s.nil? ? nil : s.to_f },
+        Function.new(Variable.new("double"), [DOUBLE], DOUBLE, &IDENTITY),
+        Function.new(Variable.new("double"), [BOOLEAN], DOUBLE) { |b| b.nil? ? nil : (b ? 1.0 : 0.0) },
+        Function.new(Variable.new("double"), [INTEGER], DOUBLE) { |i| i.nil? ? nil : i.to_f },
+        Function.new(Variable.new("double"), [NULL_TYPE], DOUBLE, &IDENTITY),
+        Function.new(Variable.new("string"), [STRING], STRING, &IDENTITY),
+        Function.new(Variable.new("string"), [DOUBLE], STRING) { |d| d.nil? ? nil : d.to_s },
+        Function.new(Variable.new("string"), [BOOLEAN], STRING) { |b| b.nil? ? nil : (b ? "true" : "false") },
+        Function.new(Variable.new("string"), [INTEGER], STRING) { |i| i.to_s },
+        Function.new(Variable.new("string"), [NULL_TYPE], STRING, &IDENTITY),
         *[INTEGER, DOUBLE].map { |type| Function.new(Operator::UNARY_PLUS, [type], type, &IDENTITY) },
         *[INTEGER, DOUBLE].map { |type| Function.new(Operator::UNARY_MINUS, [type], type) { |a| a.nil? ? nil : -a } },
         *[INTEGER, DOUBLE].map { |type| Function.new(Operator::POWER, [type, type], type) { |a, b| a.nil? || b.nil? ? nil : a ** b } },
@@ -96,37 +104,6 @@ module SquirrelDB
         Function.new(Operator::IS_IMPLIED, [BOOLEAN, BOOLEAN], BOOLEAN) { |a, b| b == false ? true : (a.nil? || b.nil? ? nil : a) },
         Function.new(Operator::EQUIVALENT, [BOOLEAN, BOOLEAN], BOOLEAN) { |a, b| a.nil? || b.nil? ? nil : a == b }
       ]
-            
-      # Calls choose_function and caches the results
-      def self.function(variable, arg_types)
-        @@functions[[variable, arg_types]] = choose_function(variable, arg_types)
-      end
-      
-      protected
-      
-      @@functions = {}
-
-      def self.choose_function(variable, arg_types)
-        candidates = BUILTIN_FUNCTIONS.select { |f| f.variable == variable }
-        return :no_candidate if candidates.empty?
-        exact_match = candidates.find { |f| f.arg_types == arg_types }
-        return exact_match if exact_match
-        conversion_candidates = candidates.select do |f|
-          arg_types.zip(f.arg_types).all? { |args| arg[0].auto_converts_to?(arg[1]) }
-        end
-        if conversion_candidates.empty?
-          :none
-        elsif conversion_candidates.length == 1
-          f = conversion_candidates[0]
-          conversions = arg_types.zip(f.arg_types).all? { |args| args[0].auto_conversion_to(args[1]) }
-          Function.new(f.variable, arg_types, f.return_type) do |*args|
-            converted_args = conversions.zip(args).collect { |arg| arg[0].call(arg[1]) }
-            f.proc.call(*converted_args)
-          end
-        else
-          :ambiguous
-        end
-      end
       
     end
 
