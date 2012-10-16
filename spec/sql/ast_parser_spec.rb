@@ -33,7 +33,7 @@ describe ASTParser do
   end
   
   it "should parse a string constant correctly" do
-    set_expr_tokens([:STRING, "23"])
+    set_expr_tokens([:STRING, "\"23\""])
     @parser.parse.should calculate_expression(Constant.new("23", ExpressionType::STRING))
   end
   
