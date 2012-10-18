@@ -26,23 +26,23 @@ Rake::RDocTask.new do |rd|
 end
 
 task :client_config do
-  ruby 'bin/squirreldb_client.rb -vf --create-config'
+  ruby 'bin/client -vf --create-config'
 end
 
 task :server_config => :racc do
-  ruby 'bin/squirreldb_server.rb -vf --create-config'
+  ruby 'bin/server -vf --create-config'
 end
 
 task :genkeys => :racc do
-  ruby 'bin/squirreldb_server.rb -vf --generate-keys 4096'
+  ruby 'bin/server -vf --generate-keys 4096'
 end
 
 task :createdb => :racc do
-  ruby 'bin/squirreldb_server.rb -vf --create-database'
+  ruby 'bin/server -vf --create-database'
 end
 
 task :start_server => :racc do
-  ruby 'bin/squirreldb_server.rb -v'
+  ruby 'bin/server -v'
 end
 
 task :rm_config => [:rm_server_config, :rm_client_config]
