@@ -1,19 +1,50 @@
 require 'rubygems'
+require 'rubygems/package_task'
 require 'rdoc/task'
 require 'rspec/core/rake_task'
 require 'rspec_encoding_matchers'
 require 'rake/clean'
+
 $:.unshift('./lib')
 require 'server/server_defaults'
 require 'client/client_defaults'
 
 CLOBBER.include("lib/sql/ast_parser.tab.rb")
 
+task :default => :spec
+
 file "lib/sql/ast_parser.tab.rb" => "lib/sql/ast_parser.y" do |t|
   sh "racc -tv lib/sql/ast_parser.y"
 end
 
 task :racc => "lib/sql/ast_parser.tab.rb"
+
+spec = Gem::Specification.new do |s|
+  s.name        = 'SquirrelDB'
+  s.version     = '0.0.0.pre'
+  s.date        = '2012-10-18'
+  s.platform    = Gem::Platform::RUBY	
+  s.summary     = "A small and incomplete SQL database in pure Ruby."
+  s.authors     = "Bernhard Brodowsky"
+  s.email       = 'brodowsb@ethz.ch'
+  s.bindir      = 'bin'
+  s.license     = 'GPLv3'
+  s.executables = ['client', 'server']
+  s.files       = Dir['lib/**/*.rb', 'lib/**/*.y', 'bin/*.rb', 'spec/**/*.rb', 'Rakefile']
+  s.homepage    = 'https://github.com/Lykos/SquirrelDB'
+  s.required_ruby_version = '>= 1.9.2'
+  s.test_files  = Dir['spec/**/*_spec.rb']
+  s.add_development_dependency 'rake'
+  s.add_runtime_dependency 'xdg'
+  s.add_runtime_dependency 'eventmachine'
+  s.add_runtime_dependency 'rspec'
+  s.add_runtime_dependency 'racc'
+  s.add_runtime_dependency 'json'
+  s.add_runtime_dependency 'loggin'
+  s.post_install_message = 'It worked!'
+end
+
+Gem::PackageTask.new(spec).define
 
 RSpec::Core::RakeTask.new(:spec => :racc) do |t|
   t.fail_on_error = false
